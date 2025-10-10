@@ -4,9 +4,12 @@ import 'package:salims_apps_new/ui/views/bottom_navigator_view.dart';
 import 'package:salims_apps_new/ui/views/login/login_view.dart';
 import 'package:stacked/stacked.dart';
 
+import '../../../core/services/api_services.dart';
+
 class SplashScreenViewmodel extends FutureViewModel {
   BuildContext? context;
   final LocalStorageService _storage = LocalStorageService();
+  ApiService apiService = new ApiService();
 
   SplashScreenViewmodel({this.context});
 
@@ -15,13 +18,22 @@ class SplashScreenViewmodel extends FutureViewModel {
     try {
       await Future.delayed(Duration(seconds: 1));
       final getData = await _storage.getUserData();
+      final cekToke = await apiService.cekToken();
 
       if (getData != null) {
-        Navigator.of(context!).pushReplacement(
-          MaterialPageRoute(builder: (context) => BottomNavigatorView()),
-        );
-        setBusy(false);
-        notifyListeners();
+        if (cekToke) {
+          Navigator.of(context!).pushReplacement(
+            MaterialPageRoute(builder: (context) => BottomNavigatorView()),
+          );
+          setBusy(false);
+          notifyListeners();
+        } else {
+          await _storage.clear();
+          Navigator.of(context!).pushReplacement(
+              new MaterialPageRoute(builder: (context) => LoginView()));
+          notifyListeners();
+          setBusy(false);
+        }
       } else {
         Navigator.of(
           context!,

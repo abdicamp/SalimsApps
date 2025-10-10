@@ -30,6 +30,7 @@ class _TaskListViewState extends State<TaskListView> {
             backgroundColor: Colors.white,
             body: Column(
               children: [
+                
                 Expanded(
                   flex: 2,
                   child: Stack(
@@ -74,7 +75,6 @@ class _TaskListViewState extends State<TaskListView> {
                           onTap: () {
                             vm.pickDateRange();
                           },
-
                           decoration: InputDecoration(
                             hintText: "Date",
                             hintStyle: TextStyle(
@@ -145,14 +145,13 @@ class _TaskListViewState extends State<TaskListView> {
                           ),
                         ),
                         SizedBox(height: 15),
-                        TaskItem(
-                          kodeCabang: '0001',
-                          actNumber: 'PTS/2508/0001',
-                          actDate:
-                              '${DateFormat('yyyy-MM-dd').format(DateTime.parse('2025-08-04 22:19:52'))}',
-                          periode: '202507',
-                          shipCode: 'E202',
-                        ),
+                        Column(
+                          children: vm.listTask.map((e) {
+                            return TaskItem(
+                              listData: e,
+                            );
+                          }).toList(),
+                        )
                       ],
                     ),
                   ),

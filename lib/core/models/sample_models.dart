@@ -2,11 +2,10 @@ class SampleDetail {
   final String tsnumber;
   final String tranidx;
   final String periode;
-  final DateTime tsdate;
-  final String samplename;
+  final String tsdate;
+  String? samplename;
   final String sampleno;
-  final String latitude;
-  final String longitude;
+  final String geoTag;
   final String address;
   final String weather;
   final String winddirection;
@@ -23,10 +22,9 @@ class SampleDetail {
     required this.tranidx,
     required this.periode,
     required this.tsdate,
-    required this.samplename,
+    this.samplename,
     required this.sampleno,
-    required this.latitude,
-    required this.longitude,
+    required this.geoTag,
     required this.address,
     required this.weather,
     required this.winddirection,
@@ -44,11 +42,10 @@ class SampleDetail {
       tsnumber: json['tsnumber'] ?? '',
       tranidx: json['tranidx'] ?? '',
       periode: json['periode'] ?? '',
-      tsdate: DateTime.parse(json['tsdate']),
+      tsdate: json['tsdate'],
       samplename: json['samplename'] ?? '',
       sampleno: json['sampleno'] ?? '',
-      latitude: json['latitude'] ?? '',
-      longitude: json['longitude'] ?? '',
+      geoTag: json['geotag'] ?? '',
       address: json['address'] ?? '',
       weather: json['weather'] ?? '',
       winddirection: json['winddirection'] ?? '',
@@ -59,11 +56,10 @@ class SampleDetail {
       usercreated: json['usercreated'] ?? '',
       takingSampleParameters:
           (json['taking_sample_parameters'] as List<dynamic>?)
-              ?.map((e) => TakingSampleParameter.fromJson(e))
-              .toList() ??
-          [],
-      takingSampleCI:
-          (json['taking_sample_ci'] as List<dynamic>?)
+                  ?.map((e) => TakingSampleParameter.fromJson(e))
+                  .toList() ??
+              [],
+      takingSampleCI: (json['taking_sample_ci'] as List<dynamic>?)
               ?.map((e) => TakingSampleCI.fromJson(e))
               .toList() ??
           [],
@@ -75,11 +71,10 @@ class SampleDetail {
       'tsnumber': tsnumber,
       'tranidx': tranidx,
       'periode': periode,
-      'tsdate': tsdate.toIso8601String(),
+      'tsdate': tsdate,
       'samplename': samplename,
       'sampleno': sampleno,
-      'latitude': latitude,
-      'longitude': longitude,
+      'geotag': geoTag,
       'address': address,
       'weather': weather,
       'winddirection': winddirection,
@@ -88,35 +83,34 @@ class SampleDetail {
       'samplecode': samplecode,
       'ptsnumber': ptsnumber,
       'usercreated': usercreated,
-      'taking_sample_parameters': takingSampleParameters
-          .map((e) => e.toJson())
-          .toList(),
+      'taking_sample_parameters':
+          takingSampleParameters.map((e) => e.toJson()).toList(),
       'taking_sample_ci': takingSampleCI.map((e) => e.toJson()).toList(),
     };
   }
 }
 
 class TakingSampleParameter {
-  final int key;
-  final int detailno;
+  int? key;
+  int? detailno;
   final String parcode;
   final String parname;
   final bool iscalibration;
   final String insituresult;
   final String description;
-  final String price;
-  final String methodid;
+  String? price;
+  String? methodid;
 
   TakingSampleParameter({
-    required this.key,
-    required this.detailno,
+    this.key,
+    this.detailno,
     required this.parcode,
     required this.parname,
     required this.iscalibration,
     required this.insituresult,
     required this.description,
-    required this.price,
-    required this.methodid,
+    this.price,
+    this.methodid,
   });
 
   factory TakingSampleParameter.fromJson(Map<String, dynamic> json) {
@@ -149,8 +143,8 @@ class TakingSampleParameter {
 }
 
 class TakingSampleCI {
-  final int key;
-  final int detailno;
+  int? key;
+  int? detailno;
   final String equipmentcode;
   final String equipmentname;
   final int conqty;
@@ -160,8 +154,8 @@ class TakingSampleCI {
   final String description;
 
   TakingSampleCI({
-    required this.key,
-    required this.detailno,
+    this.key,
+    this.detailno,
     required this.equipmentcode,
     required this.equipmentname,
     required this.conqty,

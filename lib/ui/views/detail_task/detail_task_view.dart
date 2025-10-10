@@ -3,13 +3,17 @@ import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:salims_apps_new/core/utils/card_task_container.dart';
 import 'package:salims_apps_new/core/utils/card_task_info.dart';
+import 'package:salims_apps_new/core/utils/card_task_parameter.dart';
 import 'package:salims_apps_new/core/utils/rounded_clipper.dart';
 import 'package:salims_apps_new/core/utils/style.dart';
 import 'package:salims_apps_new/ui/views/detail_task/detail_task_viewmodel.dart';
 import 'package:stacked/stacked.dart';
 
+import '../../../core/models/task_list_models.dart';
+
 class DetailTaskView extends StatefulWidget {
-  const DetailTaskView({super.key});
+  TestingOrder? listData;
+  DetailTaskView({super.key, this.listData});
 
   @override
   State<DetailTaskView> createState() => _DetailTaskViewState();
@@ -38,7 +42,8 @@ class _DetailTaskViewState extends State<DetailTaskView>
   @override
   Widget build(BuildContext context) {
     return ViewModelBuilder.reactive(
-      viewModelBuilder: () => DetailTaskViewmodel(context: context),
+      viewModelBuilder: () =>
+          DetailTaskViewmodel(context: context, listTaskList: widget.listData),
       builder: (context, vm, child) {
         return GestureDetector(
           onTap: () {
@@ -161,6 +166,7 @@ class _DetailTaskViewState extends State<DetailTaskView>
                               children: [
                                 CardTaskInfo(vm: vm),
                                 CardTaskContainer(vm: vm),
+                                CardTaskParameter(vm: vm),
                               ],
                             ),
                           ),
@@ -188,14 +194,43 @@ class _DetailTaskViewState extends State<DetailTaskView>
                           elevation: 4, // efek bayangan halus
                         ),
                         onPressed: () {
-                          bool valid1 = vm.formKey1.currentState!.validate();
-
-                          bool valid3 = vm.formKey3.currentState!.validate();
-                          if (valid1 && valid3) {
-                            print("Semua form terisi ✅");
-                          } else {
-                            print("Ada form yang masih kosong ❌");
-                          }
+                          setState(() {
+                            bool valid1 = vm.formKey1.currentState!.validate();
+                            bool valid3 = vm.formKey3.currentState!.validate();
+                            bool isEmptyListCI = vm.listTakingSampleCI.isEmpty;
+                            if (valid1 && valid3 && !isEmptyListCI) {
+                              print("Semua form terisi ✅");
+                              vm.postDataTakingSample();
+                            } else {
+                              if (!valid1) {
+                                ScaffoldMessenger.of(context!).showSnackBar(
+                                  SnackBar(
+                                    duration: Duration(seconds: 2),
+                                    content: Text("Form Task Info Kosong"),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                              }
+                              if (!valid3) {
+                                ScaffoldMessenger.of(context!).showSnackBar(
+                                  SnackBar(
+                                    duration: Duration(seconds: 2),
+                                    content: Text("Form Parameter Kosong"),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                              }
+                              if (isEmptyListCI) {
+                                ScaffoldMessenger.of(context!).showSnackBar(
+                                  SnackBar(
+                                    duration: Duration(seconds: 2),
+                                    content: Text("Form Container Info Kosong"),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                              }
+                            }
+                          });
                         },
                         child: const Text(
                           "Save",

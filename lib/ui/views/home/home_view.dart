@@ -201,22 +201,15 @@ class _HomeViewState extends State<HomeView> {
                                                 CrossAxisAlignment.start,
                                             children: const [
                                               Text(
-                                                "Chemistry Final",
+                                                "Nearest Assigment Location",
                                                 style: TextStyle(
-                                                  fontSize: 18,
+                                                  fontSize: 15,
                                                   color: Colors.white,
                                                   fontWeight: FontWeight.bold,
                                                 ),
                                               ),
-                                              Text(
-                                                "Exam",
-                                                style: TextStyle(
-                                                  fontSize: 18,
-                                                  color: Colors.white,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                              SizedBox(height: 20),
+                                              
+                                              SizedBox(height: 50),
                                               Row(
                                                 children: [
                                                   Icon(
@@ -307,39 +300,13 @@ class _HomeViewState extends State<HomeView> {
                                               CrossAxisAlignment.start,
                                           children: [
                                             Text(
-                                              "Physics",
+                                              "Outstanding",
                                               style: GoogleFonts.poppins(
                                                 fontSize: 16,
                                                 fontWeight: FontWeight.w600,
                                               ),
                                             ),
-                                            Text(
-                                              "You have completed",
-                                              style: GoogleFonts.poppins(
-                                                fontSize: 12,
-                                                color: Colors.grey[600],
-                                              ),
-                                            ),
-                                            Row(
-                                              children: [
-                                                Text(
-                                                  "28/35",
-                                                  style: GoogleFonts.poppins(
-                                                    fontSize: 12,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Colors.green[700],
-                                                  ),
-                                                ),
-                                                const SizedBox(width: 5),
-                                                Text(
-                                                  "questions",
-                                                  style: GoogleFonts.poppins(
-                                                    fontSize: 12,
-                                                    color: Colors.grey[600],
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
+                                            
                                           ],
                                         ),
                                       ],
@@ -353,7 +320,7 @@ class _HomeViewState extends State<HomeView> {
                                               width: 55,
                                               height: 55,
                                               child: CircularProgressIndicator(
-                                                value: 0.85,
+                                                value: double.parse(vm.totalListTask.toString()) / 100,
                                                 strokeWidth: 6,
                                                 valueColor:
                                                     AlwaysStoppedAnimation<
@@ -364,7 +331,7 @@ class _HomeViewState extends State<HomeView> {
                                               ),
                                             ),
                                             Text(
-                                              "85",
+                                              "${vm.totalListTask}",
                                               style: GoogleFonts.poppins(
                                                 fontSize: 16,
                                                 fontWeight: FontWeight.w600,
@@ -443,39 +410,13 @@ class _HomeViewState extends State<HomeView> {
                                               CrossAxisAlignment.start,
                                           children: [
                                             Text(
-                                              "Science",
+                                              "Finish",
                                               style: GoogleFonts.poppins(
                                                 fontSize: 16,
                                                 fontWeight: FontWeight.w600,
                                               ),
                                             ),
-                                            Text(
-                                              "You have completed",
-                                              style: GoogleFonts.poppins(
-                                                fontSize: 12,
-                                                color: Colors.grey[600],
-                                              ),
-                                            ),
-                                            Row(
-                                              children: [
-                                                Text(
-                                                  "30/40",
-                                                  style: GoogleFonts.poppins(
-                                                    fontSize: 12,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Colors.green[700],
-                                                  ),
-                                                ),
-                                                const SizedBox(width: 5),
-                                                Text(
-                                                  "questions",
-                                                  style: GoogleFonts.poppins(
-                                                    fontSize: 12,
-                                                    color: Colors.grey[600],
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
+                                        
                                           ],
                                         ),
                                       ],
@@ -489,7 +430,7 @@ class _HomeViewState extends State<HomeView> {
                                               width: 55,
                                               height: 55,
                                               child: CircularProgressIndicator(
-                                                value: 0.75,
+                                                value: vm.totalListTaskHistory / 100,
                                                 strokeWidth: 6,
                                                 valueColor:
                                                     AlwaysStoppedAnimation<
@@ -500,7 +441,7 @@ class _HomeViewState extends State<HomeView> {
                                               ),
                                             ),
                                             Text(
-                                              "75",
+                                              "${vm.totalListTaskHistory}",
                                               style: GoogleFonts.poppins(
                                                 fontSize: 16,
                                                 fontWeight: FontWeight.w600,
@@ -579,39 +520,13 @@ class _HomeViewState extends State<HomeView> {
                                               CrossAxisAlignment.start,
                                           children: [
                                             Text(
-                                              "Chemistry",
+                                              "Performa",
                                               style: GoogleFonts.poppins(
                                                 fontSize: 16,
                                                 fontWeight: FontWeight.w600,
                                               ),
                                             ),
-                                            Text(
-                                              "You have completed",
-                                              style: GoogleFonts.poppins(
-                                                fontSize: 12,
-                                                color: Colors.grey[600],
-                                              ),
-                                            ),
-                                            Row(
-                                              children: [
-                                                Text(
-                                                  "18/25",
-                                                  style: GoogleFonts.poppins(
-                                                    fontSize: 12,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Colors.green[700],
-                                                  ),
-                                                ),
-                                                const SizedBox(width: 5),
-                                                Text(
-                                                  "questions",
-                                                  style: GoogleFonts.poppins(
-                                                    fontSize: 12,
-                                                    color: Colors.grey[600],
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
+                                           
                                           ],
                                         ),
                                       ],
@@ -625,7 +540,7 @@ class _HomeViewState extends State<HomeView> {
                                               width: 55,
                                               height: 55,
                                               child: CircularProgressIndicator(
-                                                value: 0.65,
+                                                value: vm.totalPerforma,
                                                 strokeWidth: 6,
                                                 valueColor:
                                                     AlwaysStoppedAnimation<
@@ -636,7 +551,7 @@ class _HomeViewState extends State<HomeView> {
                                               ),
                                             ),
                                             Text(
-                                              "65",
+                                              "${vm.totalPerforma}",
                                               style: GoogleFonts.poppins(
                                                 fontSize: 16,
                                                 fontWeight: FontWeight.w600,

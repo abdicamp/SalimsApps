@@ -56,7 +56,7 @@ class _LoginViewState extends State<LoginView> {
 
                           // Email Field
                           _buildTextField(
-                            controller: vm.usernameontroller!,
+                            controller: vm.usernameController!,
                             hint: "Username",
                             icon: Icons.people,
                           ),
@@ -64,7 +64,7 @@ class _LoginViewState extends State<LoginView> {
 
                           // Password Field
                           _buildTextField(
-                            controller: vm.passwordController!,
+                            controller: vm.passwordController,
                             hint: "Password",
                             icon: Icons.lock_outline,
                             suffixIcon: isShowPassword

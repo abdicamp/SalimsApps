@@ -40,58 +40,7 @@ class _CardTaskInfoState extends State<CardTaskInfo> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              "Sample Loc",
-                              style: const TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            SizedBox(height: 5),
-                            Padding(
-                              padding: const EdgeInsets.all(4),
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  border: Border.all(
-                                    color: Colors.black, // Warna garis border
-                                    width: 0.5, // Ketebalan garis border
-                                  ),
-                                  borderRadius: BorderRadius.circular(
-                                    15,
-                                  ), // Sudut melengkung (opsional)
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: CustomSearchableDropDown(
-                                    isReadOnly: false,
-                                    items: widget.vm!.sampleLocationList!,
-                                    label: 'Search Sample Loc',
-                                    padding: EdgeInsets.zero,
-                                    // searchBarHeight: SDP.sdp(40),
-                                    hint: 'Search Sample Loc',
-                                    // initialIndex: index,
-                                    dropdownHintText: 'Cari Search Sample Loc',
-                                    dropdownItemStyle: GoogleFonts.getFont(
-                                      "Lato",
-                                    ),
-                                    onChanged: (value) {
-                                      if (value != null) {
-                                        setState(() {
-                                          widget.vm?.sampleLocationSelect =
-                                              value;
-                                        });
-                                      }
-                                    },
-                                    dropDownMenuItems:
-                                        widget.vm!.sampleLocationList!.map((e) {
-                                          return '${e.locationname}';
-                                        }).toList() ??
-                                        [],
-                                  ),
-                                ),
-                              ),
-                            ),
+                            
                             SizedBox(height: 5),
                             CustomTextField(
                               validator: (value) {

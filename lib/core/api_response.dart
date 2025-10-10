@@ -12,6 +12,8 @@ class ApiResponse<T> {
   factory ApiResponse.error(String errorMessage) {
     return ApiResponse._(error: errorMessage);
   }
+  
+  
 
   factory ApiResponse.loading() {
     return ApiResponse._(isLoading: true);
