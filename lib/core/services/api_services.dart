@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:logger/logger.dart';
 import 'package:salims_apps_new/core/api_response.dart';
 import 'package:salims_apps_new/core/models/equipment_response_models.dart';
 import 'package:salims_apps_new/core/models/login_models.dart';
@@ -15,12 +16,22 @@ import '../models/task_list_history_models.dart';
 class ApiService {
   final String baseUrl = "https://api-salims.chemitechlogilab.com/v1";
   final LocalStorageService _storage = LocalStorageService();
+  var logger = Logger(
+    printer: PrettyPrinter(
+      methodCount: 2,
+      errorMethodCount: 5,
+      lineLength: 80,
+      colors: true,
+      printEmojis: true,
+      printTime: true,
+    ),
+  );
 
   Future<bool> cekToken() async {
     try {
       final getData = await _storage.getUserData();
       final response = await http.get(
-        Uri.parse("$baseUrl/auth/check-token/${getData?.data.username}"),
+        Uri.parse("$baseUrl/auth/check-token/${getData?.data?.username}"),
       );
 
       if (response.statusCode == 200) {
@@ -36,12 +47,17 @@ class ApiService {
   Future<ApiResponse<LoginResponse>> login(
     String username,
     String password,
+    String token,
   ) async {
     try {
       final response = await http.post(
-        Uri.parse("$baseUrl/auth/login"),
+        Uri.parse("$baseUrl/auth/login-customer-user"),
         headers: {"Content-Type": "application/json"},
-        body: jsonEncode({"username": username, "password": password}),
+        body: jsonEncode({
+          "username": username,
+          "password": password,
+          "token_fcm": "${token}"
+        }),
       );
 
       if (response.statusCode == 200) {
@@ -49,7 +65,9 @@ class ApiService {
         final loginResponse = LoginResponse.fromJson(data);
         return ApiResponse.success(loginResponse);
       } else {
-        return ApiResponse.error("Login gagal: ${response.statusCode}");
+        logger.w("Login Api failed: ${response.body}");
+        final loginResponse = LoginResponse.fromJson(jsonDecode(response.body));
+        return ApiResponse.error("Login gagal: ${loginResponse.msg}");
       }
     } catch (e) {
       return ApiResponse.error("Unexpected Error: $e");
@@ -61,7 +79,7 @@ class ApiService {
       final getData = await _storage.getUserData();
       final response = await http.get(
         Uri.parse(
-            "$baseUrl/transaction/taking-sample/testing-order/${getData?.data.branchcode}"),
+            "$baseUrl/transaction/taking-sample/testing-order/${getData?.data?.branchcode}"),
         headers: {
           "Content-Type": "application/json",
           "Authorization": "Bearer ${getData?.accessToken}",
@@ -86,7 +104,7 @@ class ApiService {
       final getData = await _storage.getUserData();
       final response = await http.get(
         Uri.parse(
-            "$baseUrl/transaction/taking-sample/testing-order-sampling-date/${getData?.data.branchcode}"),
+            "$baseUrl/transaction/taking-sample/testing-order-sampling-date/${getData?.data?.branchcode}"),
         headers: {
           "Content-Type": "application/json",
           "Authorization": "Bearer ${getData?.accessToken}",
@@ -136,7 +154,8 @@ class ApiService {
     try {
       final getData = await _storage.getUserData();
       final response = await http.get(
-        Uri.parse("$baseUrl/general/get-equipment/${getData?.data.branchcode}"),
+        Uri.parse(
+            "$baseUrl/general/get-equipment/${getData?.data?.branchcode}"),
         headers: {
           "Content-Type": "application/json",
           "Authorization": "Bearer ${getData?.accessToken}",
@@ -186,7 +205,7 @@ class ApiService {
       final getData = await _storage.getUserData();
       final response = await http.get(
         Uri.parse(
-            "$baseUrl/transaction/taking-sample/testing-order-parameters/${getData?.data.branchcode}?reqnumber=${reqNumber}&sampleno=${sampleNo}"),
+            "$baseUrl/transaction/taking-sample/testing-order-parameters/${getData?.data?.branchcode}?reqnumber=${reqNumber}&sampleno=${sampleNo}"),
         headers: {
           "Content-Type": "application/json",
           "Authorization": "Bearer ${getData?.accessToken}",

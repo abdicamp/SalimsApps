@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:logger/logger.dart';
@@ -40,25 +43,24 @@ class LoginViewModel extends FutureViewModel {
   doLogin() async {
     try {
       setBusy(true);
-
-      // 1️⃣ Cek izin lokasi
+      String? token = await FirebaseMessaging.instance.getToken();
       final hasLocationPermission = await checkLocationPermission();
       if (!hasLocationPermission) {
         logger.w("Location permission denied");
-        return; // hentikan login
+        return;
       }
 
-      // 2️⃣ Lakukan login
       final result = await _apiServices.login(
         usernameController.text,
         passwordController.text,
+        token!,
       );
-
+      logger.i("token: ${token}");
       apiResponse = result;
 
       if (result.data != null) {
         await _storage.saveLoginData(result.data!);
-        logger.i("User login successful: ${result.data!.data.username}");
+        logger.i("User login successful: ${jsonEncode(result.data!.data)}");
         Navigator.of(context!).pushReplacement(
           MaterialPageRoute(builder: (context) => BottomNavigatorView()),
         );
@@ -141,10 +143,8 @@ class LoginViewModel extends FutureViewModel {
       context: context!,
       builder: (context) => AlertDialog(
         title: Text("Izin Lokasi Diperlukan"),
-        content: Text(
-          "Anda menolak izin lokasi secara permanen. "
-          "Silakan aktifkan izin lokasi di pengaturan aplikasi."
-        ),
+        content: Text("Anda menolak izin lokasi secara permanen. "
+            "Silakan aktifkan izin lokasi di pengaturan aplikasi."),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),

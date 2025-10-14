@@ -62,7 +62,8 @@ class DetailTaskViewmodel extends FutureViewModel {
         final responseParameter = await apiService.getParameter(
             '${listTaskList?.reqnumber}', '${listTaskList?.sampleno}');
 
-        print("responseSampleLoc : ${jsonEncode(responseSampleLoc?.data?.data)}");
+        print(
+            "responseSampleLoc : ${jsonEncode(responseSampleLoc?.data?.data)}");
         sampleLocationList = responseSampleLoc?.data?.data;
         equipmentlist = responseEquipment?.data?.data;
         unitList = responseUnitList?.data?.data;
@@ -121,10 +122,10 @@ class DetailTaskViewmodel extends FutureViewModel {
         weather: "${weatherController?.text}",
         winddirection: "${windDIrectionController?.text}",
         temperatur: "${temperaturController?.text}",
-        branchcode: "${getDataUser?.data.branchcode}",
+        branchcode: "${getDataUser?.data?.branchcode}",
         samplecode: "",
         ptsnumber: "${listTaskList!.ptsnumber}",
-        usercreated: "${getDataUser?.data.username}",
+        usercreated: "${getDataUser?.data?.username}",
         takingSampleParameters: [
           TakingSampleParameter(
             parcode: '${parameterSelect?.parcode}',

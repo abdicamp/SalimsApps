@@ -28,6 +28,14 @@
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
+	<key>UIBackgroundModes</key>
+	<array>
+	<string>remote-notification</string>
+	</array>
+	<key>FirebaseAppDelegateProxyEnabled</key>
+	<true/>
+	<key>NSUserTrackingUsageDescription</key>
+	<string>App ini memerlukan izin untuk mengirim notifikasi yang relevan.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>App membutuhkan akses lokasi untuk menampilkan data berdasarkan lokasi Anda</string>
 	<key>UISupportedInterfaceOrientations</key>

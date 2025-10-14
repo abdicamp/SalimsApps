@@ -1,20 +1,20 @@
 class LoginResponse {
-  final int retcode;
-  final bool status;
-  final String msg;
-  final String accessToken;
-  final String tokenType;
-  final UserData data;
-  final int error;
+  int? retcode;
+  bool? status;
+  String? msg;
+  String? accessToken;
+  String? tokenType;
+  UserData? data;
+  int? error;
 
   LoginResponse({
-    required this.retcode,
-    required this.status,
-    required this.msg,
-    required this.accessToken,
-    required this.tokenType,
-    required this.data,
-    required this.error,
+    this.retcode,
+    this.status,
+    this.msg,
+    this.accessToken,
+    this.tokenType,
+    this.data,
+    this.error,
   });
 
   factory LoginResponse.fromJson(Map<String, dynamic> json) {
@@ -24,7 +24,7 @@ class LoginResponse {
       msg: json['msg'],
       accessToken: json['access_token'],
       tokenType: json['token_type'],
-      data: UserData.fromJson(json['data']),
+      data: json['data'] != null ? UserData.fromJson(json['data']) : null,
       error: json['error'],
     );
   }
@@ -36,7 +36,7 @@ class LoginResponse {
       "msg": msg,
       "access_token": accessToken,
       "token_type": tokenType,
-      "data": data.toJson(),
+      "data": data?.toJson(),
       "error": error,
     };
   }

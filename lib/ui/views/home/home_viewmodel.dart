@@ -20,7 +20,7 @@ class HomeViewmodel extends FutureViewModel {
     try {
       await Future.delayed(Duration(seconds: 1));
       final getData = await _storage.getUserData();
-      username = getData?.data.username;
+      username = getData?.data?.username;
 
       setBusy(true);
       notifyListeners();
