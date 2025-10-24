@@ -125,11 +125,11 @@ class DetailTaskViewmodel extends FutureViewModel {
         locationController!.text = listTaskList!.geotag!;
         latlang = listTaskList!.geotag!;
 
-        if( listTaskList?.tsnumber != '' && listParameter.isNotEmpty){
+        if (listTaskList?.tsnumber != '' && listParameter.isNotEmpty) {
           // Group berdasarkan parcode dari listTakingSampleParameter
           final groupedData = groupBy(
             listTakingSampleParameter,
-                (item) => item.parcode?.toString().trim().toUpperCase() ?? "",
+            (item) => item.parcode?.toString().trim().toUpperCase() ?? "",
           );
 
           final groupedKeys = groupedData.keys.toList();
@@ -140,14 +140,14 @@ class DetailTaskViewmodel extends FutureViewModel {
               .toList();
 
           // Cek apakah semua parcode yang diambil sudah ada di listParameter
-          final allExist = parameterCodes.every((code) => groupedKeys.contains(code));
+          final allExist =
+              parameterCodes.every((code) => groupedKeys.contains(code));
           allExistParameter = allExist;
-          if(listTakingSampleCI.isNotEmpty){
+          if (listTakingSampleCI.isNotEmpty) {
             isConfirm = true;
           }
-
-        }else {
-          if(listTakingSampleCI.isNotEmpty){
+        } else {
+          if (listTakingSampleCI.isNotEmpty) {
             isConfirm = true;
           }
         }
@@ -188,30 +188,7 @@ class DetailTaskViewmodel extends FutureViewModel {
     institutController?.text = "";
     descriptionParController?.text = "";
     isCalibration = false;
-
-    // ✅ Pengecekan kelengkapan data
-    if (listParameter.isNotEmpty) {
-
-      final groupedData = groupBy(
-        listTakingSampleParameter,
-            (item) => item.parcode.toString().trim().toUpperCase() ?? "",
-      );
-
-      final groupedKeys = groupedData.keys.toList();
-
-      // Ambil semua parcode dari listParameter (data referensi)
-      final parameterCodes = listParameter
-          .map((e) => e.parcode.toString().trim().toUpperCase())
-          .toList();
-
-      // Cek apakah semua parcode yang diambil sudah ada di listParameter
-      final allExist = parameterCodes.every((code) => groupedKeys.contains(code));
-      allExistParameter = allExist;
-      if(listTakingSampleCI.isNotEmpty && allExist){
-        isConfirm = true;
-      }
-    }
-
+    validasiConfirm();
     notifyListeners();
   }
 
@@ -233,57 +210,31 @@ class DetailTaskViewmodel extends FutureViewModel {
     conQTYController?.text = '';
     volQTYController?.text = '';
     descriptionCIController?.text = '';
-
-    if(listTakingSampleCI.isNotEmpty){
-      isConfirm = true;
-    }
+    validasiConfirm();
     notifyListeners();
   }
 
   removeListCi(int index) {
     incrementDetailNoCI = 0;
     listTakingSampleCI.removeAt(index);
-    for(var i = 0; i < listTakingSampleCI.length;){
+    for (var i = 0; i < listTakingSampleCI.length;) {
       listTakingSampleCI[i].detailno = i;
       incrementDetailNoCI = incrementDetailNoCI! + 1;
       i++;
     }
-    if(listTakingSampleCI.isEmpty){
-      isConfirm = false;
-    }
-    print("listTakingSampleCI : ${jsonEncode(listTakingSampleParameter)}");
+    validasiConfirm();
     notifyListeners();
   }
 
   removeListPar(int index) {
     incrementDetailNoPar = 0;
     listTakingSampleParameter.removeAt(index);
-    for(var i = 0; i < listTakingSampleParameter.length;){
+    for (var i = 0; i < listTakingSampleParameter.length;) {
       listTakingSampleParameter[i].detailno = i;
       incrementDetailNoPar = incrementDetailNoPar! + 1;
       i++;
     }
-    final groupedData = groupBy(
-      listTakingSampleParameter,
-          (item) => item.parcode.toString().trim().toUpperCase() ?? "",
-    );
-
-    final groupedKeys = groupedData.keys.toList();
-
-    // Ambil semua parcode dari listParameter (data referensi)
-    final parameterCodes = listParameter
-        .map((e) => e.parcode.toString().trim().toUpperCase())
-        .toList();
-
-    // Cek apakah semua parcode yang diambil sudah ada di listParameter
-    final allExist = parameterCodes.every((code) => groupedKeys.contains(code));
-    allExistParameter = allExist;
-    if(listTakingSampleCI.isNotEmpty && allExist){
-      isConfirm = true;
-    }else {
-      isConfirm = false;
-    }
-    print("listTakingSampleParameter : ${jsonEncode(listTakingSampleParameter)}");
+    validasiConfirm();
     notifyListeners();
   }
 
@@ -314,13 +265,12 @@ class DetailTaskViewmodel extends FutureViewModel {
     print("placemarks : ${placemarks}");
     Placemark placemark = placemarks[0];
 
-
     if (placemarks.isNotEmpty) {
       Placemark placemark = placemarks[0];
       String safe(String? val) => val ?? '';
 
       address =
-      "${safe(placemark.street)}, ${safe(placemark.name)}, ${safe(placemark.subLocality)}, ${safe(placemark.postalCode)}, ${safe(placemark.locality)}, ${safe(placemark.subAdministrativeArea)}, ${safe(placemark.administrativeArea)}, ${safe(placemark.country)}";
+          "${safe(placemark.street)}, ${safe(placemark.name)}, ${safe(placemark.subLocality)}, ${safe(placemark.postalCode)}, ${safe(placemark.locality)}, ${safe(placemark.subAdministrativeArea)}, ${safe(placemark.administrativeArea)}, ${safe(placemark.country)}";
       namaJalan = safe(placemark.street);
 
       addressController?.text = namaJalan!;
@@ -333,14 +283,13 @@ class DetailTaskViewmodel extends FutureViewModel {
   postDataTakingSample() async {
     setBusy(true);
     try {
-
       final getDataUser = await localService.getUserData();
       final dataJson = SampleDetail(
         description: descriptionController!.text,
         tsnumber: "${listTaskList?.tsnumber ?? ''}",
         tranidx: "1203",
         periode:
-        "${DateFormat('yyyyMM').format(DateTime.parse('${listTaskList!.samplingdate}'))}",
+            "${DateFormat('yyyyMM').format(DateTime.parse('${listTaskList!.samplingdate}'))}",
         tsdate: DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now()),
         samplename: "${listTaskList!.sampleName}",
         sampleno: "${listTaskList!.sampleno}",
@@ -360,7 +309,7 @@ class DetailTaskViewmodel extends FutureViewModel {
       print("dataJson : ${jsonEncode(dataJson)}");
       final postSample = await apiService.postTakingSample(dataJson);
 
-      if(postSample.data != null){
+      if (postSample.data != null) {
         ScaffoldMessenger.of(context!).showSnackBar(
           SnackBar(
             duration: Duration(seconds: 2),
@@ -371,7 +320,7 @@ class DetailTaskViewmodel extends FutureViewModel {
         Navigator.of(context!).pushReplacement(
           MaterialPageRoute(builder: (context) => BottomNavigatorView()),
         );
-      }else {
+      } else {
         setBusy(false);
         ScaffoldMessenger.of(context!).showSnackBar(
           SnackBar(
@@ -398,8 +347,6 @@ class DetailTaskViewmodel extends FutureViewModel {
       //   setBusy(false);
       //   notifyListeners();
       // }
-
-
     } catch (e, stackTrace) {
       logger.e(
         "Error Post Data",
@@ -427,52 +374,126 @@ class DetailTaskViewmodel extends FutureViewModel {
 
       if (distance <= allowedRadius) {
         return true;
-      }else {
+      } else {
         return false;
       }
-
-    }catch(e){
+    } catch (e) {
       print("error cek location : ${e}");
-       return false;
+      return false;
     }
   }
 
   getOneTaskList() async {
     setBusy(true);
     try {
-      if(listTaskList?.tsnumber != '') {
-
-        final response = await apiService.getOneTaskList(listTaskList?.tsnumber);
+      if (listTaskList?.tsnumber != '') {
+        final response =
+            await apiService.getOneTaskList(listTaskList?.tsnumber);
         descriptionController!.text = response['description'];
         weatherController!.text = response['weather'];
         windDIrectionController!.text = response['winddirection'];
         temperaturController!.text = response['temperatur'];
-      
-        for(var i in response['taking_sample_parameters']){
+
+        for (var i in response['taking_sample_parameters']) {
           print("parameter : ${i}");
           listTakingSampleParameter.add(TakingSampleParameter.fromJson(i));
           incrementDetailNoPar = incrementDetailNoPar! + 1;
         }
 
-        for(var i in response['taking_sample_ci']){
+        for (var i in response['taking_sample_ci']) {
           listTakingSampleCI.add(TakingSampleCI.fromJson(i));
           incrementDetailNoCI = incrementDetailNoCI! + 1;
         }
-
-
       }
       setBusy(false);
       notifyListeners();
-    }catch (e) {
+    } catch (e) {
       print("error get one task : ${e}");
     }
   }
 
+  validasiConfirm() async {
+    try {
+      if (listTaskList?.tsnumber != "") {
+        if (listParameter.isNotEmpty) {
+          final groupedData = groupBy(
+            listTakingSampleParameter,
+            (item) => item.parcode.toString().trim().toUpperCase() ?? "",
+          );
+          final groupedKeys = groupedData.keys.toList();
+          final parameterCodes = listParameter
+              .map((e) => e.parcode.toString().trim().toUpperCase())
+              .toList();
+          final allExist =
+              parameterCodes.every((code) => groupedKeys.contains(code));
+          allExistParameter = allExist;
+
+          if (listTakingSampleCI.isNotEmpty && allExist) {
+            isConfirm = true;
+          } else {
+            isConfirm = false;
+          }
+        } else {
+          if (listTakingSampleCI.isNotEmpty) {
+            isConfirm = true;
+          } else {
+            isConfirm = false;
+          }
+        }
+      }
+      notifyListeners();
+    } catch (e) {}
+  }
+
+  confirm() async {
+    setBusy(true);
+    try {
+      final dataJson = {
+        'tsnumber': '${listTaskList?.tsnumber}',
+        'tsdate': '${listTaskList?.tsdate}',
+        'ptsnumber': '${listTaskList?.ptsnumber}',
+        'sampleno': '${listTaskList?.sampleno}',
+      };
+      final response = await apiService.updateStatus(dataJson);
+
+      print("response update status : ${response.data['status']}");
+
+      if (response.data['status'] == true) {
+        ScaffoldMessenger.of(context!).showSnackBar(
+          SnackBar(
+            duration: Duration(seconds: 2),
+            content: Text("${response.data['message']}"),
+            backgroundColor: Colors.green,
+          ),
+        );
+        setBusy(false);
+        Navigator.of(context!).pushReplacement(
+          MaterialPageRoute(builder: (context) => BottomNavigatorView()),
+        );
+
+        notifyListeners();
+      } else {
+        ScaffoldMessenger.of(context!).showSnackBar(
+          SnackBar(
+            duration: Duration(seconds: 2),
+            content: Text("${response.data['message']}"),
+            backgroundColor: Colors.red,
+          ),
+        );
+        setBusy(false);
+        notifyListeners();
+      }
+    } catch (e) {
+      setBusy(false);
+      notifyListeners();
+    }
+  }
 
   @override
   Future futureToRun() async {
     await getData();
     await getOneTaskList();
+    await validasiConfirm();
     // await setLocationName();
   }
 }

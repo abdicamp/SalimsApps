@@ -181,7 +181,6 @@ class _DetailTaskViewState extends State<DetailTaskView>
                       16.0,
                     ), // kasih jarak dari tepi
                     child: SizedBox(
-
                       height: 50,
                       child: Row(
                         children: [
@@ -189,7 +188,8 @@ class _DetailTaskViewState extends State<DetailTaskView>
                             flex: 2,
                             child: ElevatedButton(
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.blue.shade800, // warna elegan
+                                backgroundColor:
+                                    Colors.blue.shade800, // warna elegan
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(
                                     12,
@@ -199,19 +199,26 @@ class _DetailTaskViewState extends State<DetailTaskView>
                               ),
                               onPressed: () {
                                 setState(() {
-                                  bool valid1 = vm.formKey1.currentState!.validate();
+                                  bool valid1 =
+                                      vm.formKey1.currentState!.validate();
                                   // bool valid3 = vm.formKey3.currentState!.validate();
-                                  bool isEmptyListCI = vm.listTakingSampleCI.isEmpty;
-                                  bool isEmptyListPar = vm.listTakingSampleParameter.isEmpty;
-                                  if (valid1 && !isEmptyListCI && !isEmptyListPar) {
+                                  bool isEmptyListCI =
+                                      vm.listTakingSampleCI.isEmpty;
+                                  bool isEmptyListPar =
+                                      vm.listTakingSampleParameter.isEmpty;
+                                  if (valid1 &&
+                                      !isEmptyListCI &&
+                                      !isEmptyListPar) {
                                     print("Semua form terisi ✅");
                                     vm.postDataTakingSample();
                                   } else {
                                     if (!valid1) {
-                                      ScaffoldMessenger.of(context!).showSnackBar(
+                                      ScaffoldMessenger.of(context!)
+                                          .showSnackBar(
                                         SnackBar(
                                           duration: Duration(seconds: 2),
-                                          content: Text("Form Task Info Kosong"),
+                                          content:
+                                              Text("Form Task Info Kosong"),
                                           backgroundColor: Colors.red,
                                         ),
                                       );
@@ -226,19 +233,23 @@ class _DetailTaskViewState extends State<DetailTaskView>
                                     //   );
                                     // }
                                     if (isEmptyListCI) {
-                                      ScaffoldMessenger.of(context!).showSnackBar(
+                                      ScaffoldMessenger.of(context!)
+                                          .showSnackBar(
                                         SnackBar(
                                           duration: Duration(seconds: 2),
-                                          content: Text("Form Container Info Kosong"),
+                                          content: Text(
+                                              "Form Container Info Kosong"),
                                           backgroundColor: Colors.red,
                                         ),
                                       );
                                     }
                                     if (isEmptyListPar) {
-                                      ScaffoldMessenger.of(context!).showSnackBar(
+                                      ScaffoldMessenger.of(context!)
+                                          .showSnackBar(
                                         SnackBar(
                                           duration: Duration(seconds: 2),
-                                          content: Text("Form Parameter Kosong"),
+                                          content:
+                                              Text("Form Parameter Kosong"),
                                           backgroundColor: Colors.red,
                                         ),
                                       );
@@ -269,90 +280,37 @@ class _DetailTaskViewState extends State<DetailTaskView>
                           SizedBox(
                             width: 10,
                           ),
-
-                         vm.isConfirm! ?  Expanded(
-                           flex: 2,
-                           child: ElevatedButton(
-                             style: ElevatedButton.styleFrom(
-                               backgroundColor: Colors.green.shade800, // warna elegan
-                               shape: RoundedRectangleBorder(
-                                 borderRadius: BorderRadius.circular(
-                                   12,
-                                 ), // tombol rounded
-                               ),
-                               elevation: 4, // efek bayangan halus
-                             ),
-                             onPressed: () {
-                               setState(() {
-                                 bool valid1 = vm.formKey1.currentState!.validate();
-                                 // bool valid3 = vm.formKey3.currentState!.validate();
-                                 bool isEmptyListCI = vm.listTakingSampleCI.isEmpty;
-                                 bool isEmptyListPar = vm.listTakingSampleParameter.isEmpty;
-                                 if (valid1 && !isEmptyListCI && !isEmptyListPar) {
-                                   print("Semua form terisi ✅");
-                                   vm.postDataTakingSample();
-                                 } else {
-                                   if (!valid1) {
-                                     ScaffoldMessenger.of(context!).showSnackBar(
-                                       SnackBar(
-                                         duration: Duration(seconds: 2),
-                                         content: Text("Form Task Info Kosong"),
-                                         backgroundColor: Colors.red,
-                                       ),
-                                     );
-                                   }
-                                   // if (!valid3) {
-                                   //   ScaffoldMessenger.of(context!).showSnackBar(
-                                   //     SnackBar(
-                                   //       duration: Duration(seconds: 2),
-                                   //       content: Text("Form Parameter Kosong"),
-                                   //       backgroundColor: Colors.red,
-                                   //     ),
-                                   //   );
-                                   // }
-                                   if (isEmptyListCI) {
-                                     ScaffoldMessenger.of(context!).showSnackBar(
-                                       SnackBar(
-                                         duration: Duration(seconds: 2),
-                                         content: Text("Form Container Info Kosong"),
-                                         backgroundColor: Colors.red,
-                                       ),
-                                     );
-                                   }
-                                   if (isEmptyListPar) {
-                                     ScaffoldMessenger.of(context!).showSnackBar(
-                                       SnackBar(
-                                         duration: Duration(seconds: 2),
-                                         content: Text("Form Parameter Kosong"),
-                                         backgroundColor: Colors.red,
-                                       ),
-                                     );
-                                   }
-                                   // if(vm.imageString.isEmpty){
-                                   //   ScaffoldMessenger.of(context!).showSnackBar(
-                                   //     SnackBar(
-                                   //       duration: Duration(seconds: 2),
-                                   //       content: Text("Gambar tidak boleh Kosong"),
-                                   //       backgroundColor: Colors.red,
-                                   //     ),
-                                   //   );
-                                   //
-                                   // }
-                                 }
-                               });
-                             },
-                             child: const Text(
-                               "Confirm",
-                               style: TextStyle(
-                                 fontSize: 16,
-                                 fontWeight: FontWeight.bold,
-                                 color: Colors.white, // teks kontras
-                               ),
-                             ),
-                           ),
-                         ) : Stack()
-                        ]
-                        ,
+                          vm.isConfirm!
+                              ? Expanded(
+                                  flex: 2,
+                                  child: ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor:
+                                          Colors.green.shade800, // warna elegan
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(
+                                          12,
+                                        ), // tombol rounded
+                                      ),
+                                      elevation: 4, // efek bayangan halus
+                                    ),
+                                    onPressed: () {
+                                      setState(() {
+                                        vm.confirm();
+                                      });
+                                    },
+                                    child: const Text(
+                                      "Confirm",
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white, // teks kontras
+                                      ),
+                                    ),
+                                  ),
+                                )
+                              : Stack()
+                        ],
                       ),
                     ),
                   ),

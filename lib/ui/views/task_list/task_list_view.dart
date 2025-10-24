@@ -22,7 +22,6 @@ class _TaskListViewState extends State<TaskListView> {
   Widget build(BuildContext context) {
     return ViewModelBuilder.reactive(
       viewModelBuilder: () => TaskListViewmodel(context: context),
-
       builder: (context, vm, child) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           vm.isBusy
@@ -37,7 +36,6 @@ class _TaskListViewState extends State<TaskListView> {
             backgroundColor: Colors.white,
             body: Column(
               children: [
-                
                 Expanded(
                   flex: 2,
                   child: Stack(
@@ -74,93 +72,95 @@ class _TaskListViewState extends State<TaskListView> {
                   flex: 10,
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: Column(
-                      children: [
-                        TextField(
-                          readOnly: true,
-                          controller: vm.tanggalCtrl,
-                          onTap: () {
-                            vm.pickDateRange();
-                          },
-                          decoration: InputDecoration(
-                            hintText: "Date",
-                            hintStyle: TextStyle(
-                              color: Colors.grey.shade500,
-                              fontSize: 14,
-                            ),
-                            prefixIcon: Icon(
-                              Icons.date_range,
-                              color: Colors.grey.shade600,
-                            ),
-                            filled: true,
-                            fillColor: Colors.grey.shade100,
-                            contentPadding: const EdgeInsets.symmetric(
-                              vertical: 12,
-                              horizontal: 16,
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(20),
-                              borderSide: BorderSide(
-                                color: Colors.grey.shade300,
+                    child: SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          TextField(
+                            readOnly: true,
+                            controller: vm.tanggalCtrl,
+                            onTap: () {
+                              vm.pickDateRange();
+                            },
+                            decoration: InputDecoration(
+                              hintText: "Date",
+                              hintStyle: TextStyle(
+                                color: Colors.grey.shade500,
+                                fontSize: 14,
                               ),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(20),
-                              borderSide: BorderSide(
-                                color: Colors.blue.shade400,
-                                width: 1.5,
+                              prefixIcon: Icon(
+                                Icons.date_range,
+                                color: Colors.grey.shade600,
                               ),
-                            ),
-                          ),
-                        ),
-                        SizedBox(height: 15),
-                        TextField(
-                          onChanged: (value) {
-                            setState(() {
-                              vm.onSearchTextChangedMyRequest(value);
-                            });
-                          },
-                          decoration: InputDecoration(
-                            hintText: "Search task...",
-                            hintStyle: TextStyle(
-                              color: Colors.grey.shade500,
-                              fontSize: 14,
-                            ),
-                            prefixIcon: Icon(
-                              Icons.search,
-                              color: Colors.grey.shade600,
-                            ),
-                            filled: true,
-                            fillColor: Colors.grey.shade100,
-                            contentPadding: const EdgeInsets.symmetric(
-                              vertical: 12,
-                              horizontal: 16,
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(20),
-                              borderSide: BorderSide(
-                                color: Colors.grey.shade300,
+                              filled: true,
+                              fillColor: Colors.grey.shade100,
+                              contentPadding: const EdgeInsets.symmetric(
+                                vertical: 12,
+                                horizontal: 16,
                               ),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(20),
-                              borderSide: BorderSide(
-                                color: Colors.blue.shade400,
-                                width: 1.5,
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(20),
+                                borderSide: BorderSide(
+                                  color: Colors.grey.shade300,
+                                ),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(20),
+                                borderSide: BorderSide(
+                                  color: Colors.blue.shade400,
+                                  width: 1.5,
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                        SizedBox(height: 15),
-                        Column(
-                          children: vm.listTask.map((e) {
-                            return TaskItem(
-                              vm: vm,
-                              listData: e,
-                            );
-                          }).toList(),
-                        )
-                      ],
+                          SizedBox(height: 15),
+                          TextField(
+                            onChanged: (value) {
+                              setState(() {
+                                vm.onSearchTextChangedMyRequest(value);
+                              });
+                            },
+                            decoration: InputDecoration(
+                              hintText: "Search task...",
+                              hintStyle: TextStyle(
+                                color: Colors.grey.shade500,
+                                fontSize: 14,
+                              ),
+                              prefixIcon: Icon(
+                                Icons.search,
+                                color: Colors.grey.shade600,
+                              ),
+                              filled: true,
+                              fillColor: Colors.grey.shade100,
+                              contentPadding: const EdgeInsets.symmetric(
+                                vertical: 12,
+                                horizontal: 16,
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(20),
+                                borderSide: BorderSide(
+                                  color: Colors.grey.shade300,
+                                ),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(20),
+                                borderSide: BorderSide(
+                                  color: Colors.blue.shade400,
+                                  width: 1.5,
+                                ),
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: 15),
+                          Column(
+                            children: vm.listTask.map((e) {
+                              return TaskItem(
+                                vm: vm,
+                                listData: e,
+                              );
+                            }).toList(),
+                          )
+                        ],
+                      ),
                     ),
                   ),
                 ),

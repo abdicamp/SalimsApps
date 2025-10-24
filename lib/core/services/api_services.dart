@@ -79,8 +79,10 @@ class ApiService {
   Future<ApiResponse<TaskListModels>?> getTaskList(String? filterDate) async {
     try {
       final getData = await _storage.getUserData();
-      print("filterDate : ${filterDate == '' ? '${DateFormat('yyyy-MM-dd').format(DateTime.now())}-${DateFormat('yyyy-MM-dd').format(DateTime.now())}' : filterDate}");
-      print("url : ${baseUrl}/transaction/taking-sample/testing-order/${getData?.data?.branchcode}/${filterDate == '' ? '${DateFormat('yyyy-MM-dd').format(DateTime.now())}-${DateFormat('yyyy-MM-dd').format(DateTime.now())}' : filterDate}");
+      print(
+          "filterDate : ${filterDate == '' ? '${DateFormat('yyyy-MM-dd').format(DateTime.now())}-${DateFormat('yyyy-MM-dd').format(DateTime.now())}' : filterDate}");
+      print(
+          "url : ${baseUrl}/transaction/taking-sample/testing-order/${getData?.data?.branchcode}/${filterDate == '' ? '${DateFormat('yyyy-MM-dd').format(DateTime.now())}-${DateFormat('yyyy-MM-dd').format(DateTime.now())}' : filterDate}");
       final response = await http.get(
         Uri.parse(
             "${baseUrl}/transaction/taking-sample/testing-order/${getData?.data?.branchcode}/${filterDate == '' ? '${DateFormat('yyyy-MM-dd').format(DateTime.now())}-${DateFormat('yyyy-MM-dd').format(DateTime.now())}' : filterDate}"),
@@ -116,7 +118,6 @@ class ApiService {
         },
       );
       if (response.statusCode == 200) {
-
         return jsonDecode(response.body)['data'];
       } else {
         return ApiResponse.error("Failed get data: ${response.statusCode}");
@@ -255,93 +256,114 @@ class ApiService {
   Future<ApiResponse<dynamic>> postTakingSample(SampleDetail? sample) async {
     try {
       final getData = await _storage.getUserData();
-      if(sample?.tsnumber == "" || sample?.tsnumber == null) {
-
-
+      if (sample?.tsnumber == "" || sample?.tsnumber == null) {
         final response = await http.post(
-            Uri.parse(
-                "$baseUrl/transaction/taking-sample/store"),
+            Uri.parse("$baseUrl/transaction/taking-sample/store"),
             headers: {
               "Content-Type": "application/json",
               "Authorization": "Bearer ${getData?.accessToken}",
             },
-            body: jsonEncode(sample)
-        );
+            body: jsonEncode(sample));
 
         final data = jsonDecode(response.body);
 
-        if(response.statusCode == 201){
+        if (response.statusCode == 201) {
           return ApiResponse.success(data);
-        }else {
-          return ApiResponse.error('Error ${data['code']} : ${data['message']}');
+        } else {
+          return ApiResponse.error(
+              'Error ${data['code']} : ${data['message']}');
         }
-
-      }else {
+      } else {
         final response = await http.put(
-            Uri.parse(
-                "$baseUrl/transaction/taking-sample/update"),
+            Uri.parse("$baseUrl/transaction/taking-sample/update"),
             headers: {
               "Content-Type": "application/json",
               "Authorization": "Bearer ${getData?.accessToken}",
             },
-            body: jsonEncode(sample)
-        );
+            body: jsonEncode(sample));
 
         final data = jsonDecode(response.body);
         print("data update : ${data}");
-        if(response.statusCode == 200){
+        if (response.statusCode == 200) {
           return ApiResponse.success(data);
-        }else {
-          return ApiResponse.error('Error ${data['code']} : ${data['message']}');
+        } else {
+          return ApiResponse.error(
+              'Error ${data['code']} : ${data['message']}');
         }
       }
-
-
-    }catch (e) {
+    } catch (e) {
       return ApiResponse.error('Error : ${e}');
     }
   }
-
 
   Future<ApiResponse<dynamic>> updateStatus(dynamic datas) async {
     try {
       final getData = await _storage.getUserData();
 
       final Map<String, dynamic> dataJson = {
-        "tranidx" : "1206",
-        'branchcode' : '${getData?.data?.branchcode}',
-        'tsnumber' : '${datas['tsnumber']}',
-        'tsdate' : 'required',
-        'ptsnumber' : '${datas['ptsnumber']}',
-        'sampleno' : '${datas['sampleno']}',
-        'user' : '${getData?.data?.username}',
-        'appstatus' : 'APPROVED',
-        'appdescription' : '',
+        "tranidx": "1206",
+        'branchcode': '${getData?.data?.branchcode}',
+        'tsnumber': '${datas['tsnumber']}',
+        'tsdate': '${datas['tsdate']}',
+        'ptsnumber': '${datas['ptsnumber']}',
+        'sampleno': '${datas['sampleno']}',
+        'user': '${getData?.data?.username}',
+        'appstatus': 'APPROVED',
+        'appdescription': 'Finish',
       };
 
-      final response = await http.patch(
-          Uri.parse(
-              "$baseUrl/transaction/taking-sample/update-app-status"),
+      final response = await http.put(
+          Uri.parse("$baseUrl/transaction/taking-sample/update-app-status"),
           headers: {
             "Content-Type": "application/json",
             "Authorization": "Bearer ${getData?.accessToken}",
           },
-          body: jsonEncode(dataJson)
-      );
-      print("jsonEncode(sample) updateStatus : ${jsonEncode(response)}");
-      print("jsonDecode(response.body) updateStatus : ${jsonDecode(response.body)}");
+          body: jsonEncode(dataJson));
+
+      print(
+          "jsonDecode(response.body) updateStatus : ${jsonDecode(response.body)}");
+      print(
+          "jsonDecode(response.body) updateStatus code : ${response.statusCode}");
       final data = jsonDecode(response.body);
 
-      if(response.statusCode == 201){
+      if (response.statusCode == 200) {
         return ApiResponse.success(data);
-      }else {
+      } else {
         return ApiResponse.error('Error ${data['code']} : ${data['message']}');
       }
-
-    }catch (e) {
+    } catch (e) {
+      print("error update status : ${e}");
       return ApiResponse.error('Error : ${e}');
     }
   }
 
+  Future<dynamic> chagePassword(
+      String? oldPassword, String? newPassword) async {
+    try {
+      final getData = await _storage.getUserData();
+      final Map<String, dynamic> dataJson = {
+        "username": "${getData?.data?.username}",
+        'password_old': '${oldPassword}',
+        'password_confirm': '${newPassword}',
+      };
 
+      final response =
+          await http.put(Uri.parse("$baseUrl/auth/update-password"),
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer ${getData?.accessToken}",
+              },
+              body: jsonEncode(dataJson));
+      final responseData = jsonDecode(response.body);
+      print("responseData : ${responseData}");
+      print("responseData : ${response.statusCode}");
+      if (response.statusCode == 200) {
+        return responseData;
+      } else {
+        return responseData;
+      }
+    } catch (e) {
+      return "Error : ${e}";
+    }
+  }
 }
