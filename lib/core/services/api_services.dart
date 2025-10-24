@@ -1,12 +1,14 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import 'package:logger/logger.dart';
 import 'package:salims_apps_new/core/api_response.dart';
 import 'package:salims_apps_new/core/models/equipment_response_models.dart';
 import 'package:salims_apps_new/core/models/login_models.dart';
 import 'package:salims_apps_new/core/models/parameter_models.dart';
 import 'package:salims_apps_new/core/models/sample_location_models.dart';
+import 'package:salims_apps_new/core/models/sample_models.dart';
 import 'package:salims_apps_new/core/models/task_list_models.dart';
 import 'package:salims_apps_new/core/models/unit_response_models.dart';
 import 'package:salims_apps_new/core/services/local_Storage_Services.dart';
@@ -51,7 +53,7 @@ class ApiService {
   ) async {
     try {
       final response = await http.post(
-        Uri.parse("$baseUrl/auth/login-customer-user"),
+        Uri.parse("$baseUrl/auth/login"),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({
           "username": username,
@@ -74,23 +76,48 @@ class ApiService {
     }
   }
 
-  Future<ApiResponse<TaskListModels>?> getTaskList() async {
+  Future<ApiResponse<TaskListModels>?> getTaskList(String? filterDate) async {
     try {
       final getData = await _storage.getUserData();
+      print("filterDate : ${filterDate == '' ? '${DateFormat('yyyy-MM-dd').format(DateTime.now())}-${DateFormat('yyyy-MM-dd').format(DateTime.now())}' : filterDate}");
+      print("url : ${baseUrl}/transaction/taking-sample/testing-order/${getData?.data?.branchcode}/${filterDate == '' ? '${DateFormat('yyyy-MM-dd').format(DateTime.now())}-${DateFormat('yyyy-MM-dd').format(DateTime.now())}' : filterDate}");
       final response = await http.get(
         Uri.parse(
-            "$baseUrl/transaction/taking-sample/testing-order/${getData?.data?.branchcode}"),
+            "${baseUrl}/transaction/taking-sample/testing-order/${getData?.data?.branchcode}/${filterDate == '' ? '${DateFormat('yyyy-MM-dd').format(DateTime.now())}-${DateFormat('yyyy-MM-dd').format(DateTime.now())}' : filterDate}"),
         headers: {
           "Content-Type": "application/json",
           "Authorization": "Bearer ${getData?.accessToken}",
         },
       );
 
+      print("sampleResponse : ${jsonDecode(response.body)}");
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final taskListResponse = TaskListModels.fromJson(data);
-        print("sampleResponse : ${jsonEncode(taskListResponse)}");
+
         return ApiResponse.success(taskListResponse);
+      } else {
+        return ApiResponse.error("Failed get data: ${response.statusCode}");
+      }
+    } catch (e) {
+      return ApiResponse.error("Unexpected Error: $e");
+    }
+  }
+
+  Future<dynamic> getOneTaskList(String? tsNumber) async {
+    try {
+      final getData = await _storage.getUserData();
+      final response = await http.get(
+        Uri.parse(
+            "${baseUrl}/transaction/taking-sample/one/${getData?.data?.branchcode}?tsnumber=${tsNumber}"),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer ${getData?.accessToken}",
+        },
+      );
+      if (response.statusCode == 200) {
+
+        return jsonDecode(response.body)['data'];
       } else {
         return ApiResponse.error("Failed get data: ${response.statusCode}");
       }
@@ -224,4 +251,97 @@ class ApiService {
       return ApiResponse.error("Unexpected Error: $e");
     }
   }
+
+  Future<ApiResponse<dynamic>> postTakingSample(SampleDetail? sample) async {
+    try {
+      final getData = await _storage.getUserData();
+      if(sample?.tsnumber == "" || sample?.tsnumber == null) {
+
+
+        final response = await http.post(
+            Uri.parse(
+                "$baseUrl/transaction/taking-sample/store"),
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": "Bearer ${getData?.accessToken}",
+            },
+            body: jsonEncode(sample)
+        );
+
+        final data = jsonDecode(response.body);
+
+        if(response.statusCode == 201){
+          return ApiResponse.success(data);
+        }else {
+          return ApiResponse.error('Error ${data['code']} : ${data['message']}');
+        }
+
+      }else {
+        final response = await http.put(
+            Uri.parse(
+                "$baseUrl/transaction/taking-sample/update"),
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": "Bearer ${getData?.accessToken}",
+            },
+            body: jsonEncode(sample)
+        );
+
+        final data = jsonDecode(response.body);
+        print("data update : ${data}");
+        if(response.statusCode == 200){
+          return ApiResponse.success(data);
+        }else {
+          return ApiResponse.error('Error ${data['code']} : ${data['message']}');
+        }
+      }
+
+
+    }catch (e) {
+      return ApiResponse.error('Error : ${e}');
+    }
+  }
+
+
+  Future<ApiResponse<dynamic>> updateStatus(dynamic datas) async {
+    try {
+      final getData = await _storage.getUserData();
+
+      final Map<String, dynamic> dataJson = {
+        "tranidx" : "1206",
+        'branchcode' : '${getData?.data?.branchcode}',
+        'tsnumber' : '${datas['tsnumber']}',
+        'tsdate' : 'required',
+        'ptsnumber' : '${datas['ptsnumber']}',
+        'sampleno' : '${datas['sampleno']}',
+        'user' : '${getData?.data?.username}',
+        'appstatus' : 'APPROVED',
+        'appdescription' : '',
+      };
+
+      final response = await http.patch(
+          Uri.parse(
+              "$baseUrl/transaction/taking-sample/update-app-status"),
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer ${getData?.accessToken}",
+          },
+          body: jsonEncode(dataJson)
+      );
+      print("jsonEncode(sample) updateStatus : ${jsonEncode(response)}");
+      print("jsonDecode(response.body) updateStatus : ${jsonDecode(response.body)}");
+      final data = jsonDecode(response.body);
+
+      if(response.statusCode == 201){
+        return ApiResponse.success(data);
+      }else {
+        return ApiResponse.error('Error ${data['code']} : ${data['message']}');
+      }
+
+    }catch (e) {
+      return ApiResponse.error('Error : ${e}');
+    }
+  }
+
+
 }

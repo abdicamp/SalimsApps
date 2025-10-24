@@ -39,8 +39,13 @@ class TaskListModels {
 
 class TestingOrder {
   final String reqnumber;
+  final String tsnumber;
   final String ptsnumber;
+  String? geotag;
+  final String tsdate;
   final String sampleno;
+  final String sampleCode;
+  final String sampleName;
   final String samplecategory;
   final String servicetype;
   final String zonacode;
@@ -51,9 +56,14 @@ class TestingOrder {
   final String samplingdate;
 
   TestingOrder({
+     this.geotag,
     required this.reqnumber,
     required this.ptsnumber,
+    required this.tsnumber,
+    required this.tsdate,
     required this.sampleno,
+    required this.sampleCode,
+    required this.sampleName,
     required this.samplecategory,
     required this.servicetype,
     required this.zonacode,
@@ -66,9 +76,14 @@ class TestingOrder {
 
   factory TestingOrder.fromJson(Map<String, dynamic> json) {
     return TestingOrder(
+      geotag: json['geotag'] ?? "",
       reqnumber: json['reqnumber'] ?? "",
       ptsnumber: json['ptsnumber'] ?? "",
+      tsnumber: json['tsnumber'] ?? "",
+      tsdate: json['tsdate'] ?? "",
       sampleno: json['sampleno'] ?? "",
+      sampleCode: json['samplecode'] ?? "",
+      sampleName: json['samplename'] ?? "",
       samplecategory: json['samplecategory'] ?? "",
       servicetype: json['servicetype'] ?? "",
       zonacode: json['zonacode'] ?? "",
@@ -82,9 +97,14 @@ class TestingOrder {
 
   Map<String, dynamic> toJson() {
     return {
+      "geotag": geotag,
       "reqnumber": reqnumber,
       "ptsnumber": ptsnumber,
+      "tsnumber": tsnumber,
+      "tsdate": tsdate,
       "sampleno": sampleno,
+      "samplecode": sampleCode,
+      "samplename": sampleName,
       "samplecategory": samplecategory,
       "servicetype": servicetype,
       "zonacode": zonacode,

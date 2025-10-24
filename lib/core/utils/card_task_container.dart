@@ -106,7 +106,7 @@ class _CardTaskContainerState extends State<CardTaskContainer> {
                                       return null;
                                     },
                                     controller: widget.vm!.conQTYController!,
-                                    label: 'Con QTY',
+                                    label: 'Unit QTY',
                                   ),
                                 ),
                                 SizedBox(width: 7),
@@ -117,7 +117,7 @@ class _CardTaskContainerState extends State<CardTaskContainer> {
                                         CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        'Con UOM',
+                                        'Unit UOM',
                                         style: const TextStyle(
                                           fontSize: 12,
                                           fontWeight: FontWeight.w600,
@@ -194,7 +194,7 @@ class _CardTaskContainerState extends State<CardTaskContainer> {
                                       return null;
                                     },
                                     controller: widget.vm!.volQTYController!,
-                                    label: 'Vol QTY',
+                                    label: 'Volume QTY',
                                   ),
                                 ),
                                 SizedBox(width: 7),
@@ -205,7 +205,7 @@ class _CardTaskContainerState extends State<CardTaskContainer> {
                                         CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        'Vol UOM',
+                                        'Volume UOM',
                                         style: const TextStyle(
                                           fontSize: 12,
                                           fontWeight: FontWeight.w600,

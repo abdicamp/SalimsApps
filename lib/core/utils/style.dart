@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'colors.dart';
@@ -128,9 +127,12 @@ BoxShadow textShadowMain = const BoxShadow(
   offset: Offset(0, 2),
 );
 
-const loadingSpinBlue = SpinKitFadingCircle(color: AppColors.blue, size: 46.0);
+const loadingSpinBlue = CircularProgressIndicator(
+  valueColor: AlwaysStoppedAnimation<Color>(AppColors.blue),
+  strokeWidth: 4.0,
+);
 
-const loadingSpinWhite = SpinKitFadingCircle(
-  color: AppColors.white,
-  size: 46.0,
+const loadingSpinWhite = CircularProgressIndicator(
+  valueColor: AlwaysStoppedAnimation<Color>(AppColors.white),
+  strokeWidth: 4.0,
 );

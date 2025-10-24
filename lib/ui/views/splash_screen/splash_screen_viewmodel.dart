@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:salims_apps_new/core/services/local_Storage_Services.dart';
 import 'package:salims_apps_new/ui/views/bottom_navigator_view.dart';
 import 'package:salims_apps_new/ui/views/login/login_view.dart';
@@ -19,6 +20,7 @@ class SplashScreenViewmodel extends FutureViewModel {
       await Future.delayed(Duration(seconds: 1));
       final getData = await _storage.getUserData();
       final cekToke = await apiService.cekToken();
+      await Geolocator.isLocationServiceEnabled();
 
       if (getData != null) {
         if (cekToke) {

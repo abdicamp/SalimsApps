@@ -4,6 +4,7 @@ class LoginResponse {
   String? msg;
   String? accessToken;
   String? tokenType;
+  String? tokenFCM;
   UserData? data;
   int? error;
 
@@ -13,6 +14,7 @@ class LoginResponse {
     this.msg,
     this.accessToken,
     this.tokenType,
+    this.tokenFCM,
     this.data,
     this.error,
   });
@@ -23,6 +25,7 @@ class LoginResponse {
       status: json['status'],
       msg: json['msg'],
       accessToken: json['access_token'],
+      tokenFCM: json['token_fcm'],
       tokenType: json['token_type'],
       data: json['data'] != null ? UserData.fromJson(json['data']) : null,
       error: json['error'],
@@ -36,6 +39,7 @@ class LoginResponse {
       "msg": msg,
       "access_token": accessToken,
       "token_type": tokenType,
+      "token_fcm": tokenFCM,
       "data": data?.toJson(),
       "error": error,
     };

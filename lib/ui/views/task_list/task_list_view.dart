@@ -2,12 +2,13 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'package:salims_apps_new/core/utils/card_task.dart';
-import 'package:salims_apps_new/core/utils/custom_text_field.dart';
 import 'package:salims_apps_new/core/utils/rounded_clipper.dart';
 import 'package:salims_apps_new/ui/views/task_list/task_list_viewmodel.dart';
 import 'package:stacked/stacked.dart';
+
+import '../../../state_global/state_global.dart';
 
 class TaskListView extends StatefulWidget {
   const TaskListView({super.key});
@@ -21,7 +22,13 @@ class _TaskListViewState extends State<TaskListView> {
   Widget build(BuildContext context) {
     return ViewModelBuilder.reactive(
       viewModelBuilder: () => TaskListViewmodel(context: context),
+
       builder: (context, vm, child) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          vm.isBusy
+              ? context.read<GlobalLoadingState>().show()
+              : context.read<GlobalLoadingState>().hide();
+        });
         return GestureDetector(
           onTap: () {
             FocusScope.of(context).unfocus();
@@ -110,7 +117,7 @@ class _TaskListViewState extends State<TaskListView> {
                         TextField(
                           onChanged: (value) {
                             setState(() {
-                              // vm.onSearchTextChangedMyRequest(value);
+                              vm.onSearchTextChangedMyRequest(value);
                             });
                           },
                           decoration: InputDecoration(
@@ -148,6 +155,7 @@ class _TaskListViewState extends State<TaskListView> {
                         Column(
                           children: vm.listTask.map((e) {
                             return TaskItem(
+                              vm: vm,
                               listData: e,
                             );
                           }).toList(),

@@ -14,6 +14,7 @@ class SampleDetail {
   final String samplecode;
   final String ptsnumber;
   final String usercreated;
+  final String description;
   final List<TakingSampleParameter> takingSampleParameters;
   final List<TakingSampleCI> takingSampleCI;
 
@@ -33,6 +34,7 @@ class SampleDetail {
     required this.samplecode,
     required this.ptsnumber,
     required this.usercreated,
+    required this.description,
     required this.takingSampleParameters,
     required this.takingSampleCI,
   });
@@ -54,6 +56,7 @@ class SampleDetail {
       samplecode: json['samplecode'] ?? '',
       ptsnumber: json['ptsnumber'] ?? '',
       usercreated: json['usercreated'] ?? '',
+      description: json['description'] ?? '',
       takingSampleParameters:
           (json['taking_sample_parameters'] as List<dynamic>?)
                   ?.map((e) => TakingSampleParameter.fromJson(e))
@@ -83,6 +86,7 @@ class SampleDetail {
       'samplecode': samplecode,
       'ptsnumber': ptsnumber,
       'usercreated': usercreated,
+      'description': description,
       'taking_sample_parameters':
           takingSampleParameters.map((e) => e.toJson()).toList(),
       'taking_sample_ci': takingSampleCI.map((e) => e.toJson()).toList(),
@@ -91,15 +95,14 @@ class SampleDetail {
 }
 
 class TakingSampleParameter {
-  int? key;
-  int? detailno;
+  String? key;
+  dynamic detailno;
   final String parcode;
   final String parname;
   final bool iscalibration;
   final String insituresult;
   final String description;
-  String? price;
-  String? methodid;
+
 
   TakingSampleParameter({
     this.key,
@@ -109,21 +112,17 @@ class TakingSampleParameter {
     required this.iscalibration,
     required this.insituresult,
     required this.description,
-    this.price,
-    this.methodid,
   });
 
   factory TakingSampleParameter.fromJson(Map<String, dynamic> json) {
     return TakingSampleParameter(
-      key: json['key'] ?? 0,
-      detailno: json['detailno'] ?? 0,
+      key: json['key'] ?? '',
+      detailno: json['detailno'] ?? '',
       parcode: json['parcode'] ?? '',
       parname: json['parname'] ?? '',
       iscalibration: json['iscalibration'] ?? false,
       insituresult: json['insituresult'] ?? '',
       description: json['description'] ?? '',
-      price: json['price'] ?? '',
-      methodid: json['methodid'] ?? '',
     );
   }
 
@@ -136,15 +135,13 @@ class TakingSampleParameter {
       'iscalibration': iscalibration,
       'insituresult': insituresult,
       'description': description,
-      'price': price,
-      'methodid': methodid,
     };
   }
 }
 
 class TakingSampleCI {
-  int? key;
-  int? detailno;
+  String? key;
+  dynamic detailno;
   final String equipmentcode;
   final String equipmentname;
   final int conqty;
@@ -167,8 +164,8 @@ class TakingSampleCI {
 
   factory TakingSampleCI.fromJson(Map<String, dynamic> json) {
     return TakingSampleCI(
-      key: json['key'] ?? 0,
-      detailno: json['detailno'] ?? 0,
+      key: json['key'] ?? '',
+      detailno: json['detailno'] ?? '',
       equipmentcode: json['equipmentcode'] ?? '',
       equipmentname: json['equipmentname'] ?? '',
       conqty: json['conqty'] ?? 0,

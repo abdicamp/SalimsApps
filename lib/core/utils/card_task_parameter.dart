@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:salims_apps_new/core/utils/custom_text_field.dart';
 import 'package:salims_apps_new/core/utils/data_table_CI_view.dart';
+import 'package:salims_apps_new/core/utils/data_table_Par_view.dart';
 import 'package:salims_apps_new/core/utils/search_dropdown.dart';
 import 'package:salims_apps_new/ui/views/detail_task/detail_task_viewmodel.dart';
 
@@ -133,6 +134,57 @@ class _CardTaskParameterState extends State<CardTaskParameter> {
                                 ),
                               ],
                             ),
+                            SizedBox(
+                              width: MediaQuery.of(context).size.width,
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor:
+                                  Colors.blue.shade800, // warna elegan
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(
+                                      12,
+                                    ), // tombol rounded
+                                  ),
+                                  elevation: 4, // efek bayangan halus
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    if (widget.vm!.formKey3.currentState!
+                                        .validate()) {
+                                      if (widget.vm!.parameterSelect == null) {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          SnackBar(
+                                            duration: Duration(seconds: 2),
+                                            content:
+                                            Text("Form tidak boleh Kosong"),
+                                            backgroundColor: Colors.red,
+                                          ),
+                                        );
+                                      } else {
+                                        widget.vm?.addListParameter();
+
+                                      }
+                                    }
+                                  });
+                                },
+                                child: const Text(
+                                  "Add",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white, // teks kontras
+                                  ),
+                                ),
+                              ),
+                            ),
+                            widget.vm!.listTakingSampleParameter.isNotEmpty
+                                ? DataTableParView(
+                              listTakingSampleParameter:
+                              widget.vm?.listTakingSampleParameter,
+                              vm: widget.vm!,
+                            )
+                                : Stack()
                           ],
                         ),
                       ),

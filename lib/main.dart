@@ -26,6 +26,27 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   print("📩 Pesan diterima di background: ${message.messageId}");
 }
 
+void listenFCM() {
+  FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
+    print("📩 Foreground message: ${message.notification?.title}");
+    // navigatorKey.currentContext?.read<GlobalLoadingState>().getData;
+    await flutterLocalNotificationsPlugin.show(
+      0,
+      message.notification?.title ?? "No Title",
+      message.notification?.body ?? "No Body",
+      const NotificationDetails(
+        android: AndroidNotificationDetails(
+          'high_importance_channel', // harus sama dengan channel.id
+          'High Importance Notifications',
+          importance: Importance.high,
+          priority: Priority.high,
+        ),
+      ),
+      payload: message.data['screen'],
+    );
+  });
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting('id_ID', null);
@@ -37,9 +58,7 @@ void main() async {
   // ✅ Inisialisasi notifikasi lokal
   await initNotifications();
 
-  // ✅ Print token FCM untuk testing
-  final fcmToken = await FirebaseMessaging.instance.getToken();
-  print("📱 FCM Token: $fcmToken");
+  // Setup selesai, lanjut ke aplikasi
 
   runApp(
     MultiProvider(
@@ -126,6 +145,54 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  String? _token;
+
+  Future<void> _initializeMessaging() async {
+    try {
+      // Request permission first
+      final settings = await FirebaseMessaging.instance.requestPermission(
+        alert: true,
+        badge: true,
+        sound: true,
+        provisional: false,
+      );
+      print("🔔 Notification permission status: ${settings.authorizationStatus}");
+
+      if (DefaultFirebaseOptions.currentPlatform == DefaultFirebaseOptions.ios) {
+        // For iOS, wait for APNS token first
+        final apnsToken = await FirebaseMessaging.instance.getAPNSToken();
+        print("📱 APNS Token: $apnsToken");
+        
+        if (apnsToken == null) {
+          print("⚠️ APNS token is null. Make sure Push Notifications capability is enabled in Xcode.");
+          return;
+        }
+      }
+
+      // Get FCM token
+      final token = await FirebaseMessaging.instance.getToken();
+      print("📱 FCM Token: $token");
+      if (mounted) {
+        setState(() {
+          _token = token;
+        });
+      }
+    } catch (e) {
+      print("❌ Error initializing messaging: $e");
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    
+    // Initialize messaging
+    _initializeMessaging();
+
+    // Listen for foreground messages
+    listenFCM();
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
