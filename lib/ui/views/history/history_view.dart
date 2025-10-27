@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:salims_apps_new/ui/views/history/history_viewmodel.dart';
 import 'package:stacked/stacked.dart';
-
+import 'package:provider/provider.dart';
 import '../../../core/utils/card_task_history.dart';
 import '../../../core/utils/rounded_clipper.dart';
+import '../../../state_global/state_global.dart' show GlobalLoadingState;
 
 class HistoryView extends StatefulWidget {
   const HistoryView({super.key});
@@ -17,8 +18,13 @@ class _HistoryViewState extends State<HistoryView> {
   @override
   Widget build(BuildContext context) {
     return ViewModelBuilder.reactive(
-      viewModelBuilder: () => HistoryViewmodel(),
+      viewModelBuilder: () => HistoryViewmodel(context: context),
       builder: (context, vm, child) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          vm.isBusy
+              ? context.read<GlobalLoadingState>().show()
+              : context.read<GlobalLoadingState>().hide();
+        });
         return GestureDetector(
             onTap: () {},
             child: Scaffold(
@@ -66,9 +72,9 @@ class _HistoryViewState extends State<HistoryView> {
                         children: [
                           TextField(
                             readOnly: true,
-                            // controller: vm.tanggalCtrl,
+                            controller: vm.tanggalCtrl,
                             onTap: () {
-                              // vm.pickDateRange();
+                              vm.pickDateRange();
                             },
                             decoration: InputDecoration(
                               hintText: "Date",
@@ -80,6 +86,12 @@ class _HistoryViewState extends State<HistoryView> {
                                 Icons.date_range,
                                 color: Colors.grey.shade600,
                               ),
+                              suffixIcon: IconButton(onPressed: () {
+                                setState(() {
+                                  vm.tanggalCtrl!.text = "";
+                                  vm.getDataTaskHistory("", "");
+                                });
+                              }, icon: Icon(Icons.refresh_sharp)),
                               filled: true,
                               fillColor: Colors.grey.shade100,
                               contentPadding: const EdgeInsets.symmetric(
@@ -105,9 +117,10 @@ class _HistoryViewState extends State<HistoryView> {
                           TextField(
                             onChanged: (value) {
                               setState(() {
-                                // vm.onSearchTextChangedMyRequest(value);
+                                vm.onSearchTextChangedMyRequest(value);
                               });
                             },
+                            
                             decoration: InputDecoration(
                               hintText: "Search task history ...",
                               hintStyle: TextStyle(

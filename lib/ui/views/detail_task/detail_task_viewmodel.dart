@@ -257,6 +257,7 @@ class DetailTaskViewmodel extends FutureViewModel {
 
     currentLocation = LatLng(userPosition!.latitude, userPosition!.longitude);
     latlang = '${currentLocation!.latitude},${currentLocation!.longitude}';
+    print("latlang : ${latlang}");
     locationController?.text = latlang!;
     List<Placemark> placemarks = await placemarkFromCoordinates(
       currentLocation!.latitude,

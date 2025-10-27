@@ -1,42 +1,70 @@
+import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:salims_apps_new/core/models/task_list_history_models.dart';
 import 'package:salims_apps_new/core/services/api_services.dart';
 import 'package:stacked/stacked.dart';
 
-class HistoryViewmodel extends FutureViewModel {
-  ApiService apiService = new ApiService();
-  List<TaskListHistoryResponse> listTaskHistory = [];
+import '../../../core/models/testing_order_history_models.dart';
 
-  getDataTaskHistory() async {
+class HistoryViewmodel extends FutureViewModel {
+  BuildContext? context;
+  ApiService apiService = new ApiService();
+  String? fromDate;
+  String? toDate;
+  DateTimeRange? selectedRange;
+  TextEditingController? tanggalCtrl = new TextEditingController();
+  List<TestingOrderData> listTaskHistory = [];
+  List<TestingOrderData> listTaskHistorySearch = [];
+  HistoryViewmodel({this.context});
+
+  void pickDateRange() async {
+    DateTimeRange? newRange = await showDateRangePicker(
+      context: context!,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2100),
+      initialDateRange: selectedRange,
+    );
+
+    if (newRange != null) {
+      selectedRange = newRange;
+      tanggalCtrl!.text =
+      '${_formatDate(selectedRange!.start)}-${_formatDate(selectedRange!.end)}';
+      getDataTaskHistory(_formatDate(selectedRange!.start) , _formatDate(selectedRange!.end));
+      notifyListeners();
+    }
+  }
+
+  String _formatDate(DateTime date) {
+    return DateFormat('yyyy-MM-dd').format(date);
+  }
+
+  void onSearchTextChangedMyRequest(String text) {
+    listTaskHistory = text.isEmpty || text == 'All'
+        ? listTaskHistorySearch
+        : listTaskHistorySearch
+        .where(
+          (item) =>
+      item.ReqNumber.toString().toLowerCase().contains(
+        text.toLowerCase(),
+      ) ||
+          item.PtsNumber.toString().toLowerCase().contains(
+            text.toLowerCase(),
+          ) ||
+          item.ZonaName.toString().toLowerCase().contains(
+            text.toLowerCase(),
+          ) ,
+    )
+        .toList();
+
+    notifyListeners();
+  }
+
+  getDataTaskHistory(String? fromDate, String? toDate) async {
     setBusy(true);
     try {
-      final response = await apiService.getTaskListHistory();
-      listTaskHistory = [
-        TaskListHistoryResponse(
-            reqnumber: "TO0001",
-            ptsnumber: "PTS0001",
-            sampleno: "MS001",
-            samplecategory: "Product category 1",
-            servicetype: "Testing and Taking Sample",
-            zonacode: "MZO001",
-            zonaname: "JAKARTA",
-            subzonacode: "MSZ001",
-            subzonaname: "TEST",
-            address: null,
-            samplingdate: "2024-11-01"),
-        TaskListHistoryResponse(
-            reqnumber: "TO0001",
-            ptsnumber: "PTS0001",
-            sampleno: "MS001",
-            samplecategory: "Product category 1",
-            servicetype: "Testing and Taking Sample",
-            zonacode: "MZO001",
-            zonaname: "JAKARTA",
-            subzonacode: "MSZ001",
-            subzonaname: "TEST",
-            address: null,
-            samplingdate: "2024-11-01")
-      ];
-
+      final response = await apiService.getTaskListHistory(fromDate, toDate);
+      listTaskHistory = List.from(response!.data!.data ?? []);
+      listTaskHistorySearch = List.from(response!.data!.data ?? []);
       setBusy(false);
       notifyListeners();
     } catch (e) {
@@ -47,6 +75,6 @@ class HistoryViewmodel extends FutureViewModel {
 
   @override
   Future futureToRun() async {
-    await getDataTaskHistory();
+    await getDataTaskHistory('','');
   }
 }

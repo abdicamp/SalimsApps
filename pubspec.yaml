@@ -52,9 +52,10 @@ dependencies:
   google_maps_flutter_ios: ^2.15.2
   flutter_local_notifications: ^17.2.2
   collection: ^1.18.0
+  url_launcher: ^6.3.1
+  flutter_launcher_icons: ^0.14.4
 
 dev_dependencies:
-  flutter_launcher_icons: ^0.13.1
   flutter_test:
     sdk: flutter
 
@@ -70,7 +71,7 @@ dev_dependencies:
 flutter_icons:
   android: true
   ios: true
-  image_path: "assets/images/salims.png"
+  image_path: "assets/images/logo.jpeg"
 # The following section is specific to Flutter packages.
 flutter:
 

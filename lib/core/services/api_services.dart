@@ -14,6 +14,7 @@ import 'package:salims_apps_new/core/models/unit_response_models.dart';
 import 'package:salims_apps_new/core/services/local_Storage_Services.dart';
 
 import '../models/task_list_history_models.dart';
+import '../models/testing_order_history_models.dart';
 
 class ApiService {
   final String baseUrl = "https://api-salims.chemitechlogilab.com/v1";
@@ -106,6 +107,44 @@ class ApiService {
     }
   }
 
+  Future<ApiResponse<TestingOrderHistoryModel>?> getTaskListHistory(
+      String? fromDate,
+      String? toDate,
+      ) async {
+    try {
+      final getData = await _storage.getUserData();
+
+      // Bangun URL dengan query parameters (karena GET tidak bisa body)
+      final uri = Uri.parse(
+        "${baseUrl}/transaction/taking-sample/testing-order-sampling-date/${getData?.data?.branchcode}",
+      ).replace(queryParameters: {
+        "startDate": fromDate ?? "",
+        "endDate": toDate ?? "",
+      });
+
+      final response = await http.get(
+        uri,
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer ${getData?.accessToken}",
+        },
+      );
+
+      print("getTaskListHistory : ${response.body}");
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final taskListResponse = TestingOrderHistoryModel.fromJson(data);
+
+        return ApiResponse.success(taskListResponse);
+      } else {
+        return ApiResponse.error("Failed get data: ${response.statusCode}");
+      }
+    } catch (e) {
+      return ApiResponse.error("Unexpected Error: $e");
+    }
+  }
+
   Future<dynamic> getOneTaskList(String? tsNumber) async {
     try {
       final getData = await _storage.getUserData();
@@ -127,32 +166,6 @@ class ApiService {
     }
   }
 
-  Future<ApiResponse<TaskListHistoryModels>?> getTaskListHistory() async {
-    try {
-      final getData = await _storage.getUserData();
-      final response = await http.get(
-        Uri.parse(
-            "$baseUrl/transaction/taking-sample/testing-order-sampling-date/${getData?.data?.branchcode}"),
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer ${getData?.accessToken}",
-        },
-      );
-
-      print("response.statusCode : ${response.statusCode}");
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final taskListHistory = TaskListHistoryModels.fromJson(data);
-        print("taskListHistory : ${jsonEncode(taskListHistory)}");
-        return ApiResponse.success(taskListHistory);
-      } else {
-        return ApiResponse.error("Failed get data: ${response.statusCode}");
-      }
-    } catch (e) {
-      return ApiResponse.error("Unexpected Error: $e");
-    }
-  }
 
   Future<ApiResponse<SampleLocationResponse>?> getSampleLoc() async {
     try {
