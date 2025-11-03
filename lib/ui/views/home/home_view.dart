@@ -31,6 +31,7 @@ class _HomeViewState extends State<HomeView> {
             Scaffold(
               appBar: AppBar(
                 backgroundColor: Colors.white,
+                automaticallyImplyLeading: false,
                 title: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -70,7 +71,6 @@ class _HomeViewState extends State<HomeView> {
               ),
               backgroundColor: Colors.white,
               body: RefreshIndicator(
-
                 onRefresh: () async {
                   await vm.runAllFunction();
                 },
@@ -88,7 +88,8 @@ class _HomeViewState extends State<HomeView> {
                                 Padding(
                                   padding: const EdgeInsets.all(15),
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         "Hello!",
@@ -107,7 +108,6 @@ class _HomeViewState extends State<HomeView> {
                                     ],
                                   ),
                                 ),
-
                                 Padding(
                                   padding: const EdgeInsets.all(8.0),
                                   child: Stack(
@@ -175,7 +175,7 @@ class _HomeViewState extends State<HomeView> {
 
                                       // Lapisan 5 (utama dengan gradient dan isi)
                                       Padding(
-                                        padding:  EdgeInsets.only(top: 16),
+                                        padding: EdgeInsets.only(top: 16),
                                         child: Card(
                                           elevation: 8,
                                           shape: RoundedRectangleBorder(
@@ -188,9 +188,10 @@ class _HomeViewState extends State<HomeView> {
                                               context,
                                             ).size.width,
                                             decoration: BoxDecoration(
-                                              gradient:  LinearGradient(
+                                              gradient: LinearGradient(
                                                 colors: [
-                                                  Color(0xFF1565C0), // Biru navy
+                                                  Color(
+                                                      0xFF1565C0), // Biru navy
                                                   Color(
                                                     0xFF42A5F5,
                                                   ), // Biru terang
@@ -198,11 +199,12 @@ class _HomeViewState extends State<HomeView> {
                                                 begin: Alignment.topLeft,
                                                 end: Alignment.bottomRight,
                                               ),
-                                              borderRadius: BorderRadius.circular(
+                                              borderRadius:
+                                                  BorderRadius.circular(
                                                 12,
                                               ),
                                             ),
-                                            padding:  EdgeInsets.all(16),
+                                            padding: EdgeInsets.all(16),
                                             child: Column(
                                               crossAxisAlignment:
                                                   CrossAxisAlignment.start,
@@ -215,13 +217,11 @@ class _HomeViewState extends State<HomeView> {
                                                     fontWeight: FontWeight.bold,
                                                   ),
                                                 ),
-
                                                 const SizedBox(height: 10),
                                                 Row(
                                                   children: [
                                                     const Icon(
-                                                      Icons
-                                                          .gps_fixed,
+                                                      Icons.gps_fixed,
                                                       color: Colors.white,
                                                       size: 15,
                                                     ),
@@ -241,8 +241,7 @@ class _HomeViewState extends State<HomeView> {
                                                 Row(
                                                   children: [
                                                     const Icon(
-                                                      Icons
-                                                          .location_on,
+                                                      Icons.location_on,
                                                       color: Colors.white,
                                                       size: 15,
                                                     ),
@@ -253,7 +252,7 @@ class _HomeViewState extends State<HomeView> {
                                                         fontSize: 12,
                                                         color: Colors.white,
                                                         fontWeight:
-                                                        FontWeight.bold,
+                                                            FontWeight.bold,
                                                       ),
                                                     ),
                                                   ],
@@ -261,16 +260,18 @@ class _HomeViewState extends State<HomeView> {
                                                 const SizedBox(height: 5),
                                                 Row(
                                                   children: [
-
                                                     const SizedBox(width: 22),
                                                     SizedBox(
-                                                      width: MediaQuery.of(context).size.width / 2,
+                                                      width:
+                                                          MediaQuery.of(context)
+                                                                  .size
+                                                                  .width /
+                                                              2,
                                                       child: Text(
                                                         "${vm.dataNearestLocation?.address ?? ''}",
                                                         style: const TextStyle(
                                                           fontSize: 10,
                                                           color: Colors.white,
-
                                                         ),
                                                       ),
                                                     ),
@@ -280,7 +281,8 @@ class _HomeViewState extends State<HomeView> {
                                                 InkWell(
                                                   onTap: () {
                                                     setState(() {
-                                                      vm.openMap(vm.lat, vm.lng);
+                                                      vm.openMap(
+                                                          vm.lat, vm.lng);
                                                     });
                                                     // Navigator.of(context).push(
                                                     //   MaterialPageRoute(
@@ -291,34 +293,55 @@ class _HomeViewState extends State<HomeView> {
                                                     // );
                                                   },
                                                   child: Container(
-                                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4), // 🔹 lebih kecil dari sebelumnya
+                                                    padding: const EdgeInsets
+                                                        .symmetric(
+                                                        horizontal: 10,
+                                                        vertical:
+                                                            4), // 🔹 lebih kecil dari sebelumnya
                                                     decoration: BoxDecoration(
-                                                      color: Colors.white.withOpacity(0.2), // 🔹 transparan lembut
-                                                      borderRadius: BorderRadius.circular(10), // sedikit lebih kecil radius
+                                                      color: Colors.white
+                                                          .withOpacity(
+                                                              0.2), // 🔹 transparan lembut
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              10), // sedikit lebih kecil radius
                                                       boxShadow: [
                                                         BoxShadow(
-                                                          color: Colors.black.withOpacity(0.05), // bayangan sangat halus
+                                                          color: Colors.black
+                                                              .withOpacity(
+                                                                  0.05), // bayangan sangat halus
                                                           blurRadius: 2,
-                                                          offset: const Offset(0, 1),
+                                                          offset: const Offset(
+                                                              0, 1),
                                                         ),
                                                       ],
                                                     ),
                                                     child: Row(
-                                                      mainAxisSize: MainAxisSize.min,
+                                                      mainAxisSize:
+                                                          MainAxisSize.min,
                                                       children: [
                                                         Text(
                                                           "Check Location",
-                                                          style: GoogleFonts.poppins(
-                                                            fontSize: 11, // 🔹 lebih kecil agar proporsional
-                                                            fontWeight: FontWeight.w600,
-                                                            color: Colors.white.withOpacity(0.9), // teks tetap jelas
+                                                          style: GoogleFonts
+                                                              .poppins(
+                                                            fontSize:
+                                                                11, // 🔹 lebih kecil agar proporsional
+                                                            fontWeight:
+                                                                FontWeight.w600,
+                                                            color: Colors.white
+                                                                .withOpacity(
+                                                                    0.9), // teks tetap jelas
                                                           ),
                                                         ),
-                                                        const SizedBox(width: 4),
+                                                        const SizedBox(
+                                                            width: 4),
                                                         Icon(
                                                           Icons.chevron_right,
-                                                          size: 13, // 🔹 sedikit lebih kecil
-                                                          color: Colors.white.withOpacity(0.6), // 🔹 putih transparan
+                                                          size:
+                                                              13, // 🔹 sedikit lebih kecil
+                                                          color: Colors.white
+                                                              .withOpacity(
+                                                                  0.6), // 🔹 putih transparan
                                                         ),
                                                       ],
                                                     ),
@@ -327,50 +350,71 @@ class _HomeViewState extends State<HomeView> {
                                                 const SizedBox(height: 10),
                                                 InkWell(
                                                   onTap: () {
-
                                                     Navigator.of(context).push(
                                                       MaterialPageRoute(
-                                                        builder: (context) => DetailTaskView(
-                                                          listData: vm.dataNearestLocation,
+                                                        builder: (context) =>
+                                                            DetailTaskView(
+                                                          listData: vm
+                                                              .dataNearestLocation,
                                                         ),
                                                       ),
                                                     );
                                                   },
                                                   child: Container(
-                                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4), // 🔹 lebih kecil dari sebelumnya
+                                                    padding: const EdgeInsets
+                                                        .symmetric(
+                                                        horizontal: 10,
+                                                        vertical:
+                                                            4), // 🔹 lebih kecil dari sebelumnya
                                                     decoration: BoxDecoration(
-                                                      color: Colors.white.withOpacity(0.2), // 🔹 transparan lembut
-                                                      borderRadius: BorderRadius.circular(10), // sedikit lebih kecil radius
+                                                      color: Colors.white
+                                                          .withOpacity(
+                                                              0.2), // 🔹 transparan lembut
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              10), // sedikit lebih kecil radius
                                                       boxShadow: [
                                                         BoxShadow(
-                                                          color: Colors.black.withOpacity(0.05), // bayangan sangat halus
+                                                          color: Colors.black
+                                                              .withOpacity(
+                                                                  0.05), // bayangan sangat halus
                                                           blurRadius: 2,
-                                                          offset: const Offset(0, 1),
+                                                          offset: const Offset(
+                                                              0, 1),
                                                         ),
                                                       ],
                                                     ),
                                                     child: Row(
-                                                      mainAxisSize: MainAxisSize.min,
+                                                      mainAxisSize:
+                                                          MainAxisSize.min,
                                                       children: [
                                                         Text(
                                                           "To do task",
-                                                          style: GoogleFonts.poppins(
-                                                            fontSize: 11, // 🔹 lebih kecil agar proporsional
-                                                            fontWeight: FontWeight.w600,
-                                                            color: Colors.white.withOpacity(0.9), // teks tetap jelas
+                                                          style: GoogleFonts
+                                                              .poppins(
+                                                            fontSize:
+                                                                11, // 🔹 lebih kecil agar proporsional
+                                                            fontWeight:
+                                                                FontWeight.w600,
+                                                            color: Colors.white
+                                                                .withOpacity(
+                                                                    0.9), // teks tetap jelas
                                                           ),
                                                         ),
-                                                        const SizedBox(width: 4),
+                                                        const SizedBox(
+                                                            width: 4),
                                                         Icon(
                                                           Icons.chevron_right,
-                                                          size: 13, // 🔹 sedikit lebih kecil
-                                                          color: Colors.white.withOpacity(0.6), // 🔹 putih transparan
+                                                          size:
+                                                              13, // 🔹 sedikit lebih kecil
+                                                          color: Colors.white
+                                                              .withOpacity(
+                                                                  0.6), // 🔹 putih transparan
                                                         ),
                                                       ],
                                                     ),
                                                   ),
                                                 ),
-
                                               ],
                                             ),
                                           ),
@@ -425,7 +469,8 @@ class _HomeViewState extends State<HomeView> {
                                               color: Colors.blue.withOpacity(
                                                 0.2,
                                               ), // soft bg
-                                              borderRadius: BorderRadius.circular(
+                                              borderRadius:
+                                                  BorderRadius.circular(
                                                 12,
                                               ),
                                             ),
@@ -447,7 +492,6 @@ class _HomeViewState extends State<HomeView> {
                                                   fontWeight: FontWeight.w600,
                                                 ),
                                               ),
-
                                             ],
                                           ),
                                         ],
@@ -460,13 +504,16 @@ class _HomeViewState extends State<HomeView> {
                                               SizedBox(
                                                 width: 55,
                                                 height: 55,
-                                                child: CircularProgressIndicator(
-                                                  value: double.parse(vm.totalListTask.toString()) / 100,
+                                                child:
+                                                    CircularProgressIndicator(
+                                                  value: double.parse(vm
+                                                          .totalListTask
+                                                          .toString()) /
+                                                      100,
                                                   strokeWidth: 6,
                                                   valueColor:
                                                       AlwaysStoppedAnimation<
-                                                        Color
-                                                      >(Colors.blue),
+                                                          Color>(Colors.blue),
                                                   backgroundColor:
                                                       Colors.grey[200]!,
                                                 ),
@@ -510,7 +557,6 @@ class _HomeViewState extends State<HomeView> {
                                 width: MediaQuery.of(context).size.width,
                               ),
                             ),
-
                             Padding(
                               padding: const EdgeInsets.only(top: 3),
                               child: Card(
@@ -535,7 +581,8 @@ class _HomeViewState extends State<HomeView> {
                                               color: Colors.green.withOpacity(
                                                 0.2,
                                               ),
-                                              borderRadius: BorderRadius.circular(
+                                              borderRadius:
+                                                  BorderRadius.circular(
                                                 12,
                                               ),
                                             ),
@@ -557,7 +604,6 @@ class _HomeViewState extends State<HomeView> {
                                                   fontWeight: FontWeight.w600,
                                                 ),
                                               ),
-
                                             ],
                                           ),
                                         ],
@@ -570,13 +616,15 @@ class _HomeViewState extends State<HomeView> {
                                               SizedBox(
                                                 width: 55,
                                                 height: 55,
-                                                child: CircularProgressIndicator(
-                                                  value: vm.totalListTaskHistory / 100,
+                                                child:
+                                                    CircularProgressIndicator(
+                                                  value:
+                                                      vm.totalListTaskHistory /
+                                                          100,
                                                   strokeWidth: 6,
                                                   valueColor:
                                                       AlwaysStoppedAnimation<
-                                                        Color
-                                                      >(Colors.green),
+                                                          Color>(Colors.green),
                                                   backgroundColor:
                                                       Colors.grey[200]!,
                                                 ),
@@ -620,7 +668,6 @@ class _HomeViewState extends State<HomeView> {
                                 width: MediaQuery.of(context).size.width,
                               ),
                             ),
-
                             Padding(
                               padding: const EdgeInsets.only(top: 3),
                               child: Card(
@@ -645,7 +692,8 @@ class _HomeViewState extends State<HomeView> {
                                               color: Colors.purple.withOpacity(
                                                 0.2,
                                               ),
-                                              borderRadius: BorderRadius.circular(
+                                              borderRadius:
+                                                  BorderRadius.circular(
                                                 12,
                                               ),
                                             ),
@@ -667,7 +715,6 @@ class _HomeViewState extends State<HomeView> {
                                                   fontWeight: FontWeight.w600,
                                                 ),
                                               ),
-
                                             ],
                                           ),
                                         ],
@@ -680,13 +727,29 @@ class _HomeViewState extends State<HomeView> {
                                               SizedBox(
                                                 width: 55,
                                                 height: 55,
-                                                child: CircularProgressIndicator(
-                                                  value: vm.totalPerforma,
+                                                child:
+                                                    CircularProgressIndicator(
+                                                  // v boleh null; kalau null/NaN/Infinity → pakai spinner indeterminate
+                                                  value: (() {
+                                                    final v = vm
+                                                        .totalPerforma; // double?
+                                                    if (v == null ||
+                                                        v.isNaN ||
+                                                        v.isInfinite)
+                                                      return null;
+
+                                                    // Kalau kamu simpan sebagai persen (0–100), ubah ke 0–1
+                                                    final normalized =
+                                                        v > 1.0 ? v / 100.0 : v;
+
+                                                    // Pastikan tetap 0–1
+                                                    return normalized.clamp(
+                                                        0.0, 1.0);
+                                                  })(),
                                                   strokeWidth: 6,
                                                   valueColor:
-                                                      AlwaysStoppedAnimation<
-                                                        Color
-                                                      >(Colors.purple),
+                                                      const AlwaysStoppedAnimation<
+                                                          Color>(Colors.purple),
                                                   backgroundColor:
                                                       Colors.grey[200]!,
                                                 ),

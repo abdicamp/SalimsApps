@@ -204,16 +204,31 @@ class _DetailTaskViewState extends State<DetailTaskView>
                                   // bool valid3 = vm.formKey3.currentState!.validate();
                                   bool isEmptyListCI =
                                       vm.listTakingSampleCI.isEmpty;
+
                                   bool isEmptyListPar =
                                       vm.listTakingSampleParameter.isEmpty;
-                                  if (valid1 &&
-                                      !isEmptyListCI &&
-                                      !isEmptyListPar) {
-                                    print("Semua form terisi ✅");
-                                    vm.postDataTakingSample();
+
+                                  if (valid1 && !isEmptyListCI) {
+                                    if (vm.listParameter.isEmpty) {
+                                      vm.confirmPost();
+                                    } else {
+                                      if (isEmptyListPar) {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          SnackBar(
+                                            duration: Duration(seconds: 2),
+                                            content:
+                                                Text("Form Parameter Kosong"),
+                                            backgroundColor: Colors.red,
+                                          ),
+                                        );
+                                      } else {
+                                        vm.confirmPost();
+                                      }
+                                    }
                                   } else {
                                     if (!valid1) {
-                                      ScaffoldMessenger.of(context!)
+                                      ScaffoldMessenger.of(context)
                                           .showSnackBar(
                                         SnackBar(
                                           duration: Duration(seconds: 2),
@@ -223,17 +238,9 @@ class _DetailTaskViewState extends State<DetailTaskView>
                                         ),
                                       );
                                     }
-                                    // if (!valid3) {
-                                    //   ScaffoldMessenger.of(context!).showSnackBar(
-                                    //     SnackBar(
-                                    //       duration: Duration(seconds: 2),
-                                    //       content: Text("Form Parameter Kosong"),
-                                    //       backgroundColor: Colors.red,
-                                    //     ),
-                                    //   );
-                                    // }
+
                                     if (isEmptyListCI) {
-                                      ScaffoldMessenger.of(context!)
+                                      ScaffoldMessenger.of(context)
                                           .showSnackBar(
                                         SnackBar(
                                           duration: Duration(seconds: 2),
@@ -243,17 +250,7 @@ class _DetailTaskViewState extends State<DetailTaskView>
                                         ),
                                       );
                                     }
-                                    if (isEmptyListPar) {
-                                      ScaffoldMessenger.of(context!)
-                                          .showSnackBar(
-                                        SnackBar(
-                                          duration: Duration(seconds: 2),
-                                          content:
-                                              Text("Form Parameter Kosong"),
-                                          backgroundColor: Colors.red,
-                                        ),
-                                      );
-                                    }
+
                                     // if(vm.imageString.isEmpty){
                                     //   ScaffoldMessenger.of(context!).showSnackBar(
                                     //     SnackBar(

@@ -24,12 +24,10 @@ class HomeViewmodel extends FutureViewModel {
   double lng = 0;
 
   getUserData() async {
-
     try {
       await Future.delayed(Duration(seconds: 1));
       final getData = await _storage.getUserData();
       username = getData?.data?.username;
-
 
       notifyListeners();
     } catch (e) {
@@ -40,7 +38,17 @@ class HomeViewmodel extends FutureViewModel {
   }
 
   getMonthlyReport() {
-    totalPerforma = totalListTask / totalListTaskHistory;
+    final done = totalListTask;
+    final total = totalListTaskHistory;
+    if (total <= 0) {
+      // Tidak ada data ⇒ tampilkan spinner indeterminate
+      totalPerforma = 0.0;
+    } else {
+      final ratio = done / total; // double
+      // Amankan dari NaN/Infinity dan paksa 0..1
+      totalPerforma = ratio.isFinite ? ratio.clamp(0.0, 1.0) : null;
+    }
+
     notifyListeners();
   }
 
@@ -66,7 +74,6 @@ class HomeViewmodel extends FutureViewModel {
   runAllFunction() async {
     setBusy(true);
     try {
-
       final cekToken = await apiService.cekToken();
 
       if (cekToken) {
@@ -74,21 +81,22 @@ class HomeViewmodel extends FutureViewModel {
         await getMonthlyReport();
         await getUserData();
         setBusy(false);
-        notifyListeners();
       } else {
         await _storage.clear();
         Navigator.of(context!).pushReplacement(
             new MaterialPageRoute(builder: (context) => SplashScreenView()));
-        notifyListeners();
+
         setBusy(false);
       }
-    }catch (e) {
+      notifyListeners();
+    } catch (e) {
       setBusy(false);
     }
   }
 
   Future<void> openMap(double lat, double lng) async {
-    final Uri googleUrl = Uri.parse('https://www.google.com/maps/search/?api=1&query=$lat,$lng');
+    final Uri googleUrl =
+        Uri.parse('https://www.google.com/maps/search/?api=1&query=$lat,$lng');
 
     if (await canLaunchUrl(googleUrl)) {
       await launchUrl(googleUrl, mode: LaunchMode.externalApplication);
@@ -105,8 +113,12 @@ class HomeViewmodel extends FutureViewModel {
     final fromDateStr = dateFormat.format(fromDate);
     final toDateStr = dateFormat.format(toDate);
 
-    final responseTaskList = await apiService.getTaskList('${fromDateStr}-${toDateStr}');
-    final responseTaskListHistory = await apiService.getTaskListHistory(fromDateStr, toDateStr);
+    final responseTaskList =
+        await apiService.getTaskList('${fromDateStr}-${toDateStr}');
+    print("fromDateStr : ${fromDateStr} , toDateStr : ${toDateStr}");
+    final responseTaskListHistory =
+        await apiService.getTaskListHistory(fromDateStr, toDateStr);
+
     totalListTask = responseTaskList!.data!.data.length;
     totalListTaskHistory = responseTaskListHistory!.data!.data.length;
     listTask = List.from(responseTaskList.data!.data);
@@ -145,7 +157,6 @@ class HomeViewmodel extends FutureViewModel {
 
   Future<TestingOrder?> getNearestLocation() async {
     try {
-
       Position current = await getCurrentLocation();
 
       double minDistance = double.infinity;
@@ -155,8 +166,8 @@ class HomeViewmodel extends FutureViewModel {
         String? latlong = place.geotag;
         var latLngSplit = latlong?.split(',');
 
-         lat = double.tryParse(latLngSplit![0]) ?? 0.0;
-         lng = double.tryParse(latLngSplit[1]) ?? 0.0;
+        lat = double.tryParse(latLngSplit![0]) ?? 0.0;
+        lng = double.tryParse(latLngSplit[1]) ?? 0.0;
         print("data location : ${lat},${lng}");
         double distance = Geolocator.distanceBetween(
           current.latitude,
@@ -171,10 +182,9 @@ class HomeViewmodel extends FutureViewModel {
         }
       }
       radius = minDistance.round();
-      print("Lokasi terdekat: ${nearestPlace?.subzonaname} (${minDistance.round()
-      } m) , Current Location : ${current.latitude},${current.longitude} , data location : ${nearestPlace?.geotag}");
+      print(
+          "Lokasi terdekat: ${nearestPlace?.subzonaname} (${minDistance.round()} m) , Current Location : ${current.latitude},${current.longitude} , data location : ${nearestPlace?.geotag}");
       return nearestPlace;
-
     } catch (e) {
       print("Error: $e");
       return null;

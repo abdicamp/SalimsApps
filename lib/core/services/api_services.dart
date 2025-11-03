@@ -62,11 +62,16 @@ class ApiService {
           "token_fcm": "${token}"
         }),
       );
-
+      print("status code : ${response.statusCode}");
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final loginResponse = LoginResponse.fromJson(data);
         return ApiResponse.success(loginResponse);
+      } else if (response.statusCode == 400) {
+        logger.w("Login Api failed: ${response.body}");
+        final loginResponse = LoginResponse.fromJson(jsonDecode(response.body));
+        return ApiResponse.error(
+            "Login gagal: ${loginResponse.msg!.split('|')[1]}");
       } else {
         logger.w("Login Api failed: ${response.body}");
         final loginResponse = LoginResponse.fromJson(jsonDecode(response.body));
@@ -94,6 +99,7 @@ class ApiService {
       );
 
       print("sampleResponse : ${jsonDecode(response.body)}");
+      print("status code : ${response.statusCode}");
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final taskListResponse = TaskListModels.fromJson(data);
@@ -108,9 +114,9 @@ class ApiService {
   }
 
   Future<ApiResponse<TestingOrderHistoryModel>?> getTaskListHistory(
-      String? fromDate,
-      String? toDate,
-      ) async {
+    String? fromDate,
+    String? toDate,
+  ) async {
     try {
       final getData = await _storage.getUserData();
 
@@ -129,8 +135,8 @@ class ApiService {
           "Authorization": "Bearer ${getData?.accessToken}",
         },
       );
-
-      print("getTaskListHistory : ${response.body}");
+      final dataLength = jsonDecode(response.body);
+      print("getTaskListHistory : ${dataLength} ${response.body}");
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -165,7 +171,6 @@ class ApiService {
       return ApiResponse.error("Unexpected Error: $e");
     }
   }
-
 
   Future<ApiResponse<SampleLocationResponse>?> getSampleLoc() async {
     try {

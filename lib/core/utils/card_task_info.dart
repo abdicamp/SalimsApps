@@ -16,6 +16,51 @@ class CardTaskInfo extends StatefulWidget {
 }
 
 class _CardTaskInfoState extends State<CardTaskInfo> {
+  void _showDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false, // Tidak bisa ditutup dengan tap di luar dialog
+      builder: (context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: Row(
+            children: [
+              Icon(Icons.warning, color: Colors.orange),
+              SizedBox(width: 8),
+              Text("Konfirmasi"),
+            ],
+          ),
+          content: Text(
+            "Apakah kamu yakin ingin mengubah lokasi nya ?",
+            style: TextStyle(fontSize: 16),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                setState(() {
+                  Navigator.pop(context); // Menutup dialog
+                });
+              },
+              child: Text("Cancel"),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+              onPressed: () {
+                setState(() {});
+                // TODO: tambahkan aksi sesuai kebutuhan
+                widget.vm!.setLocationName();
+                Navigator.pop(context); // Menutup dialog
+              },
+              child: Text("Yes"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -47,157 +92,161 @@ class _CardTaskInfoState extends State<CardTaskInfo> {
                               width: MediaQuery.of(context).size.width,
                               child: widget.vm!.imageFiles.isEmpty
                                   ? GestureDetector(
-                                onTap: () async {
-                                  await widget.vm!.pickImage();
-                                  print("klik");
-                                },
-                                child: DottedBorder(
-                                  borderType: BorderType.RRect,
-                                  color: Colors.grey,
-                                  radius: const Radius.circular(18.0),
-                                  dashPattern: const [8, 4],
-                                  child: Center(
-                                    child: SizedBox(
-                                      height: 120.0,
-                                      child: Column(
-                                        mainAxisAlignment:
-                                        MainAxisAlignment.center,
-                                        children: [
-                                          Assets.icons.image.svg(),
-
-                                          const Text('Lampiran'),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              )
-                                  : DottedBorder(
-                                borderType: BorderType.RRect,
-                                color: Colors.grey,
-                                radius: const Radius.circular(18.0),
-                                dashPattern: const [8, 4],
-                                child: ClipRRect(
-                                  borderRadius:
-                                  const BorderRadius.all(
-                                    Radius.circular(18.0),
-                                  ),
-                                  child: GridView.builder(
-                                    shrinkWrap:
-                                    true, // penting jika tidak berada dalam Expanded
-                                    physics:
-                                    const NeverScrollableScrollPhysics(), // biar tidak tabrakan scroll
-                                    gridDelegate:
-                                    const SliverGridDelegateWithFixedCrossAxisCount(
-                                      crossAxisCount: 3,
-                                      crossAxisSpacing: 4.0,
-                                      mainAxisSpacing: 4.0,
-                                    ),
-                                    itemCount:
-                                    widget.vm!.imageFiles.length + 1,
-                                    itemBuilder: (context, index) {
-                                      if (index ==
-                                          widget.vm!.imageFiles.length) {
-                                        return Padding(
-                                          padding:
-                                          const EdgeInsets.all(
-                                            10,
-                                          ),
-                                          child: GestureDetector(
-                                            onTap: () async {
-                                              await widget.vm!.pickImage();
-                                            },
-                                            child: Image.asset(
-                                              "assets/images/add_image.jpeg",
-                                              height: 50,
+                                      onTap: () async {
+                                        await widget.vm!.pickImage();
+                                        print("klik");
+                                      },
+                                      child: DottedBorder(
+                                        borderType: BorderType.RRect,
+                                        color: Colors.grey,
+                                        radius: const Radius.circular(18.0),
+                                        dashPattern: const [8, 4],
+                                        child: Center(
+                                          child: SizedBox(
+                                            height: 120.0,
+                                            child: Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                Assets.icons.image.svg(),
+                                                const Text('Lampiran'),
+                                              ],
                                             ),
                                           ),
-                                        );
-                                      } else {
-                                        return Stack(
-                                          children: [
-                                            Padding(
-                                              padding:
-                                              const EdgeInsets.all(
-                                                8.0,
-                                              ),
-                                              child: ClipRRect(
-                                                borderRadius:
-                                                const BorderRadius.all(
-                                                  Radius.circular(
-                                                    10,
+                                        ),
+                                      ),
+                                    )
+                                  : DottedBorder(
+                                      borderType: BorderType.RRect,
+                                      color: Colors.grey,
+                                      radius: const Radius.circular(18.0),
+                                      dashPattern: const [8, 4],
+                                      child: ClipRRect(
+                                        borderRadius: const BorderRadius.all(
+                                          Radius.circular(18.0),
+                                        ),
+                                        child: GridView.builder(
+                                          shrinkWrap:
+                                              true, // penting jika tidak berada dalam Expanded
+                                          physics:
+                                              const NeverScrollableScrollPhysics(), // biar tidak tabrakan scroll
+                                          gridDelegate:
+                                              const SliverGridDelegateWithFixedCrossAxisCount(
+                                            crossAxisCount: 3,
+                                            crossAxisSpacing: 4.0,
+                                            mainAxisSpacing: 4.0,
+                                          ),
+                                          itemCount:
+                                              widget.vm!.imageFiles.length + 1,
+                                          itemBuilder: (context, index) {
+                                            if (index ==
+                                                widget.vm!.imageFiles.length) {
+                                              return Padding(
+                                                padding: const EdgeInsets.all(
+                                                  10,
+                                                ),
+                                                child: GestureDetector(
+                                                  onTap: () async {
+                                                    await widget.vm!
+                                                        .pickImage();
+                                                  },
+                                                  child: Image.asset(
+                                                    "assets/images/add_image.jpeg",
+                                                    height: 50,
                                                   ),
                                                 ),
-                                                child: Image.file(
-                                                  widget.vm!.imageFiles[index],
-                                                  height: 120.0,
-                                                  fit: BoxFit.cover,
-                                                ),
-                                              ),
-                                            ),
-                                            InkWell(
-                                              onTap: () {
-                                                setState(() {
-                                                  widget.vm!.imageFiles
-                                                      .removeAt(
-                                                    index,
-                                                  );
-                                                });
-                                              },
-                                              child: Icon(
-                                                Icons.delete,
-                                                color: Colors.red,
-                                              ),
-                                            ),
-                                          ],
-                                        );
-                                      }
-                                    },
-                                  ),
-                                ),
-                              ),
+                                              );
+                                            } else {
+                                              return Stack(
+                                                children: [
+                                                  Padding(
+                                                    padding:
+                                                        const EdgeInsets.all(
+                                                      8.0,
+                                                    ),
+                                                    child: ClipRRect(
+                                                      borderRadius:
+                                                          const BorderRadius
+                                                              .all(
+                                                        Radius.circular(
+                                                          10,
+                                                        ),
+                                                      ),
+                                                      child: Image.file(
+                                                        widget.vm!
+                                                            .imageFiles[index],
+                                                        height: 120.0,
+                                                        fit: BoxFit.cover,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  InkWell(
+                                                    onTap: () {
+                                                      setState(() {
+                                                        widget.vm!.imageFiles
+                                                            .removeAt(
+                                                          index,
+                                                        );
+                                                      });
+                                                    },
+                                                    child: Icon(
+                                                      Icons.delete,
+                                                      color: Colors.red,
+                                                    ),
+                                                  ),
+                                                ],
+                                              );
+                                            }
+                                          },
+                                        ),
+                                      ),
+                                    ),
                             ),
                             SizedBox(height: 5),
-                        Row(
-                          children: [
-                            // TextField Geotag
-                            Expanded(
-                              flex: 5,
-                              child: CustomTextField(
-                                readOnly: true,
-                                controller: widget.vm!.locationController!,
-                                label: 'Geotag',
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            // Tombol kotak untuk cek lokasi
-                            Padding(
-                              padding: const EdgeInsets.only(top: 25),
-                              child: Container(
-                                height: 50, // samakan tinggi dengan TextField
-                                width: 55,
-                                decoration: BoxDecoration(
-                                  border: Border.all(color: Colors.grey, width: 1),
-                                  borderRadius: BorderRadius.circular(10),
-                                  color: Colors.white,
-
+                            Row(
+                              children: [
+                                // TextField Geotag
+                                Expanded(
+                                  flex: 5,
+                                  child: CustomTextField(
+                                    readOnly: true,
+                                    controller: widget.vm!.locationController!,
+                                    label: 'Geotag',
+                                  ),
                                 ),
-                                child: IconButton(
-                                  icon: const Icon(Icons.location_searching, color: Colors.black),
-                                  onPressed: () {
-                                    widget.vm!.setLocationName();
-                                  },
+                                const SizedBox(width: 8),
+                                // Tombol kotak untuk cek lokasi
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 25),
+                                  child: Container(
+                                    height:
+                                        50, // samakan tinggi dengan TextField
+                                    width: 55,
+                                    decoration: BoxDecoration(
+                                      border: Border.all(
+                                          color: Colors.grey, width: 1),
+                                      borderRadius: BorderRadius.circular(10),
+                                      color: Colors.white,
+                                    ),
+                                    child: IconButton(
+                                      icon: const Icon(Icons.location_searching,
+                                          color: Colors.black),
+                                      onPressed: () {
+                                        _showDialog();
+                                      },
+                                    ),
+                                  ),
                                 ),
-                              ),
+                              ],
                             ),
-                          ],
-                        ),
-                        SizedBox(height: 5),
-                          widget.vm!.isChangeLocation == true ?  CustomTextField(
-                              maxLines: 3,
-                              controller: widget.vm!.addressController!,
-                              label: 'Addres',
-                            ) : Stack(),
+                            SizedBox(height: 5),
+                            widget.vm!.isChangeLocation == true
+                                ? CustomTextField(
+                                    maxLines: 3,
+                                    controller: widget.vm!.addressController!,
+                                    label: 'Addres',
+                                  )
+                                : Stack(),
                             SizedBox(height: 5),
                             CustomTextField(
                               validator: (value) {

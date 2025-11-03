@@ -51,7 +51,7 @@ class DetailTaskViewmodel extends FutureViewModel {
 
   // CONTAINER INFO
   int? incrementDetailNoCI = 0;
-  List<TakingSampleParameter> listTakingSampleParameter = [];
+  List<TakingSampleCI> listTakingSampleCI = [];
   List<Equipment>? equipmentlist = [];
   List<Unit>? unitList = [];
   Unit? conSelect;
@@ -63,7 +63,7 @@ class DetailTaskViewmodel extends FutureViewModel {
 
   // PARAMETER
   int? incrementDetailNoPar = 0;
-  List<TakingSampleCI> listTakingSampleCI = [];
+  List<TakingSampleParameter> listTakingSampleParameter = [];
   List<TestingOrderParameter> listParameter = [];
   TestingOrderParameter? parameterSelect;
   TextEditingController? institutController = new TextEditingController();
@@ -281,8 +281,42 @@ class DetailTaskViewmodel extends FutureViewModel {
     notifyListeners();
   }
 
+  Future<void> confirmPost() async {
+    try {
+      setBusy(true);
+      if (isChangeLocation == true) {
+        await postDataTakingSample();
+      } else {
+        final isCek = await cekRangeLocation();
+        if (isCek) {
+          await postDataTakingSample();
+        } else {
+          ScaffoldMessenger.of(context!).showSnackBar(
+            SnackBar(
+              duration: Duration(seconds: 2),
+              content: Text("You are out of location range"),
+              backgroundColor: Colors.red,
+            ),
+          );
+          setBusy(false);
+          notifyListeners();
+        }
+      }
+      notifyListeners();
+    } catch (e) {
+      ScaffoldMessenger.of(context!).showSnackBar(
+        SnackBar(
+          duration: Duration(seconds: 2),
+          content: Text("Failed Confirm: ${e}"),
+          backgroundColor: Colors.red,
+        ),
+      );
+      setBusy(false);
+      notifyListeners();
+    }
+  }
+
   postDataTakingSample() async {
-    setBusy(true);
     try {
       final getDataUser = await localService.getUserData();
       final dataJson = SampleDetail(
@@ -318,6 +352,7 @@ class DetailTaskViewmodel extends FutureViewModel {
             backgroundColor: Colors.green,
           ),
         );
+        setBusy(false);
         Navigator.of(context!).pushReplacement(
           MaterialPageRoute(builder: (context) => BottomNavigatorView()),
         );
@@ -332,28 +367,21 @@ class DetailTaskViewmodel extends FutureViewModel {
         );
         notifyListeners();
       }
-
-      setBusy(false);
-      notifyListeners();
-      // if(cekRangeLocation == true){
-      //
-      // }else {
-      //   ScaffoldMessenger.of(context!).showSnackBar(
-      //     SnackBar(
-      //       duration: Duration(seconds: 2),
-      //       content: Text("You are out of location range"),
-      //       backgroundColor: Colors.red,
-      //     ),
-      //   );
-      //   setBusy(false);
-      //   notifyListeners();
-      // }
     } catch (e, stackTrace) {
+      setBusy(false);
       logger.e(
         "Error Post Data",
         error: e,
         stackTrace: stackTrace,
       );
+      ScaffoldMessenger.of(context!).showSnackBar(
+        SnackBar(
+          duration: Duration(seconds: 2),
+          content: Text("Failed Post Data"),
+          backgroundColor: Colors.red,
+        ),
+      );
+      notifyListeners();
     }
   }
 
@@ -365,13 +393,18 @@ class DetailTaskViewmodel extends FutureViewModel {
       double lat = double.tryParse(latLngSplit[0]) ?? 0.0;
       double lng = double.tryParse(latLngSplit[1]) ?? 0.0;
 
+      Position? userPositions = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+
       double distance = RadiusCalculate.calculateDistanceInMeter(
-        userPosition!.latitude,
-        userPosition!.longitude,
+        userPositions.latitude,
+        userPositions.longitude,
         lat,
         lng,
       );
-      print("distance : ${distance}");
+      print(
+          "distance : ${distance} , userPositions.latitude : ${userPositions.latitude} , userPositions.longitude : ${userPositions.longitude}");
 
       if (distance <= allowedRadius) {
         return true;

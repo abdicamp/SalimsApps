@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:salims_apps_new/core/models/task_list_history_models.dart';
@@ -28,8 +30,9 @@ class HistoryViewmodel extends FutureViewModel {
     if (newRange != null) {
       selectedRange = newRange;
       tanggalCtrl!.text =
-      '${_formatDate(selectedRange!.start)}-${_formatDate(selectedRange!.end)}';
-      getDataTaskHistory(_formatDate(selectedRange!.start) , _formatDate(selectedRange!.end));
+          '${_formatDate(selectedRange!.start)}-${_formatDate(selectedRange!.end)}';
+      getDataTaskHistory(
+          _formatDate(selectedRange!.start), _formatDate(selectedRange!.end));
       notifyListeners();
     }
   }
@@ -42,19 +45,19 @@ class HistoryViewmodel extends FutureViewModel {
     listTaskHistory = text.isEmpty || text == 'All'
         ? listTaskHistorySearch
         : listTaskHistorySearch
-        .where(
-          (item) =>
-      item.ReqNumber.toString().toLowerCase().contains(
-        text.toLowerCase(),
-      ) ||
-          item.PtsNumber.toString().toLowerCase().contains(
-            text.toLowerCase(),
-          ) ||
-          item.ZonaName.toString().toLowerCase().contains(
-            text.toLowerCase(),
-          ) ,
-    )
-        .toList();
+            .where(
+              (item) =>
+                  item.ReqNumber.toString().toLowerCase().contains(
+                        text.toLowerCase(),
+                      ) ||
+                  item.PtsNumber.toString().toLowerCase().contains(
+                        text.toLowerCase(),
+                      ) ||
+                  item.ZonaName.toString().toLowerCase().contains(
+                        text.toLowerCase(),
+                      ),
+            )
+            .toList();
 
     notifyListeners();
   }
@@ -64,6 +67,8 @@ class HistoryViewmodel extends FutureViewModel {
     try {
       final response = await apiService.getTaskListHistory(fromDate, toDate);
       listTaskHistory = List.from(response!.data!.data ?? []);
+      print("listTaskHistory : ${jsonEncode(listTaskHistory)}");
+      print("listTaskHistory length : ${listTaskHistory.length}");
       listTaskHistorySearch = List.from(response!.data!.data ?? []);
       setBusy(false);
       notifyListeners();
@@ -75,6 +80,6 @@ class HistoryViewmodel extends FutureViewModel {
 
   @override
   Future futureToRun() async {
-    await getDataTaskHistory('','');
+    await getDataTaskHistory('', '');
   }
 }
