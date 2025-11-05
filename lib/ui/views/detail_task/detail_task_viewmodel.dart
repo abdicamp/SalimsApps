@@ -41,6 +41,7 @@ class DetailTaskViewmodel extends FutureViewModel {
   String? address;
   String? namaJalan;
   List<SampleLocation>? sampleLocationList = [];
+  List<String> uploadFotoSampleList = [];
   SampleLocation? sampleLocationSelect;
   TextEditingController? locationController = new TextEditingController();
   TextEditingController? addressController = new TextEditingController();
@@ -316,9 +317,34 @@ class DetailTaskViewmodel extends FutureViewModel {
     }
   }
 
+  Future<String> convertImageToBase64(File imageFile) async {
+    final bytes = await imageFile.readAsBytes();
+    final base64String = base64Encode(bytes);
+    final ext = imageFile.path.split('.').last.toLowerCase();
+
+    // Tambahkan prefix MIME type
+    String mimeType = 'image/jpeg';
+    if (ext == 'png') mimeType = 'image/png';
+    else if (ext == 'jpg' || ext == 'jpeg') mimeType = 'image/jpeg';
+
+    return 'data:$mimeType;base64,$base64String';
+  }
+
   postDataTakingSample() async {
     try {
       final getDataUser = await localService.getUserData();
+      // 🔹 Ubah image ke base64
+      List<String> imageBase64List = [];
+      for (var file in imageFiles) {
+        String base64Str = await convertImageToBase64(file);
+        imageBase64List.add(base64Str);
+      }
+
+      // 🔹 Gabungkan dengan URL lama jika ada
+      if (imageString.isNotEmpty) {
+        imageBase64List.insertAll(0, imageString);
+      }
+
       final dataJson = SampleDetail(
         description: descriptionController!.text,
         tsnumber: "${listTaskList?.tsnumber ?? ''}",
@@ -339,6 +365,7 @@ class DetailTaskViewmodel extends FutureViewModel {
         usercreated: "${getDataUser?.data?.username}",
         takingSampleParameters: listTakingSampleParameter,
         takingSampleCI: listTakingSampleCI,
+        uploadFotoSample: imageBase64List
       );
 
       print("dataJson : ${jsonEncode(dataJson)}");
@@ -420,16 +447,26 @@ class DetailTaskViewmodel extends FutureViewModel {
   getOneTaskList() async {
     setBusy(true);
     try {
+      print("listTaskList?.tsnumber : ${listTaskList?.tsnumber}");
       if (listTaskList?.tsnumber != '') {
         final response =
-            await apiService.getOneTaskList(listTaskList?.tsnumber);
+        await apiService.getOneTaskList(listTaskList?.tsnumber);
+
         descriptionController!.text = response['description'];
         weatherController!.text = response['weather'];
         windDIrectionController!.text = response['winddirection'];
         temperaturController!.text = response['temperatur'];
 
+        // ✅ Ambil list URL gambar dari API
+        imageString.clear();
+        if (response['upload_foto_sample'] != null) {
+          // Kalau response berisi list gambar (misal array)
+          for (var url in response['upload_foto_sample']) {
+            imageString.add(url.toString());
+          }
+        }
+
         for (var i in response['taking_sample_parameters']) {
-          print("parameter : ${i}");
           listTakingSampleParameter.add(TakingSampleParameter.fromJson(i));
           incrementDetailNoPar = incrementDetailNoPar! + 1;
         }

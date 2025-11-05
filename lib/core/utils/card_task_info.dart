@@ -139,42 +139,29 @@ class _CardTaskInfoState extends State<CardTaskInfo> {
                                           itemCount:
                                               widget.vm!.imageFiles.length + 1,
                                           itemBuilder: (context, index) {
-                                            if (index ==
-                                                widget.vm!.imageFiles.length) {
+                                            final totalUrl = widget.vm!.imageString.length;
+
+                                            if (index == totalUrl + widget.vm!.imageFiles.length) {
+                                              // Tombol tambah gambar
                                               return Padding(
-                                                padding: const EdgeInsets.all(
-                                                  10,
-                                                ),
+                                                padding: const EdgeInsets.all(10),
                                                 child: GestureDetector(
                                                   onTap: () async {
-                                                    await widget.vm!
-                                                        .pickImage();
+                                                    await widget.vm!.pickImage();
                                                   },
-                                                  child: Image.asset(
-                                                    "assets/images/add_image.jpeg",
-                                                    height: 50,
-                                                  ),
+                                                  child: Image.asset("assets/images/add_image.jpeg", height: 50),
                                                 ),
                                               );
-                                            } else {
+                                            } else if (index < totalUrl) {
+                                              // ✅ Gambar dari URL
                                               return Stack(
                                                 children: [
                                                   Padding(
-                                                    padding:
-                                                        const EdgeInsets.all(
-                                                      8.0,
-                                                    ),
+                                                    padding: const EdgeInsets.all(8.0),
                                                     child: ClipRRect(
-                                                      borderRadius:
-                                                          const BorderRadius
-                                                              .all(
-                                                        Radius.circular(
-                                                          10,
-                                                        ),
-                                                      ),
-                                                      child: Image.file(
-                                                        widget.vm!
-                                                            .imageFiles[index],
+                                                      borderRadius: const BorderRadius.all(Radius.circular(10)),
+                                                      child: Image.network(
+                                                        widget.vm!.imageString[index],
                                                         height: 120.0,
                                                         fit: BoxFit.cover,
                                                       ),
@@ -183,21 +170,42 @@ class _CardTaskInfoState extends State<CardTaskInfo> {
                                                   InkWell(
                                                     onTap: () {
                                                       setState(() {
-                                                        widget.vm!.imageFiles
-                                                            .removeAt(
-                                                          index,
-                                                        );
+                                                        widget.vm!.imageString.removeAt(index);
                                                       });
                                                     },
-                                                    child: Icon(
-                                                      Icons.delete,
-                                                      color: Colors.red,
+                                                    child: const Icon(Icons.delete, color: Colors.red),
+                                                  ),
+                                                ],
+                                              );
+                                            } else {
+                                              // ✅ Gambar dari File lokal
+                                              final fileIndex = index - totalUrl;
+                                              return Stack(
+                                                children: [
+                                                  Padding(
+                                                    padding: const EdgeInsets.all(8.0),
+                                                    child: ClipRRect(
+                                                      borderRadius: const BorderRadius.all(Radius.circular(10)),
+                                                      child: Image.file(
+                                                        widget.vm!.imageFiles[fileIndex],
+                                                        height: 120.0,
+                                                        fit: BoxFit.cover,
+                                                      ),
                                                     ),
+                                                  ),
+                                                  InkWell(
+                                                    onTap: () {
+                                                      setState(() {
+                                                        widget.vm!.imageFiles.removeAt(fileIndex);
+                                                      });
+                                                    },
+                                                    child: const Icon(Icons.delete, color: Colors.red),
                                                   ),
                                                 ],
                                               );
                                             }
                                           },
+
                                         ),
                                       ),
                                     ),

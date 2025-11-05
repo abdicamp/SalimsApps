@@ -15,6 +15,7 @@ class SampleDetail {
   final String ptsnumber;
   final String usercreated;
   final String description;
+  final List<String>? uploadFotoSample; // ✅ Tambah ini
   final List<TakingSampleParameter> takingSampleParameters;
   final List<TakingSampleCI> takingSampleCI;
 
@@ -37,6 +38,7 @@ class SampleDetail {
     required this.description,
     required this.takingSampleParameters,
     required this.takingSampleCI,
+    this.uploadFotoSample, // ✅ Tambah ini juga
   });
 
   factory SampleDetail.fromJson(Map<String, dynamic> json) {
@@ -66,6 +68,9 @@ class SampleDetail {
               ?.map((e) => TakingSampleCI.fromJson(e))
               .toList() ??
           [],
+      uploadFotoSample: json['upload_foto_sample'] != null
+          ? List<String>.from(json['upload_foto_sample'])
+          : [], // ✅ Parsing URL list
     );
   }
 
@@ -90,6 +95,7 @@ class SampleDetail {
       'taking_sample_parameters':
           takingSampleParameters.map((e) => e.toJson()).toList(),
       'taking_sample_ci': takingSampleCI.map((e) => e.toJson()).toList(),
+      "upload_foto_sample": uploadFotoSample, // ✅ pastikan ikut di toJson
     };
   }
 }
