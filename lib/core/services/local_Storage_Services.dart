@@ -1,0 +1,36 @@
+import 'dart:convert';
+import 'package:salims_apps_new/core/models/login_models.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+class LocalStorageService {
+  static const _keyAccessToken = "access_token";
+  static const String _loginKey = "login_response";
+
+  Future<void> saveLoginData(LoginResponse login) async {
+    final prefs = await SharedPreferences.getInstance();
+    String jsonString = jsonEncode(
+      login.toJson(),
+    ); // simpan sebagai string JSON
+    print("jsonString : ${jsonString}");
+    await prefs.setString(_loginKey, jsonString);
+  }
+
+  Future<String?> getToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_keyAccessToken);
+  }
+
+  Future<LoginResponse?> getUserData() async {
+    final prefs = await SharedPreferences.getInstance();
+    final jsonString = prefs.getString(_loginKey);
+    if (jsonString != null) {
+      return LoginResponse.fromJson(jsonDecode(jsonString));
+    }
+    return null;
+  }
+
+  Future<void> clear() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+  }
+}
