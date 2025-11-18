@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:salims_apps_new/core/utils/app_localizations.dart';
+import 'package:salims_apps_new/core/widgets/language_selector.dart';
 import 'package:salims_apps_new/state_global/state_global.dart';
 import 'package:salims_apps_new/ui/views/profile/profile_viewmodel.dart';
 import 'package:stacked/stacked.dart';
+import '../../../core/utils/colors.dart';
 import '../../../core/utils/rounded_clipper.dart';
 
 class ProfileView extends StatefulWidget {
@@ -39,8 +42,8 @@ class _ProfileViewState extends State<ProfileView> {
                         decoration: const BoxDecoration(
                           gradient: LinearGradient(
                             colors: [
-                              Color(0xFF1565C0), // Biru navy
-                              Color(0xFF42A5F5), // Biru terang
+                              AppColors.skyBlue,
+                              AppColors.limeLight,
                             ],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
@@ -48,7 +51,7 @@ class _ProfileViewState extends State<ProfileView> {
                         ),
                         child: Center(
                           child: Text(
-                            "Profile",
+                            AppLocalizations.of(context)?.profile ?? "Profile",
                             style: GoogleFonts.poppins(
                               color: Colors.white,
                               fontSize: 24,
@@ -85,11 +88,12 @@ class _ProfileViewState extends State<ProfileView> {
                             children: [
                               CircleAvatar(
                                 radius: 45,
-                                backgroundColor: const Color(0xFF1565C0),
+                                backgroundColor: const Color(0xFF15C01E),
                                 child: const CircleAvatar(
                                   radius: 42,
+                                  backgroundColor: Colors.white,
                                   backgroundImage:
-                                      AssetImage('assets/images/salims.png'),
+                                      AssetImage('assets/images/logo.png',),
                                 ),
                               ),
                               const SizedBox(height: 16),
@@ -98,7 +102,7 @@ class _ProfileViewState extends State<ProfileView> {
                                 style: GoogleFonts.poppins(
                                   fontSize: 20,
                                   fontWeight: FontWeight.w600,
-                                  color: const Color(0xFF1565C0),
+                                  color: Colors.green,
                                 ),
                               ),
                             ],
@@ -171,7 +175,7 @@ class _ProfileViewState extends State<ProfileView> {
                                             prefixIcon: Icon(
                                               Icons.lock_outline,
                                             ),
-                                            hintText: 'Old Password',
+                                            hintText: AppLocalizations.of(context)?.oldPassword ?? 'Old Password',
                                             border: InputBorder.none,
                                             contentPadding:
                                                 EdgeInsets.symmetric(
@@ -231,7 +235,7 @@ class _ProfileViewState extends State<ProfileView> {
                                             prefixIcon: Icon(
                                               Icons.lock_outline,
                                             ),
-                                            hintText: 'New Password',
+                                            hintText: AppLocalizations.of(context)?.newPassword ?? 'New Password',
                                             border: InputBorder.none,
                                             contentPadding:
                                                 EdgeInsets.symmetric(
@@ -252,7 +256,7 @@ class _ProfileViewState extends State<ProfileView> {
                                         icon: const Icon(Icons.lock_outline,
                                             color: Colors.white),
                                         label: Text(
-                                          "Save",
+                                          AppLocalizations.of(context)?.save ?? "Save",
                                           style: GoogleFonts.poppins(
                                             fontSize: 16,
                                             fontWeight: FontWeight.w500,
@@ -281,7 +285,7 @@ class _ProfileViewState extends State<ProfileView> {
                                           });
                                         },
                                         label: Text(
-                                          "Cancel",
+                                          AppLocalizations.of(context)?.cancel ?? "Cancel",
                                           style: GoogleFonts.poppins(
                                             fontSize: 16,
                                             fontWeight: FontWeight.w500,
@@ -306,17 +310,25 @@ class _ProfileViewState extends State<ProfileView> {
                                         CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        "Account Information",
+                                        AppLocalizations.of(context)?.accountInformation ?? "Account Information",
                                         style: GoogleFonts.poppins(
                                           fontSize: 16,
                                           fontWeight: FontWeight.w600,
                                         ),
                                       ),
                                       const SizedBox(height: 10),
-                                      _buildInfoRow("Employee ID", "EMP001"),
                                       _buildInfoRow(
-                                          "Division", "Quality Control"),
-                                      _buildInfoRow("Join Date", "01 Jan 2020"),
+                                        AppLocalizations.of(context)?.employeeId ?? "Employee ID", 
+                                        "EMP001"
+                                      ),
+                                      _buildInfoRow(
+                                        AppLocalizations.of(context)?.division ?? "Division", 
+                                        "Quality Control"
+                                      ),
+                                      _buildInfoRow(
+                                        AppLocalizations.of(context)?.joinDate ?? "Join Date", 
+                                        "01 Jan 2020"
+                                      ),
                                     ],
                                   ),
                           ),
@@ -326,34 +338,57 @@ class _ProfileViewState extends State<ProfileView> {
                       vm.isChangePassword == true
                           ? Stack()
                           : Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 20),
-                              child: ElevatedButton.icon(
-                                onPressed: () {
-                                  setState(() {
-                                    vm.isChangePassword = true;
-                                  });
-                                },
-                                icon: const Icon(Icons.lock_outline,
-                                    color: Colors.white),
-                                label: Text(
-                                  "Change Password",
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w500,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF1565C0),
-                                  minimumSize: const Size.fromHeight(50),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(14),
-                                  ),
-                                  elevation: 3,
-                                ),
+                            padding: const EdgeInsets.only(left: 20, right: 20),
+                            child: Container(
+                                                    decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [
+                                        // putih
+                                Color(0xFF4CAF50),     // hijau
+                                Color(0xFF2196F3),     // biru
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(14),
+                                                    ),
+                                                    child: ElevatedButton.icon(
+                            onPressed: () {
+                              setState(() {
+                                vm.isChangePassword = true;
+                              });
+                            },
+                            icon: const Icon(
+                              Icons.lock_outline,
+                              color: Colors.white,
+                            ),
+                            label: Text(
+                              AppLocalizations.of(context)?.changePassword ?? "Change Password",
+                              style: GoogleFonts.poppins(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.white,
                               ),
                             ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.transparent,      // penting: biar kelihatan gradient
+                              shadowColor: Colors.transparent,          // hilangin bayangan default
+                              surfaceTintColor: Colors.transparent,     // buat Material 3
+                              minimumSize: const Size.fromHeight(50),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              elevation: 0,
+                            ),
+                                                    ),
+                                                  ),
+                          )
+,
+
+                      const SizedBox(height: 25),
+                      
+                      // Language Selector
+                      if (vm.isChangePassword == false) const LanguageSelector(),
 
                       // Informasi tambahan (optional)
                     ],
@@ -382,7 +417,7 @@ class _ProfileViewState extends State<ProfileView> {
               style: GoogleFonts.poppins(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
-                color: const Color(0xFF1565C0),
+                color: Colors.green,
               )),
         ],
       ),

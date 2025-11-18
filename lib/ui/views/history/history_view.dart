@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:salims_apps_new/core/utils/app_localizations.dart';
 import 'package:salims_apps_new/ui/views/history/history_viewmodel.dart';
 import 'package:stacked/stacked.dart';
 import 'package:provider/provider.dart';
 import '../../../core/utils/card_task_history.dart';
+import '../../../core/utils/colors.dart';
 import '../../../core/utils/rounded_clipper.dart';
 import '../../../state_global/state_global.dart' show GlobalLoadingState;
 
@@ -41,8 +43,8 @@ class _HistoryViewState extends State<HistoryView> {
                             decoration: BoxDecoration(
                               gradient: const LinearGradient(
                                 colors: [
-                                  Color(0xFF1565C0), // Biru navy
-                                  Color(0xFF42A5F5), // Biru terang
+                                  AppColors.skyBlue,
+                                  AppColors.limeLight,
                                 ],
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
@@ -50,7 +52,7 @@ class _HistoryViewState extends State<HistoryView> {
                             ),
                             child: Center(
                               child: Text(
-                                "History Task",
+                                AppLocalizations.of(context)?.historyTask ?? "History Task",
                                 style: GoogleFonts.lato(
                                   color: Colors.white,
                                   fontSize: 22,
@@ -77,7 +79,7 @@ class _HistoryViewState extends State<HistoryView> {
                                 vm.pickDateRange();
                               },
                               decoration: InputDecoration(
-                                hintText: "Date",
+                                hintText: AppLocalizations.of(context)?.date ?? "Date",
                                 hintStyle: TextStyle(
                                   color: Colors.grey.shade500,
                                   fontSize: 14,
@@ -90,7 +92,8 @@ class _HistoryViewState extends State<HistoryView> {
                                     onPressed: () {
                                       setState(() {
                                         vm.tanggalCtrl!.text = "";
-                                        vm.getDataTaskHistory("", "");
+                                        vm.getDataTaskHistory();
+
                                       });
                                     },
                                     icon: Icon(Icons.refresh_sharp)),
@@ -123,7 +126,7 @@ class _HistoryViewState extends State<HistoryView> {
                                 });
                               },
                               decoration: InputDecoration(
-                                hintText: "Search task history ...",
+                                hintText: AppLocalizations.of(context)?.searchTaskHistory ?? "Search task history...",
                                 hintStyle: TextStyle(
                                   color: Colors.grey.shade500,
                                   fontSize: 14,

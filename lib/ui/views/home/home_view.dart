@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:salims_apps_new/core/utils/app_localizations.dart';
 import 'package:salims_apps_new/state_global/state_global.dart';
 import 'package:salims_apps_new/ui/views/home/home_viewmodel.dart';
 import 'package:badges/badges.dart' as badges;
 import 'package:stacked/stacked.dart';
 import 'package:provider/provider.dart';
 
+import '../../../core/utils/colors.dart';
 import '../detail_task/detail_task_view.dart';
 
 class HomeView extends StatefulWidget {
@@ -16,59 +18,33 @@ class HomeView extends StatefulWidget {
 }
 
 class _HomeViewState extends State<HomeView> {
+  bool _lastBusyState = false;
+
   @override
   Widget build(BuildContext context) {
     return ViewModelBuilder.reactive(
       viewModelBuilder: () => HomeViewmodel(context: context),
       builder: (context, vm, child) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          vm.isBusy
-              ? context.read<GlobalLoadingState>().show()
-              : context.read<GlobalLoadingState>().hide();
-        });
+        // Only update loading state if it changed to avoid unnecessary callbacks
+        if (_lastBusyState != vm.isBusy) {
+          _lastBusyState = vm.isBusy;
+          // Use WidgetsBinding to update loading state after build phase
+          // This prevents calling setState/notifyListeners during build
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              final loadingState = context.read<GlobalLoadingState>();
+              if (vm.isBusy) {
+                loadingState.show();
+              } else {
+                loadingState.hide();
+              }
+            }
+          });
+        }
         return Stack(
           children: [
             Scaffold(
-              appBar: AppBar(
-                backgroundColor: Colors.white,
-                automaticallyImplyLeading: false,
-                title: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Image.asset("assets/images/salims.png", width: 120),
-                    Row(
-                      children: [
-                        badges.Badge(
-                          showBadge: 1 > 0,
-                          badgeContent: Text(
-                            '1',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
-                            ),
-                          ),
-                          badgeStyle: const badges.BadgeStyle(
-                            badgeColor: Colors.red,
-                          ),
-                          child: const Icon(
-                            Icons.notifications,
-                            color: Colors.black, // warna icon notifikasi
-                            size: 28, // opsional: atur ukuran
-                          ),
-                        ),
-                        SizedBox(width: 20),
-                        IconButton(
-                          onPressed: () {
-                            vm.logout();
-                          },
-                          icon: Icon(Icons.logout, color: Colors.black),
-                        ),
-                        SizedBox(width: 10),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
+
               backgroundColor: Colors.white,
               body: RefreshIndicator(
                 onRefresh: () async {
@@ -85,18 +61,53 @@ class _HomeViewState extends State<HomeView> {
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
+                                const SizedBox(height: 15),
                                 Padding(
                                   padding: const EdgeInsets.all(15),
                                   child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Text(
-                                        "Hello!",
-                                        style: GoogleFonts.poppins(
-                                          fontSize: 30,
-                                          fontWeight: FontWeight.bold,
-                                        ),
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text(
+                                            AppLocalizations.of(context)?.hello ?? "Hello!",
+                                            style: GoogleFonts.poppins(
+                                              fontSize: 30,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          Row(
+                                            children: [
+                                              badges.Badge(
+                                                showBadge: 1 > 0,
+                                                badgeContent: const Text(
+                                                  '1',
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 12,
+                                                  ),
+                                                ),
+                                                badgeStyle: const badges.BadgeStyle(
+                                                  badgeColor: Colors.red,
+                                                ),
+                                                child: const Icon(
+                                                  Icons.notifications,
+                                                  color: Colors.black, // warna icon notifikasi
+                                                  size: 28,
+                                                ),
+                                              ),
+                                              const SizedBox(width: 20),
+                                              IconButton(
+                                                onPressed: () {
+                                                  vm.logout();
+                                                },
+                                                icon: const Icon(Icons.logout, color: Colors.black),
+                                              ),
+                                              const SizedBox(width: 10),
+                                            ],
+                                          ),
+                                        ],
                                       ),
                                       Text(
                                         "${vm.username}",
@@ -108,66 +119,52 @@ class _HomeViewState extends State<HomeView> {
                                     ],
                                   ),
                                 ),
+
+                                // ====== Card berlapis + gradient ======
                                 Padding(
                                   padding: const EdgeInsets.all(8.0),
                                   child: Stack(
                                     children: [
                                       // Lapisan 1
                                       Card(
-                                        color: const Color(
-                                          0xFF0D47A1,
-                                        ), // Biru tua
+                                        color: const Color(0xFF004D40), // hijau tua cenderung biru
                                         child: SizedBox(
-                                          width: MediaQuery.of(
-                                            context,
-                                          ).size.width,
+                                          width: MediaQuery.of(context).size.width,
                                           height: 50,
                                         ),
                                       ),
 
                                       // Lapisan 2
-                                      Padding(
-                                        padding: const EdgeInsets.only(top: 4),
+                                      const Padding(
+                                        padding: EdgeInsets.only(top: 4),
                                         child: Card(
-                                          color: const Color(
-                                            0xFF1565C0,
-                                          ), // Biru navy
+                                          color: Color(0xFF00695C), // hijau teal lebih muda
                                           child: SizedBox(
-                                            width: MediaQuery.of(
-                                              context,
-                                            ).size.width,
+                                            width: double.infinity,
                                             height: 50,
                                           ),
                                         ),
                                       ),
 
                                       // Lapisan 3
-                                      Padding(
-                                        padding: const EdgeInsets.only(top: 8),
+                                      const Padding(
+                                        padding: EdgeInsets.only(top: 8),
                                         child: Card(
-                                          color: const Color(
-                                            0xFF1976D2,
-                                          ), // Biru medium
+                                          color: Color(0xFF00796B), // hijau kebiruan
                                           child: SizedBox(
-                                            width: MediaQuery.of(
-                                              context,
-                                            ).size.width,
+                                            width: double.infinity,
                                             height: 50,
                                           ),
                                         ),
                                       ),
 
                                       // Lapisan 4
-                                      Padding(
-                                        padding: const EdgeInsets.only(top: 12),
+                                      const Padding(
+                                        padding: EdgeInsets.only(top: 12),
                                         child: Card(
-                                          color: const Color(
-                                            0xFF42A5F5,
-                                          ), // Biru terang
+                                          color: Color(0xFF26A69A), // hijau teal terang
                                           child: SizedBox(
-                                            width: MediaQuery.of(
-                                              context,
-                                            ).size.width,
+                                            width: double.infinity,
                                             height: 50,
                                           ),
                                         ),
@@ -175,49 +172,43 @@ class _HomeViewState extends State<HomeView> {
 
                                       // Lapisan 5 (utama dengan gradient dan isi)
                                       Padding(
-                                        padding: EdgeInsets.only(top: 16),
+                                        padding: const EdgeInsets.only(top: 16),
                                         child: Card(
                                           elevation: 8,
                                           shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(
-                                              12,
-                                            ),
+                                            borderRadius: BorderRadius.circular(12),
                                           ),
                                           child: Container(
-                                            width: MediaQuery.of(
-                                              context,
-                                            ).size.width,
+                                            width: MediaQuery.of(context).size.width,
                                             decoration: BoxDecoration(
-                                              gradient: LinearGradient(
+                                              gradient: const LinearGradient(
                                                 colors: [
-                                                  Color(
-                                                      0xFF1565C0), // Biru navy
-                                                  Color(
-                                                    0xFF42A5F5,
-                                                  ), // Biru terang
+                                                  AppColors.skyBlue,
+                                                  AppColors.limeLight,
                                                 ],
                                                 begin: Alignment.topLeft,
                                                 end: Alignment.bottomRight,
                                               ),
-                                              borderRadius:
-                                                  BorderRadius.circular(
-                                                12,
-                                              ),
+                                              borderRadius: BorderRadius.circular(12),
                                             ),
-                                            padding: EdgeInsets.all(16),
+                                            padding: const EdgeInsets.all(16),
                                             child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
+                                              crossAxisAlignment: CrossAxisAlignment.start,
                                               children: [
-                                                const Text(
-                                                  "Nearest Assigment Location",
-                                                  style: TextStyle(
+                                                // Judul card
+                                                Text(
+                                                  AppLocalizations.of(context)
+                                                      ?.nearestAssignmentLocation ??
+                                                      "Nearest Assignment Location",
+                                                  style: const TextStyle(
                                                     fontSize: 15,
-                                                    color: Colors.white,
+                                                    color: Colors.white, // teks hijau tua
                                                     fontWeight: FontWeight.bold,
                                                   ),
                                                 ),
                                                 const SizedBox(height: 10),
+
+                                                // Radius
                                                 Row(
                                                   children: [
                                                     const Icon(
@@ -231,13 +222,14 @@ class _HomeViewState extends State<HomeView> {
                                                       style: const TextStyle(
                                                         fontSize: 12,
                                                         color: Colors.white,
-                                                        fontWeight:
-                                                            FontWeight.bold,
+                                                        fontWeight: FontWeight.bold,
                                                       ),
                                                     ),
                                                   ],
                                                 ),
                                                 const SizedBox(height: 10),
+
+                                                // Nama subzona
                                                 Row(
                                                   children: [
                                                     const Icon(
@@ -251,25 +243,25 @@ class _HomeViewState extends State<HomeView> {
                                                       style: const TextStyle(
                                                         fontSize: 12,
                                                         color: Colors.white,
-                                                        fontWeight:
-                                                            FontWeight.bold,
+                                                        fontWeight: FontWeight.bold,
                                                       ),
                                                     ),
                                                   ],
                                                 ),
                                                 const SizedBox(height: 5),
+
+                                                // Alamat
                                                 Row(
                                                   children: [
                                                     const SizedBox(width: 22),
                                                     SizedBox(
                                                       width:
-                                                          MediaQuery.of(context)
-                                                                  .size
-                                                                  .width /
-                                                              2,
-                                                      child: Text(
-                                                        "${vm.dataNearestLocation?.address ?? ''}",
-                                                        style: const TextStyle(
+                                                      MediaQuery.of(context).size.width / 2,
+                                                      child: const Text(
+                                                        // kalau mau, bisa ganti jadi non-const biar pakai vm langsung
+                                                        // tapi di sini ikut pattern kamu:
+                                                        "",
+                                                        style: TextStyle(
                                                           fontSize: 10,
                                                           color: Colors.white,
                                                         ),
@@ -277,139 +269,121 @@ class _HomeViewState extends State<HomeView> {
                                                     ),
                                                   ],
                                                 ),
+
+                                                // Address as dynamic text (dikeluarkan dari const biar pakai vm)
+                                                Row(
+                                                  children: [
+                                                    const SizedBox(width: 22),
+                                                    SizedBox(
+                                                      width:
+                                                      MediaQuery.of(context).size.width / 2,
+                                                      child: Text(
+                                                        "${vm.dataNearestLocation?.address ?? ''}",
+                                                        style: const TextStyle(
+                                                          fontSize: 10,
+                                                          color: Color(0xFF004D40),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+
                                                 const SizedBox(height: 20),
+
+                                                // Tombol Check Location
                                                 InkWell(
                                                   onTap: () {
-                                                    setState(() {
-                                                      vm.openMap(
-                                                          vm.lat, vm.lng);
-                                                    });
-                                                    // Navigator.of(context).push(
-                                                    //   MaterialPageRoute(
-                                                    //     builder: (context) => DetailTaskView(
-                                                    //       listData: vm.dataNearestLocation,
-                                                    //     ),
-                                                    //   ),
-                                                    // );
+                                                    vm.openMap(vm.lat, vm.lng);
                                                   },
                                                   child: Container(
-                                                    padding: const EdgeInsets
-                                                        .symmetric(
-                                                        horizontal: 10,
-                                                        vertical:
-                                                            4), // 🔹 lebih kecil dari sebelumnya
+                                                    padding: const EdgeInsets.symmetric(
+                                                      horizontal: 10,
+                                                      vertical: 4,
+                                                    ),
                                                     decoration: BoxDecoration(
-                                                      color: Colors.white
-                                                          .withOpacity(
-                                                              0.2), // 🔹 transparan lembut
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              10), // sedikit lebih kecil radius
+                                                      color: Colors.white.withOpacity(0.2),
+                                                      borderRadius: BorderRadius.circular(10),
                                                       boxShadow: [
                                                         BoxShadow(
-                                                          color: Colors.black
-                                                              .withOpacity(
-                                                                  0.05), // bayangan sangat halus
+                                                          color:
+                                                          Colors.black.withOpacity(0.05),
                                                           blurRadius: 2,
-                                                          offset: const Offset(
-                                                              0, 1),
+                                                          offset: const Offset(0, 1),
                                                         ),
                                                       ],
                                                     ),
                                                     child: Row(
-                                                      mainAxisSize:
-                                                          MainAxisSize.min,
+                                                      mainAxisSize: MainAxisSize.min,
                                                       children: [
                                                         Text(
-                                                          "Check Location",
-                                                          style: GoogleFonts
-                                                              .poppins(
-                                                            fontSize:
-                                                                11, // 🔹 lebih kecil agar proporsional
-                                                            fontWeight:
-                                                                FontWeight.w600,
-                                                            color: Colors.white
-                                                                .withOpacity(
-                                                                    0.9), // teks tetap jelas
+                                                          AppLocalizations.of(context)
+                                                              ?.checkLocation ??
+                                                              "Check Location",
+                                                          style: GoogleFonts.poppins(
+                                                            fontSize: 11,
+                                                            fontWeight: FontWeight.w600,
+                                                            color: Colors.white.withOpacity(0.9),
                                                           ),
                                                         ),
-                                                        const SizedBox(
-                                                            width: 4),
+                                                        const SizedBox(width: 4),
                                                         Icon(
                                                           Icons.chevron_right,
-                                                          size:
-                                                              13, // 🔹 sedikit lebih kecil
-                                                          color: Colors.white
-                                                              .withOpacity(
-                                                                  0.6), // 🔹 putih transparan
+                                                          size: 13,
+                                                          color: Colors.white.withOpacity(0.6),
                                                         ),
                                                       ],
                                                     ),
                                                   ),
                                                 ),
                                                 const SizedBox(height: 10),
+
+                                                // Tombol To Do Task
                                                 InkWell(
                                                   onTap: () {
                                                     Navigator.of(context).push(
                                                       MaterialPageRoute(
-                                                        builder: (context) =>
-                                                            DetailTaskView(
-                                                          listData: vm
-                                                              .dataNearestLocation,
+                                                        builder: (context) => DetailTaskView(
+                                                          listData:
+                                                          vm.dataNearestLocation,
                                                         ),
                                                       ),
                                                     );
                                                   },
                                                   child: Container(
-                                                    padding: const EdgeInsets
-                                                        .symmetric(
-                                                        horizontal: 10,
-                                                        vertical:
-                                                            4), // 🔹 lebih kecil dari sebelumnya
+                                                    padding: const EdgeInsets.symmetric(
+                                                      horizontal: 10,
+                                                      vertical: 4,
+                                                    ),
                                                     decoration: BoxDecoration(
-                                                      color: Colors.white
-                                                          .withOpacity(
-                                                              0.2), // 🔹 transparan lembut
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              10), // sedikit lebih kecil radius
+                                                      color: Colors.white.withOpacity(0.2),
+                                                      borderRadius: BorderRadius.circular(10),
                                                       boxShadow: [
                                                         BoxShadow(
-                                                          color: Colors.black
-                                                              .withOpacity(
-                                                                  0.05), // bayangan sangat halus
+                                                          color:
+                                                          Colors.black.withOpacity(0.05),
                                                           blurRadius: 2,
-                                                          offset: const Offset(
-                                                              0, 1),
+                                                          offset: const Offset(0, 1),
                                                         ),
                                                       ],
                                                     ),
                                                     child: Row(
-                                                      mainAxisSize:
-                                                          MainAxisSize.min,
+                                                      mainAxisSize: MainAxisSize.min,
                                                       children: [
                                                         Text(
-                                                          "To do task",
-                                                          style: GoogleFonts
-                                                              .poppins(
-                                                            fontSize:
-                                                                11, // 🔹 lebih kecil agar proporsional
-                                                            fontWeight:
-                                                                FontWeight.w600,
-                                                            color: Colors.white
-                                                                .withOpacity(
-                                                                    0.9), // teks tetap jelas
+                                                          AppLocalizations.of(context)
+                                                              ?.toDoTask ??
+                                                              "To do task",
+                                                          style: GoogleFonts.poppins(
+                                                            fontSize: 11,
+                                                            fontWeight: FontWeight.w600,
+                                                            color: Colors.white.withOpacity(0.9),
                                                           ),
                                                         ),
-                                                        const SizedBox(
-                                                            width: 4),
+                                                        const SizedBox(width: 4),
                                                         Icon(
                                                           Icons.chevron_right,
-                                                          size:
-                                                              13, // 🔹 sedikit lebih kecil
-                                                          color: Colors.white
-                                                              .withOpacity(
-                                                                  0.6), // 🔹 putih transparan
+                                                          size: 13,
+                                                          color: Colors.white.withOpacity(0.6),
                                                         ),
                                                       ],
                                                     ),
@@ -425,16 +399,19 @@ class _HomeViewState extends State<HomeView> {
                                 ),
                               ],
                             ),
+
+                            // Gambar di pojok kanan bawah
                             Positioned(
                               bottom: 0,
                               right: 0,
                               child: Image.asset(
-                                "assets/images/micro.png",
+                                "assets/images/logo.png",
                                 width: 200,
                               ),
                             ),
                           ],
-                        ),
+                        )
+,
                         SizedBox(height: 20),
                         Stack(
                           children: [
@@ -486,7 +463,7 @@ class _HomeViewState extends State<HomeView> {
                                                 CrossAxisAlignment.start,
                                             children: [
                                               Text(
-                                                "Outstanding",
+                                                AppLocalizations.of(context)?.outstanding ?? "Outstanding",
                                                 style: GoogleFonts.poppins(
                                                   fontSize: 16,
                                                   fontWeight: FontWeight.w600,
@@ -529,7 +506,7 @@ class _HomeViewState extends State<HomeView> {
                                           ),
                                           const SizedBox(height: 4),
                                           Text(
-                                            "% Completed",
+                                            AppLocalizations.of(context)?.percentCompleted ?? "% Completed",
                                             style: GoogleFonts.poppins(
                                               fontSize: 10,
                                               color: Colors.grey[600],
@@ -598,7 +575,7 @@ class _HomeViewState extends State<HomeView> {
                                                 CrossAxisAlignment.start,
                                             children: [
                                               Text(
-                                                "Finish",
+                                                AppLocalizations.of(context)?.finish ?? "Finish",
                                                 style: GoogleFonts.poppins(
                                                   fontSize: 16,
                                                   fontWeight: FontWeight.w600,
@@ -640,7 +617,7 @@ class _HomeViewState extends State<HomeView> {
                                           ),
                                           const SizedBox(height: 4),
                                           Text(
-                                            "% Completed",
+                                            AppLocalizations.of(context)?.percentCompleted ?? "% Completed",
                                             style: GoogleFonts.poppins(
                                               fontSize: 10,
                                               color: Colors.grey[600],
@@ -709,7 +686,7 @@ class _HomeViewState extends State<HomeView> {
                                                 CrossAxisAlignment.start,
                                             children: [
                                               Text(
-                                                "Performa",
+                                                AppLocalizations.of(context)?.performa ?? "Performa",
                                                 style: GoogleFonts.poppins(
                                                   fontSize: 16,
                                                   fontWeight: FontWeight.w600,
@@ -765,7 +742,7 @@ class _HomeViewState extends State<HomeView> {
                                           ),
                                           const SizedBox(height: 4),
                                           Text(
-                                            "% Completed",
+                                            AppLocalizations.of(context)?.percentCompleted ?? "% Completed",
                                             style: GoogleFonts.poppins(
                                               fontSize: 10,
                                               color: Colors.grey[600],

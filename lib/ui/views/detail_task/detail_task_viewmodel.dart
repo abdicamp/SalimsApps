@@ -12,13 +12,13 @@ import 'package:salims_apps_new/core/models/sample_location_models.dart';
 import 'package:salims_apps_new/core/models/sample_models.dart';
 import 'package:salims_apps_new/core/models/unit_response_models.dart';
 import 'package:salims_apps_new/core/services/api_services.dart';
+import 'package:salims_apps_new/core/utils/app_localizations.dart';
 import 'package:salims_apps_new/ui/views/bottom_navigator_view.dart';
 import 'package:salims_apps_new/ui/views/splash_screen/splash_screen_view.dart';
 import 'package:stacked/stacked.dart';
 import 'package:path/path.dart' as p;
-import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-
+import 'package:http/http.dart' as http;
 import '../../../core/models/parameter_models.dart';
 import '../../../core/models/task_list_models.dart';
 import '../../../core/services/local_Storage_Services.dart';
@@ -28,14 +28,17 @@ class DetailTaskViewmodel extends FutureViewModel {
   final formKey1 = GlobalKey<FormState>();
   final formKey2 = GlobalKey<FormState>();
   final formKey3 = GlobalKey<FormState>();
+  bool? isDetailhistory = false;
   BuildContext? context;
   TestingOrder? listTaskList;
-  String? latlang;
   Position? userPosition;
+  String? latlang;
+  String? longitude;
+  String? latitude;
   LatLng? currentLocation;
   ApiService apiService = new ApiService();
   LocalStorageService localService = new LocalStorageService();
-  DetailTaskViewmodel({this.context, this.listTaskList});
+  DetailTaskViewmodel({this.context, this.listTaskList, this.isDetailhistory});
 
   // TASK INFO
   String? address;
@@ -76,6 +79,7 @@ class DetailTaskViewmodel extends FutureViewModel {
 
   List<File> imageFiles = [];
   List<String> imageString = [];
+  List<String> imageOldString = [];
 
   // Logger
   var logger = Logger(
@@ -90,19 +94,17 @@ class DetailTaskViewmodel extends FutureViewModel {
   );
 
   Future<void> pickImage() async {
-    try {
-      XFile? pickedFile = await ImagePicker().pickImage(
-        source: ImageSource.gallery,
-      );
-      // print("image picked : ${pickedFile!.path}");
-      if (pickedFile != null) {
-        File file = File(pickedFile.path);
-        imageFiles.add(file);
-        imageString.add(p.basename(file.path));
+    final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      // Pastikan file baru tidak sudah ada di list
+      final newFile = File(pickedFile.path);
+      bool alreadyExists = imageFiles.any((f) => f.path == newFile.path);
+
+      if (!alreadyExists) {
+        imageFiles.add(newFile);
         notifyListeners();
       }
-    } catch (e) {
-      // print("error image : ${e}");
     }
   }
 
@@ -112,17 +114,42 @@ class DetailTaskViewmodel extends FutureViewModel {
       final cekTokens = await apiService.cekToken();
       if (cekTokens) {
         final responseSampleLoc = await apiService.getSampleLoc();
-        final responseEquipment = await apiService.getEquipment();
         final responseUnitList = await apiService.getUnitList();
-        final responseParameter = await apiService.getParameter(
-            '${listTaskList?.reqnumber}', '${listTaskList?.sampleno}');
-
-        print(
-            "responseParameter : ${jsonEncode(responseParameter?.data?.data)}");
+        final responseParameterAndEquipment = await apiService.getParameterAndEquipment(
+            '${listTaskList?.ptsnumber}', '${listTaskList?.sampleno}');
+        
+        // Convert List<dynamic> to List<TestingOrderParameter>
+        final dataPars = responseParameterAndEquipment?.data['data']['testing_order_parameters'];
+        if (dataPars is List) {
+          listParameter = dataPars
+              .map((e) => TestingOrderParameter.fromJson(e as Map<String, dynamic>))
+              .toList();
+        } else {
+          listParameter = [];
+        }
+        
+        print("listParameter length: ${listParameter.length}");
+        if (listParameter.isNotEmpty) {
+          print("First parameter: ${listParameter.first.parcode}");
+        }
+        
+        // Convert List<dynamic> to List<Equipment>
+        final dataEquipments = responseParameterAndEquipment?.data['data']['testing_order_equipment'];
+        if (dataEquipments is List) {
+          equipmentlist = dataEquipments
+              .map((e) => Equipment.fromJson(e as Map<String, dynamic>))
+              .toList();
+        } else {
+          equipmentlist = [];
+        }
+        
+        print("equipmentlist length: ${equipmentlist?.length ?? 0}");
+        if (equipmentlist != null && equipmentlist!.isNotEmpty) {
+          print("First equipment: ${equipmentlist!.first.equipmentcode}");
+        }
+        
         sampleLocationList = responseSampleLoc?.data?.data;
-        equipmentlist = responseEquipment?.data?.data;
         unitList = responseUnitList?.data?.data;
-        listParameter = responseParameter!.data!.data;
         locationController!.text = listTaskList!.geotag!;
         latlang = listTaskList!.geotag!;
 
@@ -258,12 +285,15 @@ class DetailTaskViewmodel extends FutureViewModel {
 
     currentLocation = LatLng(userPosition!.latitude, userPosition!.longitude);
     latlang = '${currentLocation!.latitude},${currentLocation!.longitude}';
+    latitude = '${currentLocation!.latitude}';
+    longitude = '${currentLocation!.longitude}';
     print("latlang : ${latlang}");
     locationController?.text = latlang!;
     List<Placemark> placemarks = await placemarkFromCoordinates(
       currentLocation!.latitude,
       currentLocation!.longitude,
     );
+
     print("placemarks : ${placemarks}");
     Placemark placemark = placemarks[0];
 
@@ -295,7 +325,7 @@ class DetailTaskViewmodel extends FutureViewModel {
           ScaffoldMessenger.of(context!).showSnackBar(
             SnackBar(
               duration: Duration(seconds: 2),
-              content: Text("You are out of location range"),
+              content: Text(AppLocalizations.of(context!)?.outOfLocationRange ?? "You are out of location range"),
               backgroundColor: Colors.red,
             ),
           );
@@ -308,7 +338,7 @@ class DetailTaskViewmodel extends FutureViewModel {
       ScaffoldMessenger.of(context!).showSnackBar(
         SnackBar(
           duration: Duration(seconds: 2),
-          content: Text("Failed Confirm: ${e}"),
+          content: Text("${AppLocalizations.of(context!)?.failedConfirm ?? "Failed to confirm"}: ${e}"),
           backgroundColor: Colors.red,
         ),
       );
@@ -330,6 +360,30 @@ class DetailTaskViewmodel extends FutureViewModel {
     return 'data:$mimeType;base64,$base64String';
   }
 
+  Future<String> convertImageUrlToBase64(String imageUrl) async {
+    try {
+      final response = await http.get(Uri.parse(imageUrl));
+
+      if (response.statusCode == 200) {
+        // Ambil byte data dari response
+        final bytes = response.bodyBytes;
+
+        // Ubah ke Base64
+        String base64Image = base64Encode(bytes);
+
+        // Jika mau tambahkan prefix MIME type-nya:
+        String base64WithPrefix = "data:image/jpeg;base64,$base64Image";
+
+        return base64WithPrefix;
+      } else {
+        throw Exception('Gagal mengambil gambar: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error convert image url to base64: $e');
+      return '';
+    }
+  }
+
   postDataTakingSample() async {
     try {
       final getDataUser = await localService.getUserData();
@@ -342,7 +396,11 @@ class DetailTaskViewmodel extends FutureViewModel {
 
       // 🔹 Gabungkan dengan URL lama jika ada
       if (imageString.isNotEmpty) {
-        imageBase64List.insertAll(0, imageString);
+        for (var file in imageString) {
+          String base64Str = await convertImageUrlToBase64(file);
+          imageBase64List.add(base64Str);
+        }
+
       }
 
       final dataJson = SampleDetail(
@@ -355,6 +413,8 @@ class DetailTaskViewmodel extends FutureViewModel {
         samplename: "${listTaskList!.sampleName}",
         sampleno: "${listTaskList!.sampleno}",
         geoTag: "${latlang}",
+          longtitude : '${longitude}',
+          latitude : '${latitude}',
         address: "${listTaskList!.address}",
         weather: "${weatherController?.text}",
         winddirection: "${windDIrectionController?.text}",
@@ -365,6 +425,7 @@ class DetailTaskViewmodel extends FutureViewModel {
         usercreated: "${getDataUser?.data?.username}",
         takingSampleParameters: listTakingSampleParameter,
         takingSampleCI: listTakingSampleCI,
+        photoOld : imageOldString,
         uploadFotoSample: imageBase64List
       );
 
@@ -404,7 +465,7 @@ class DetailTaskViewmodel extends FutureViewModel {
       ScaffoldMessenger.of(context!).showSnackBar(
         SnackBar(
           duration: Duration(seconds: 2),
-          content: Text("Failed Post Data"),
+          content: Text(AppLocalizations.of(context!)?.failedPostData ?? "Failed to post data"),
           backgroundColor: Colors.red,
         ),
       );
@@ -452,18 +513,20 @@ class DetailTaskViewmodel extends FutureViewModel {
         final response =
         await apiService.getOneTaskList(listTaskList?.tsnumber);
 
-        descriptionController!.text = response['description'];
+        descriptionController!.text = response['description'] ?? '';
         weatherController!.text = response['weather'];
         windDIrectionController!.text = response['winddirection'];
         temperaturController!.text = response['temperatur'];
-
+        print("response get one : ${response}");
         // ✅ Ambil list URL gambar dari API
         imageString.clear();
-        if (response['upload_foto_sample'] != null) {
+        if (response['documents'] != null) {
           // Kalau response berisi list gambar (misal array)
-          for (var url in response['upload_foto_sample']) {
-            imageString.add(url.toString());
+          for (var url in response['documents']) {
+            imageString.add(url['pathname'].toString());
+            imageOldString.add(url['pathname'].toString());
           }
+          print("imageString length : ${imageString.length} , ${imageString}");
         }
 
         for (var i in response['taking_sample_parameters']) {

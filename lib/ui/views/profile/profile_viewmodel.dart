@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:http/http.dart';
 import 'package:salims_apps_new/core/services/api_services.dart';
 import 'package:salims_apps_new/core/services/local_Storage_Services.dart';
+import 'package:salims_apps_new/core/utils/app_localizations.dart';
 import 'package:salims_apps_new/ui/views/splash_screen/splash_screen_view.dart';
 import 'package:stacked/stacked.dart';
 
@@ -38,7 +39,7 @@ class ProfileViewModel extends FutureViewModel {
         ScaffoldMessenger.of(ctx!).showSnackBar(
           SnackBar(
             duration: Duration(seconds: 2),
-            content: Text("${response['msg']} , Please login again !"),
+            content: Text("${response['msg']} , ${AppLocalizations.of(ctx!)?.pleaseLoginAgain ?? "Please login again"}!"),
             backgroundColor: Colors.green,
           ),
         );
@@ -64,7 +65,7 @@ class ProfileViewModel extends FutureViewModel {
       ScaffoldMessenger.of(ctx!).showSnackBar(
         SnackBar(
           duration: Duration(seconds: 2),
-          content: Text("Error change password :${e}"),
+          content: Text("${AppLocalizations.of(ctx!)?.errorChangePassword ?? "Error changing password"}: ${e}"),
           backgroundColor: Colors.red,
         ),
       );

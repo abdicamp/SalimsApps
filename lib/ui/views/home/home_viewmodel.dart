@@ -25,7 +25,7 @@ class HomeViewmodel extends FutureViewModel {
 
   getUserData() async {
     try {
-      await Future.delayed(Duration(seconds: 1));
+      // Remove unnecessary delay for faster loading
       final getData = await _storage.getUserData();
       username = getData?.data?.username;
 
@@ -73,24 +73,31 @@ class HomeViewmodel extends FutureViewModel {
 
   runAllFunction() async {
     setBusy(true);
+    notifyListeners(); // Immediately notify to show loading
     try {
       final cekToken = await apiService.cekToken();
 
       if (cekToken) {
-        await getDataTask();
-        await getMonthlyReport();
-        await getUserData();
+        // Run getUserData in parallel with getDataTask for faster loading
+        await Future.wait<void>([
+          getDataTask(),
+          getUserData(),
+        ]);
+        // getMonthlyReport depends on getDataTask, so run it after
+        getMonthlyReport();
         setBusy(false);
+        notifyListeners();
       } else {
         await _storage.clear();
+        setBusy(false);
+        notifyListeners();
         Navigator.of(context!).pushReplacement(
             new MaterialPageRoute(builder: (context) => SplashScreenView()));
-
-        setBusy(false);
       }
-      notifyListeners();
     } catch (e) {
       setBusy(false);
+      notifyListeners();
+      print("Error in runAllFunction: $e");
     }
   }
 
@@ -117,7 +124,7 @@ class HomeViewmodel extends FutureViewModel {
         await apiService.getTaskList('${fromDateStr}-${toDateStr}');
     print("fromDateStr : ${fromDateStr} , toDateStr : ${toDateStr}");
     final responseTaskListHistory =
-        await apiService.getTaskListHistory(fromDateStr, toDateStr);
+        await apiService.getTaskListHistory('${fromDateStr}-${toDateStr}');
 
     totalListTask = responseTaskList!.data!.data.length;
     totalListTaskHistory = responseTaskListHistory!.data!.data.length;
@@ -161,7 +168,7 @@ class HomeViewmodel extends FutureViewModel {
 
       double minDistance = double.infinity;
       TestingOrder? nearestPlace;
-
+      print("listTask : ${listTask}");
       for (var place in listTask) {
         String? latlong = place.geotag;
         var latLngSplit = latlong?.split(',');
@@ -172,8 +179,8 @@ class HomeViewmodel extends FutureViewModel {
         double distance = Geolocator.distanceBetween(
           current.latitude,
           current.longitude,
-          lat!,
-          lng!,
+          lat,
+          lng,
         );
 
         if (distance < minDistance) {
@@ -193,6 +200,7 @@ class HomeViewmodel extends FutureViewModel {
 
   @override
   Future futureToRun() async {
+    setBusy(true);
     await runAllFunction();
   }
 }

@@ -4,6 +4,8 @@ import 'package:salims_apps_new/core/models/task_list_models.dart';
 import 'package:salims_apps_new/ui/views/detail_task/detail_task_view.dart';
 import 'package:salims_apps_new/ui/views/task_list/task_list_viewmodel.dart';
 
+import 'colors.dart';
+
 class TaskItem extends StatelessWidget {
   TaskListViewmodel? vm;
   final TestingOrder? listData;
@@ -49,6 +51,7 @@ class TaskItem extends StatelessWidget {
                                   MaterialPageRoute(
                                     builder: (context) => DetailTaskView(
                                       listData: listData,
+                                      isDetailhistory: false,
                                     ),
                                   ),
                                 );
@@ -61,7 +64,14 @@ class TaskItem extends StatelessWidget {
                                 Container(
                                   width: 60,
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFF42A5F5),
+                                    gradient: const LinearGradient(
+                                      colors: [
+                                        AppColors.skyBlue,
+                                        AppColors.limeLight,
+                                      ],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    ),
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                   padding:
@@ -173,7 +183,7 @@ class TaskItem extends StatelessWidget {
 
                                     child: ElevatedButton(
                                       style: ElevatedButton.styleFrom(
-                                        backgroundColor: Colors.blue.shade800,
+                                        backgroundColor: Colors.green,
                                         padding: const EdgeInsets.symmetric(
                                             vertical: 6, horizontal: 10),
                                         shape: RoundedRectangleBorder(
@@ -188,6 +198,8 @@ class TaskItem extends StatelessWidget {
                                             builder: (context) =>
                                                 DetailTaskView(
                                               listData: listData,
+                                                  isDetailhistory: false,
+
                                             ),
                                           ),
                                         );

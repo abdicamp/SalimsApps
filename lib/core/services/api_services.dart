@@ -85,20 +85,17 @@ class ApiService {
   Future<ApiResponse<TaskListModels>?> getTaskList(String? filterDate) async {
     try {
       final getData = await _storage.getUserData();
-      print(
-          "filterDate : ${filterDate == '' ? '${DateFormat('yyyy-MM-dd').format(DateTime.now())}-${DateFormat('yyyy-MM-dd').format(DateTime.now())}' : filterDate}");
-      print(
-          "url : ${baseUrl}/transaction/taking-sample/testing-order/${getData?.data?.branchcode}/${filterDate == '' ? '${DateFormat('yyyy-MM-dd').format(DateTime.now())}-${DateFormat('yyyy-MM-dd').format(DateTime.now())}' : filterDate}");
+      print("${baseUrl}/transaction/taking-sample/testing-order?branchcode=${getData?.data?.branchcode}&labour_id=${getData?.data?.labour_id}&rangeDate=${filterDate == '' ? '${DateFormat('yyyy-MM-dd').format(DateTime.now())}-${DateFormat('yyyy-MM-dd').format(DateTime.now())}' : filterDate}");
       final response = await http.get(
         Uri.parse(
-            "${baseUrl}/transaction/taking-sample/testing-order/${getData?.data?.branchcode}/${filterDate == '' ? '${DateFormat('yyyy-MM-dd').format(DateTime.now())}-${DateFormat('yyyy-MM-dd').format(DateTime.now())}' : filterDate}"),
+            "${baseUrl}/transaction/taking-sample/testing-order?branchcode=${getData?.data?.branchcode}&labour_id=${getData?.data?.labour_id}&rangeDate=${filterDate == '' ? '${DateFormat('yyyy-MM-dd').format(DateTime.now())}-${DateFormat('yyyy-MM-dd').format(DateTime.now())}' : filterDate}"),
         headers: {
           "Content-Type": "application/json",
           "Authorization": "Bearer ${getData?.accessToken}",
         },
       );
 
-      print("sampleResponse : ${jsonDecode(response.body)}");
+      print("sampleResponse getTaskList : ${jsonDecode(response.body)}");
       print("status code : ${response.statusCode}");
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -114,19 +111,15 @@ class ApiService {
   }
 
   Future<ApiResponse<TestingOrderHistoryModel>?> getTaskListHistory(
-    String? fromDate,
-    String? toDate,
+      String? filterDate
   ) async {
     try {
       final getData = await _storage.getUserData();
 
       // Bangun URL dengan query parameters (karena GET tidak bisa body)
       final uri = Uri.parse(
-        "${baseUrl}/transaction/taking-sample/testing-order-sampling-date/${getData?.data?.branchcode}",
-      ).replace(queryParameters: {
-        "startDate": fromDate ?? "",
-        "endDate": toDate ?? "",
-      });
+        "${baseUrl}/transaction/taking-sample/testing-order-sampling-date?branchcode=${getData?.data?.branchcode}&labour_id=${getData?.data?.labour_id}}",
+      );
 
       final response = await http.get(
         uri,
@@ -245,24 +238,25 @@ class ApiService {
     }
   }
 
-  Future<ApiResponse<ParameterModels>?> getParameter(
-      String? reqNumber, String? sampleNo) async {
+  Future<ApiResponse<dynamic>?> getParameterAndEquipment(
+      String? ptsNumber, String? sampleNo) async {
     try {
       final getData = await _storage.getUserData();
       final response = await http.get(
         Uri.parse(
-            "$baseUrl/transaction/taking-sample/testing-order-parameters/${getData?.data?.branchcode}?reqnumber=${reqNumber}&sampleno=${sampleNo}"),
+            "$baseUrl/transaction/taking-sample/testing-order-parameter?branchcode=${getData?.data?.branchcode}&pts_number=${ptsNumber}&sampleno=${sampleNo}"),
         headers: {
           "Content-Type": "application/json",
           "Authorization": "Bearer ${getData?.accessToken}",
         },
       );
 
+
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        final parameterResponse = ParameterModels.fromJson(data);
 
-        return ApiResponse.success(parameterResponse);
+
+        return ApiResponse.success(data);
       } else {
         return ApiResponse.error("Failed get data: ${response.statusCode}");
       }
@@ -285,13 +279,16 @@ class ApiService {
 
         final data = jsonDecode(response.body);
 
-        if (response.statusCode == 201) {
+        print("data response post taking : ${data}");
+
+        if (response.statusCode == 201 || response.statusCode == 200) {
           return ApiResponse.success(data);
         } else {
           return ApiResponse.error(
               'Error ${data['code']} : ${data['message']}');
         }
-      } else {
+      }
+      else {
         final response = await http.put(
             Uri.parse("$baseUrl/transaction/taking-sample/update"),
             headers: {
@@ -300,6 +297,7 @@ class ApiService {
             },
             body: jsonEncode(sample));
 
+        logger.w("post failed: ${response.body}");
         final data = jsonDecode(response.body);
         print("data update : ${data}");
         if (response.statusCode == 200) {
@@ -310,6 +308,7 @@ class ApiService {
         }
       }
     } catch (e) {
+      print("error catch : ${e}");
       return ApiResponse.error('Error : ${e}');
     }
   }

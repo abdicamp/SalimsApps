@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:salims_apps_new/core/utils/app_localizations.dart';
 import 'package:salims_apps_new/core/utils/card_task_container.dart';
 import 'package:salims_apps_new/core/utils/card_task_info.dart';
 import 'package:salims_apps_new/core/utils/card_task_parameter.dart';
@@ -12,8 +13,9 @@ import 'package:stacked/stacked.dart';
 import '../../../core/models/task_list_models.dart';
 
 class DetailTaskView extends StatefulWidget {
+  bool? isDetailhistory;
   TestingOrder? listData;
-  DetailTaskView({super.key, this.listData});
+  DetailTaskView({super.key, this.listData, this.isDetailhistory});
 
   @override
   State<DetailTaskView> createState() => _DetailTaskViewState();
@@ -25,7 +27,13 @@ class _DetailTaskViewState extends State<DetailTaskView>
 
   int selectedIndex = 0;
 
-  final List<String> tabs = ['Task Info', 'Container Info', 'Parameter'];
+  List<String> getTabs(BuildContext context) {
+    return [
+      AppLocalizations.of(context)?.taskInfo ?? 'Task Info',
+      AppLocalizations.of(context)?.containerInfo ?? 'Container Info',
+      AppLocalizations.of(context)?.parameter ?? 'Parameter',
+    ];
+  }
 
   @override
   void initState() {
@@ -43,7 +51,7 @@ class _DetailTaskViewState extends State<DetailTaskView>
   Widget build(BuildContext context) {
     return ViewModelBuilder.reactive(
       viewModelBuilder: () =>
-          DetailTaskViewmodel(context: context, listTaskList: widget.listData),
+          DetailTaskViewmodel(context: context, listTaskList: widget.listData , isDetailhistory: widget.isDetailhistory),
       builder: (context, vm, child) {
         return GestureDetector(
           onTap: () {
@@ -74,7 +82,7 @@ class _DetailTaskViewState extends State<DetailTaskView>
                               ),
                               child: Center(
                                 child: Text(
-                                  "Detail Task",
+                                  AppLocalizations.of(context)?.detailTask ?? "Detail Task",
                                   style: GoogleFonts.lato(
                                     color: Colors.white,
                                     fontSize: 22,
@@ -115,7 +123,7 @@ class _DetailTaskViewState extends State<DetailTaskView>
                             ),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: List.generate(tabs.length, (index) {
+                              children: List.generate(getTabs(context).length, (index) {
                                 bool isSelected = selectedIndex == index;
                                 return Expanded(
                                   child: GestureDetector(
@@ -143,7 +151,7 @@ class _DetailTaskViewState extends State<DetailTaskView>
                                       ),
                                       child: Center(
                                         child: Text(
-                                          tabs[index],
+                                          getTabs(context)[index],
                                           style: TextStyle(
                                             color: isSelected
                                                 ? Colors.black
@@ -164,9 +172,9 @@ class _DetailTaskViewState extends State<DetailTaskView>
                             child: IndexedStack(
                               index: selectedIndex,
                               children: [
-                                CardTaskInfo(vm: vm),
-                                CardTaskContainer(vm: vm),
-                                CardTaskParameter(vm: vm),
+                                CardTaskInfo(vm: vm, isDetailhistory: widget.isDetailhistory,),
+                                CardTaskContainer(vm: vm, isDetailhistory: widget.isDetailhistory,),
+                                CardTaskParameter(vm: vm, isDetailhistory: widget.isDetailhistory,),
                               ],
                             ),
                           ),
@@ -175,7 +183,7 @@ class _DetailTaskViewState extends State<DetailTaskView>
                     ),
                   ],
                 ),
-                bottomNavigationBar: SafeArea(
+                bottomNavigationBar: widget.isDetailhistory == true ? Stack() : SafeArea(
                   child: Padding(
                     padding: const EdgeInsets.all(
                       16.0,
@@ -218,7 +226,7 @@ class _DetailTaskViewState extends State<DetailTaskView>
                                           SnackBar(
                                             duration: Duration(seconds: 2),
                                             content:
-                                                Text("Form Parameter Kosong"),
+                                                Text(AppLocalizations.of(context)?.formParameterEmpty ?? "Form Parameter is Empty"),
                                             backgroundColor: Colors.red,
                                           ),
                                         );
@@ -233,7 +241,7 @@ class _DetailTaskViewState extends State<DetailTaskView>
                                         SnackBar(
                                           duration: Duration(seconds: 2),
                                           content:
-                                              Text("Form Task Info Kosong"),
+                                              Text(AppLocalizations.of(context)?.formTaskInfoEmpty ?? "Form Task Info is Empty"),
                                           backgroundColor: Colors.red,
                                         ),
                                       );
@@ -245,7 +253,7 @@ class _DetailTaskViewState extends State<DetailTaskView>
                                         SnackBar(
                                           duration: Duration(seconds: 2),
                                           content: Text(
-                                              "Form Container Info Kosong"),
+                                              AppLocalizations.of(context)?.formContainerInfoEmpty ?? "Form Container Info is Empty"),
                                           backgroundColor: Colors.red,
                                         ),
                                       );

@@ -2,11 +2,17 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:provider/provider.dart';
+import 'package:salims_apps_new/core/services/language_service.dart';
+import 'package:salims_apps_new/core/utils/app_localizations.dart';
 import 'package:salims_apps_new/firebase_options.dart';
 import 'package:salims_apps_new/state_global/state_global.dart';
 import 'package:salims_apps_new/ui/views/splash_screen/splash_screen_view.dart';
+
+import 'core/utils/colors.dart';
 
 // 🔔 Global instance untuk notifikasi
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
@@ -49,7 +55,12 @@ void listenFCM() {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await initializeDateFormatting('id_ID', null);
+  try {
+    await initializeDateFormatting('id_ID', null);
+  } catch (e) {
+    // If date formatting initialization fails, continue anyway
+    print('Warning: Could not initialize date formatting: $e');
+  }
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   // ✅ Handler pesan background
@@ -64,6 +75,7 @@ void main() async {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => GlobalLoadingState()),
+        ChangeNotifierProvider(create: (_) => LanguageService()),
       ],
       child: const MyApp(),
     ),
@@ -112,7 +124,6 @@ Future<void> initNotifications() async {
   FirebaseMessaging.onMessage.listen((RemoteMessage message) {
     RemoteNotification? notification = message.notification;
     AndroidNotification? android = message.notification?.android;
-    AppleNotification? apple = message.notification?.apple;
 
     if (notification != null) {
       flutterLocalNotificationsPlugin.show(
@@ -145,20 +156,19 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  String? _token;
-
   Future<void> _initializeMessaging() async {
     try {
-      // Request permission first
-      final settings = await FirebaseMessaging.instance.requestPermission(
-        alert: true,
-        badge: true,
-        sound: true,
-        provisional: false,
-      );
-      print("🔔 Notification permission status: ${settings.authorizationStatus}");
-
+      // Request permission first (hanya untuk iOS, Android tidak perlu)
       if (DefaultFirebaseOptions.currentPlatform == DefaultFirebaseOptions.ios) {
+        final settings = await FirebaseMessaging.instance.requestPermission(
+          alert: true,
+          badge: true,
+          sound: true,
+          provisional: false,
+        );
+        
+        print("🔔 Notification permission status: ${settings.authorizationStatus}");
+
         // For iOS, wait for APNS token first
         final apnsToken = await FirebaseMessaging.instance.getAPNSToken();
         print("📱 APNS Token: $apnsToken");
@@ -169,16 +179,53 @@ class _MyAppState extends State<MyApp> {
         }
       }
 
-      // Get FCM token
-      final token = await FirebaseMessaging.instance.getToken();
-      print("📱 FCM Token: $token");
-      if (mounted) {
-        setState(() {
-          _token = token;
-        });
+      // Get FCM token dengan retry untuk Android
+      String? token;
+      int retryCount = 0;
+      const maxRetries = 3;
+      
+      while (token == null && retryCount < maxRetries) {
+        try {
+          token = await FirebaseMessaging.instance.getToken();
+          if (token != null) {
+            print("📱 FCM Token: $token");
+            // Token bisa digunakan untuk dikirim ke server jika diperlukan
+            // Contoh: await sendTokenToServer(token);
+            break;
+          }
+        } catch (e) {
+          retryCount++;
+          print("⚠️ Error getting FCM token (attempt $retryCount/$maxRetries): $e");
+          
+          // Jika error SERVICE_NOT_AVAILABLE, mungkin Google Play Services tidak tersedia
+          if (e.toString().contains('SERVICE_NOT_AVAILABLE')) {
+            print("⚠️ Google Play Services mungkin tidak tersedia atau tidak ter-update.");
+            print("⚠️ Pastikan device memiliki Google Play Services yang ter-update.");
+            
+            // Tidak retry lagi untuk SERVICE_NOT_AVAILABLE
+            break;
+          }
+          
+          if (retryCount < maxRetries) {
+            await Future.delayed(const Duration(seconds: 2));
+          }
+        }
       }
-    } catch (e) {
+      
+      if (token == null) {
+        print("⚠️ FCM Token tidak dapat diperoleh setelah $maxRetries attempts");
+      }
+    } catch (e, stackTrace) {
       print("❌ Error initializing messaging: $e");
+      print("❌ Stack trace: $stackTrace");
+      
+      // Log lebih detail untuk debugging
+      if (e.toString().contains('SERVICE_NOT_AVAILABLE')) {
+        print("⚠️ SERVICE_NOT_AVAILABLE error biasanya terjadi karena:");
+        print("   1. Google Play Services tidak tersedia atau tidak ter-update");
+        print("   2. Network connectivity issues");
+        print("   3. Firebase project configuration issues");
+      }
     }
   }
 
@@ -195,9 +242,38 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: SplashScreenView(),
+    return Consumer<LanguageService>(
+      builder: (context, languageService, child) {
+        return MaterialApp(
+          debugShowCheckedModeBanner: false,
+          locale: languageService.currentLocale,
+          localizationsDelegates: [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: const [
+            Locale('id'), // Indonesian
+            Locale('en'), // English
+          ],
+            theme: ThemeData(
+              scaffoldBackgroundColor: AppColors.background,
+              primaryColor: AppColors.skyBlue,
+              textTheme: GoogleFonts.poppinsTextTheme().apply(
+                bodyColor: AppColors.textPrimary,
+                displayColor: AppColors.textPrimary,
+              ),
+              colorScheme: ColorScheme.fromSeed(
+                seedColor: AppColors.skyBlue,
+                primary: AppColors.skyBlue,
+                secondary: AppColors.lime,
+                background: AppColors.background,
+              ),
+            ),
+          home: SplashScreenView(),
+        );
+      },
     );
   }
 }
