@@ -8,8 +8,9 @@ import 'package:salims_apps_new/core/utils/search_dropdown.dart';
 import 'package:salims_apps_new/ui/views/detail_task/detail_task_viewmodel.dart';
 
 class CardTaskParameter extends StatefulWidget {
+  bool? isDetailhistory;
   DetailTaskViewmodel? vm;
-  CardTaskParameter({super.key, this.vm});
+  CardTaskParameter({super.key, this.vm, this.isDetailhistory});
 
   @override
   State<CardTaskParameter> createState() => _CardTaskParameterState();
@@ -40,7 +41,13 @@ class _CardTaskParameterState extends State<CardTaskParameter> {
                       color: Colors.white,
                       child: Padding(
                         padding: const EdgeInsets.all(14),
-                        child: Column(
+                        child:
+
+                       widget.isDetailhistory == true ? DataTableParView(
+                         listTakingSampleParameter:
+                         widget.vm?.listTakingSampleParameter,
+                         vm: widget.vm!,
+                       ) :  Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(

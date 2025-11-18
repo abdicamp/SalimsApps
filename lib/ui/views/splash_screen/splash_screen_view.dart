@@ -22,7 +22,7 @@ class _SplashScreenViewState extends State<SplashScreenView> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Image.asset("assets/images/salims.png"),
+                Image.asset("assets/images/logo.png", height: 250,),
                 SizedBox(height: 50),
                 loadingSpinBlue,
               ],

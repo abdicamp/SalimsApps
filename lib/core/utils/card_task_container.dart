@@ -7,8 +7,9 @@ import 'package:salims_apps_new/core/utils/search_dropdown.dart';
 import 'package:salims_apps_new/ui/views/detail_task/detail_task_viewmodel.dart';
 
 class CardTaskContainer extends StatefulWidget {
+  bool? isDetailhistory;
   DetailTaskViewmodel? vm;
-  CardTaskContainer({super.key, this.vm});
+  CardTaskContainer({super.key, this.vm, this.isDetailhistory});
 
   @override
   State<CardTaskContainer> createState() => _CardTaskContainerState();
@@ -39,7 +40,13 @@ class _CardTaskContainerState extends State<CardTaskContainer> {
                       color: Colors.white,
                       child: Padding(
                         padding: const EdgeInsets.all(14),
-                        child: Column(
+                        child:
+
+                       widget.isDetailhistory == true ? DataTableCIView(
+                         listTakingSample:
+                         widget.vm?.listTakingSampleCI,
+                         vm: widget.vm!,
+                       ) : Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
@@ -66,7 +73,7 @@ class _CardTaskContainerState extends State<CardTaskContainer> {
                                 child: Padding(
                                   padding: const EdgeInsets.all(8.0),
                                   child: CustomSearchableDropDown(
-                                    isReadOnly: false,
+                                    isReadOnly: widget.isDetailhistory!,
                                     items: widget.vm!.equipmentlist ?? [],
                                     label: 'Search Equipment',
                                     padding: EdgeInsets.zero,
@@ -99,6 +106,7 @@ class _CardTaskContainerState extends State<CardTaskContainer> {
                                 Expanded(
                                   flex: 2,
                                   child: CustomTextField(
+                                    readOnly: widget.isDetailhistory!,
                                     validator: (value) {
                                       if (value == null || value.isEmpty) {
                                         return 'Please enter some text';
@@ -136,6 +144,7 @@ class _CardTaskContainerState extends State<CardTaskContainer> {
                                         child: Padding(
                                           padding: const EdgeInsets.all(8.0),
                                           child: DropdownButton<String>(
+
                                             value: widget.vm!.conSelect?.code,
                                             isExpanded: true,
                                             underline: SizedBox(),

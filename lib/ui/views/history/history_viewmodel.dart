@@ -31,8 +31,7 @@ class HistoryViewmodel extends FutureViewModel {
       selectedRange = newRange;
       tanggalCtrl!.text =
           '${_formatDate(selectedRange!.start)}-${_formatDate(selectedRange!.end)}';
-      getDataTaskHistory(
-          _formatDate(selectedRange!.start), _formatDate(selectedRange!.end));
+
       notifyListeners();
     }
   }
@@ -62,10 +61,10 @@ class HistoryViewmodel extends FutureViewModel {
     notifyListeners();
   }
 
-  getDataTaskHistory(String? fromDate, String? toDate) async {
+  getDataTaskHistory() async {
     setBusy(true);
     try {
-      final response = await apiService.getTaskListHistory(fromDate, toDate);
+      final response = await apiService.getTaskListHistory(tanggalCtrl?.text ?? '${DateFormat('yyyy-MM-dd').format(DateTime.now())}-${DateFormat('yyyy-MM-dd').format(DateTime.now())}');
       listTaskHistory = List.from(response!.data!.data ?? []);
       print("listTaskHistory : ${jsonEncode(listTaskHistory)}");
       print("listTaskHistory length : ${listTaskHistory.length}");
@@ -80,6 +79,6 @@ class HistoryViewmodel extends FutureViewModel {
 
   @override
   Future futureToRun() async {
-    await getDataTaskHistory('', '');
+    await getDataTaskHistory();
   }
 }

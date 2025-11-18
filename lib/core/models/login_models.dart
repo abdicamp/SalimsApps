@@ -65,6 +65,7 @@ class UserData {
   final int? islogin;
   final String? userip;
   final String? labourcode;
+  final int? labour_id;
   final String? usercreated;
   final String? datecreated;
   final String? timecreated;
@@ -81,6 +82,7 @@ class UserData {
     this.delauthority,
     this.finauthority,
     this.prnauthority,
+    this.labour_id,
     this.prsauthority,
     this.branchauthority,
     this.warehouseauthority,
@@ -119,6 +121,7 @@ class UserData {
       islogin: json['islogin'],
       userip: json['userip'],
       labourcode: json['labourcode'],
+      labour_id: json['labour_id'],
       usercreated: json['usercreated'],
       datecreated: json['datecreated'],
       timecreated: json['timecreated'],
@@ -139,6 +142,7 @@ class UserData {
       "finauthority": finauthority,
       "prnauthority": prnauthority,
       "prsauthority": prsauthority,
+      "labour_id": labour_id,
       "branchauthority": branchauthority,
       "warehouseauthority": warehouseauthority,
       "departmentauthority": departmentauthority,

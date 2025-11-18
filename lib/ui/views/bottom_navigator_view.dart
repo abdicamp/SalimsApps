@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:salims_apps_new/core/utils/app_localizations.dart';
 import 'package:salims_apps_new/core/utils/colors.dart';
 import 'package:salims_apps_new/core/utils/style.dart';
 import 'package:salims_apps_new/state_global/loading_overlay.dart';
@@ -42,8 +43,8 @@ class _BottomNavigatorViewState extends State<BottomNavigatorView> {
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    const Color(0xFFF7F4FB), // lebih terang di atas
-                    const Color(0xFFF0E6FA), // ungu muda di bawah
+                    AppColors.skyBlue,
+                    AppColors.limeLight,
                   ],
                 ),
                 borderRadius: const BorderRadius.only(
@@ -72,47 +73,49 @@ class _BottomNavigatorViewState extends State<BottomNavigatorView> {
                   currentIndex: _selectedIndex,
                   onTap: (value) => setState(() => _selectedIndex = value),
                   type: BottomNavigationBarType.fixed,
-                  selectedLabelStyle: const TextStyle(color: AppColors.primary),
+                  selectedLabelStyle: const TextStyle(color: AppColors.green),
                   selectedIconTheme: const IconThemeData(
-                    color: AppColors.primary,
+                    color: AppColors.green,
                   ),
                   elevation: 0,
+
                   items: [
                     BottomNavigationBarItem(
                       icon: Icon(
                         Icons.home_outlined,
                         color: _selectedIndex == 0
-                            ? AppColors.primary
+                            ? AppColors.green
                             : AppColors.grey,
                       ),
-                      label: 'Home',
+                      label: AppLocalizations.of(context)?.home ?? 'Home',
+
                     ),
                     BottomNavigationBarItem(
                       icon: Icon(
                         Icons.art_track_sharp,
                         color: _selectedIndex == 1
-                            ? AppColors.primary
+                            ? AppColors.green
                             : AppColors.grey,
                       ),
-                      label: 'Taking Sample',
+                      label: AppLocalizations.of(context)?.takingSample ?? 'Taking Sample',
                     ),
                     BottomNavigationBarItem(
                       icon: Icon(
                         Icons.history,
                         color: _selectedIndex == 2
-                            ? AppColors.primary
+                            ? AppColors.green
                             : AppColors.grey,
                       ),
-                      label: 'History',
+                      label: AppLocalizations.of(context)?.history ?? 'History',
                     ),
                     BottomNavigationBarItem(
                       icon: Icon(
                         Icons.people_alt_sharp,
                         color: _selectedIndex == 3
-                            ? AppColors.primary
+                            ? AppColors.green
                             : AppColors.grey,
                       ),
-                      label: 'Profile',
+                      label: AppLocalizations.of(context)?.profile ?? 'Profile',
                     ),
                   ],
                 ),
