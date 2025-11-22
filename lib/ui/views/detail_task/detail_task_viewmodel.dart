@@ -117,7 +117,7 @@ class DetailTaskViewmodel extends FutureViewModel {
         final responseUnitList = await apiService.getUnitList();
         final responseParameterAndEquipment = await apiService.getParameterAndEquipment(
             '${listTaskList?.ptsnumber}', '${listTaskList?.sampleno}');
-        
+        print("responseParameterAndEquipment : ${responseParameterAndEquipment}");
         // Convert List<dynamic> to List<TestingOrderParameter>
         final dataPars = responseParameterAndEquipment?.data['data']['testing_order_parameters'];
         if (dataPars is List) {
@@ -423,6 +423,7 @@ class DetailTaskViewmodel extends FutureViewModel {
         samplecode: "${listTaskList!.sampleCode}",
         ptsnumber: "${listTaskList!.ptsnumber}",
         usercreated: "${getDataUser?.data?.username}",
+          samplingby : "${getDataUser?.data?.username}",
         takingSampleParameters: listTakingSampleParameter,
         takingSampleCI: listTakingSampleCI,
         photoOld : imageOldString,

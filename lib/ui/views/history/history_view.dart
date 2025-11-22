@@ -91,12 +91,10 @@ class _HistoryViewState extends State<HistoryView> {
                                 suffixIcon: IconButton(
                                     onPressed: () {
                                       setState(() {
-                                        vm.tanggalCtrl!.text = "";
-                                        vm.getDataTaskHistory();
-
+                                        vm.getDate();
                                       });
                                     },
-                                    icon: Icon(Icons.refresh_sharp)),
+                                    icon: Icon(Icons.clear)),
                                 filled: true,
                                 fillColor: Colors.grey.shade100,
                                 contentPadding: const EdgeInsets.symmetric(

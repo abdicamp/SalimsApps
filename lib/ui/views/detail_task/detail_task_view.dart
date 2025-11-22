@@ -73,8 +73,8 @@ class _DetailTaskViewState extends State<DetailTaskView>
                               decoration: BoxDecoration(
                                 gradient: const LinearGradient(
                                   colors: [
-                                    Color(0xFF1565C0), // Biru navy
-                                    Color(0xFF42A5F5), // Biru terang
+                                    Color(0xFF4CAF50),     // hijau
+                                    Color(0xFF2196F3),
                                   ],
                                   begin: Alignment.topLeft,
                                   end: Alignment.bottomRight,

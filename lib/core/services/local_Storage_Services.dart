@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class LocalStorageService {
   static const _keyAccessToken = "access_token";
   static const String _loginKey = "login_response";
+  static const String _lastCheckedNotificationId = "last_checked_notification_id";
 
   Future<void> saveLoginData(LoginResponse login) async {
     final prefs = await SharedPreferences.getInstance();
@@ -32,5 +33,15 @@ class LocalStorageService {
   Future<void> clear() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
+  }
+
+  Future<void> saveLastCheckedNotificationId(int notificationId) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_lastCheckedNotificationId, notificationId);
+  }
+
+  Future<int?> getLastCheckedNotificationId() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getInt(_lastCheckedNotificationId);
   }
 }
