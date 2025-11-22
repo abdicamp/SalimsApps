@@ -22,6 +22,7 @@ class HomeViewmodel extends FutureViewModel {
   int? radius = 0;
   double lat = 0;
   double lng = 0;
+  int newNotificationCount = 0;
 
   getUserData() async {
     try {
@@ -82,6 +83,7 @@ class HomeViewmodel extends FutureViewModel {
         await Future.wait<void>([
           getDataTask(),
           getUserData(),
+          checkNewNotifications(),
         ]);
         // getMonthlyReport depends on getDataTask, so run it after
         getMonthlyReport();
@@ -98,6 +100,68 @@ class HomeViewmodel extends FutureViewModel {
       setBusy(false);
       notifyListeners();
       print("Error in runAllFunction: $e");
+    }
+  }
+
+  checkNewNotifications() async {
+    try {
+      final response = await apiService.getNotificationHistory();
+      if (response?.data?.data != null) {
+        final notifications = response!.data!.data!.data;
+        if (notifications.isNotEmpty) {
+          // Get the latest notification ID
+          final latestNotificationId = notifications.first.id ?? 0;
+          
+          // Get last checked notification ID from storage
+          final lastCheckedId = await _storage.getLastCheckedNotificationId();
+          
+          // Count notifications that are newer than last checked
+          if (lastCheckedId == null) {
+            // First time, count all notifications
+            newNotificationCount = notifications.length;
+            // Save the latest notification ID as last checked
+            if (latestNotificationId > 0) {
+              await _storage.saveLastCheckedNotificationId(latestNotificationId);
+            }
+          } else {
+            // Count notifications with ID greater than last checked
+            newNotificationCount = notifications
+                .where((notification) {
+                  final notificationId = notification.id ?? 0;
+                  return notificationId > lastCheckedId;
+                })
+                .length;
+          }
+        } else {
+          newNotificationCount = 0;
+        }
+      } else {
+        newNotificationCount = 0;
+      }
+      notifyListeners();
+    } catch (e) {
+      print("Error checkNewNotifications: $e");
+      newNotificationCount = 0;
+      notifyListeners();
+    }
+  }
+
+  markNotificationsAsRead() async {
+    try {
+      final response = await apiService.getNotificationHistory();
+      if (response?.data?.data != null) {
+        final notifications = response!.data!.data!.data;
+        if (notifications.isNotEmpty) {
+          final latestNotificationId = notifications.first.id ?? 0;
+          if (latestNotificationId > 0) {
+            await _storage.saveLastCheckedNotificationId(latestNotificationId);
+            newNotificationCount = 0;
+            notifyListeners();
+          }
+        }
+      }
+    } catch (e) {
+      print("Error markNotificationsAsRead: $e");
     }
   }
 
@@ -122,13 +186,26 @@ class HomeViewmodel extends FutureViewModel {
 
     final responseTaskList =
         await apiService.getTaskList('${fromDateStr}-${toDateStr}');
-    print("fromDateStr : ${fromDateStr} , toDateStr : ${toDateStr}");
     final responseTaskListHistory =
         await apiService.getTaskListHistory('${fromDateStr}-${toDateStr}');
-
-    totalListTask = responseTaskList!.data!.data.length;
-    totalListTaskHistory = responseTaskListHistory!.data!.data.length;
-    listTask = List.from(responseTaskList.data!.data);
+    
+    if (responseTaskList?.data?.data != null) {
+      totalListTask = responseTaskList!.data!.data.length;
+      listTask = List.from(responseTaskList.data!.data);
+    } else {
+      totalListTask = 0;
+      listTask = [];
+    }
+    
+    // Handle responseTaskListHistory - bisa status false dengan data kosong
+    if (responseTaskListHistory?.data != null) {
+      totalListTaskHistory = responseTaskListHistory!.data!.data.length;
+    } else {
+      totalListTaskHistory = 0;
+      if (responseTaskListHistory?.error != null) {
+        print("Error getTaskListHistory: ${responseTaskListHistory!.error}");
+      }
+    }
     dataNearestLocation = await getNearestLocation();
     notifyListeners();
   }
@@ -169,12 +246,31 @@ class HomeViewmodel extends FutureViewModel {
       double minDistance = double.infinity;
       TestingOrder? nearestPlace;
       print("listTask : ${listTask}");
+      
+      // Jika listTask kosong, return null
+      if (listTask.isEmpty) {
+        radius = 0;
+        return null;
+      }
+      
       for (var place in listTask) {
         String? latlong = place.geotag;
-        var latLngSplit = latlong?.split(',');
+        if (latlong == null || latlong.isEmpty) {
+          continue; // Skip jika geotag null atau empty
+        }
+        
+        var latLngSplit = latlong.split(',');
+        if (latLngSplit.length < 2) {
+          continue; // Skip jika format tidak valid
+        }
 
-        lat = double.tryParse(latLngSplit![0]) ?? 0.0;
+        lat = double.tryParse(latLngSplit[0]) ?? 0.0;
         lng = double.tryParse(latLngSplit[1]) ?? 0.0;
+        
+        if (lat == 0.0 && lng == 0.0) {
+          continue; // Skip jika parsing gagal
+        }
+        
         print("data location : ${lat},${lng}");
         double distance = Geolocator.distanceBetween(
           current.latitude,
@@ -188,6 +284,13 @@ class HomeViewmodel extends FutureViewModel {
           nearestPlace = place;
         }
       }
+      
+      // Cek apakah minDistance masih infinity (tidak ada tempat yang valid ditemukan)
+      if (minDistance.isInfinite || minDistance.isNaN) {
+        radius = 0;
+        return null;
+      }
+      
       radius = minDistance.round();
       print(
           "Lokasi terdekat: ${nearestPlace?.subzonaname} (${minDistance.round()} m) , Current Location : ${current.latitude},${current.longitude} , data location : ${nearestPlace?.geotag}");

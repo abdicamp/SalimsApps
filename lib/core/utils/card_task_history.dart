@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:logger/logger.dart';
 import 'package:salims_apps_new/core/models/task_list_models.dart';
 import 'package:salims_apps_new/ui/views/detail_task/detail_task_view.dart';
-
+import 'package:intl/intl.dart';
 import '../models/task_list_history_models.dart';
 import '../models/testing_order_history_models.dart';
 
@@ -54,7 +55,7 @@ class TaskItemHistory extends StatelessWidget {
                               // );
                             },
                             child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
                                 // Kalender Mini (Tanggal)
                                 Container(
@@ -69,7 +70,8 @@ class TaskItemHistory extends StatelessWidget {
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       Text(
-                                        listData!.SamplingDate.split("-")[2],
+                                        "${DateFormat("dd").format(DateTime.parse(listData!
+                                            .TsDate))}",
                                         style: GoogleFonts.poppins(
                                           fontSize: 20,
                                           fontWeight: FontWeight.bold,
@@ -78,7 +80,7 @@ class TaskItemHistory extends StatelessWidget {
                                       ),
                                       Text(
                                         _getMonthName(int.parse(listData!
-                                            .SamplingDate
+                                            .TsDate
                                             .split("-")[1])),
                                         style: GoogleFonts.poppins(
                                           fontSize: 12,
@@ -123,7 +125,7 @@ class TaskItemHistory extends StatelessWidget {
                                       ),
                                       const SizedBox(height: 6),
                                       Text(
-                                        listData!.ServiceType,
+                                        listData!.Samplecatname,
                                         style: GoogleFonts.poppins(
                                           fontSize: 13,
                                           color: const Color(0xFF42A5F5),

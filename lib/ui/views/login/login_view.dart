@@ -95,8 +95,8 @@ class _LoginViewState extends State<LoginView> {
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
                                 colors: [
-                                  const Color.fromARGB(255, 3, 141, 255),
-                                  const Color.fromARGB(255, 156, 210, 255),
+                                  Color(0xFF4CAF50),     // hijau
+                                  Color(0xFF2196F3),
                                 ],
                               ),
                               borderRadius: BorderRadius.circular(15),

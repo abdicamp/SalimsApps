@@ -61,6 +61,7 @@ class UserData {
   final String? departmentauthority;
   final String? samplinglocauthority;
   final String? buildingauthority;
+  final String? zonaauthority;
   final String? description;
   final int? islogin;
   final String? userip;
@@ -89,6 +90,7 @@ class UserData {
     this.departmentauthority,
     this.samplinglocauthority,
     this.buildingauthority,
+    this.zonaauthority,
     this.description,
     this.islogin,
     this.userip,
@@ -117,6 +119,7 @@ class UserData {
       departmentauthority: json['departmentauthority'],
       samplinglocauthority: json['samplinglocauthority'],
       buildingauthority: json['buildingauthority'],
+      zonaauthority: json['zonaauthority'],
       description: json['description'],
       islogin: json['islogin'],
       userip: json['userip'],
@@ -148,6 +151,7 @@ class UserData {
       "departmentauthority": departmentauthority,
       "samplinglocauthority": samplinglocauthority,
       "buildingauthority": buildingauthority,
+      "zonaauthority": zonaauthority,
       "description": description,
       "islogin": islogin,
       "userip": userip,
