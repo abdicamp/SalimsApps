@@ -125,7 +125,7 @@ class TaskItem extends StatelessWidget {
                                       ),
                                       const SizedBox(height: 6),
                                       Text(
-                                        "${listData!.sampleno} • ${listData!.samplecategory}",
+                                        "${listData!.sampleno} • ${listData!.samplecatname}",
                                         style: GoogleFonts.poppins(
                                           fontSize: 13,
                                           color: Colors.grey[700],

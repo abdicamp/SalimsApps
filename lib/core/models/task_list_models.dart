@@ -47,6 +47,7 @@ class TestingOrder {
   final String sampleCode;
   final String sampleName;
   final String samplecategory;
+  final String samplecatname;
   final String servicetype;
   final String zonacode;
   final String zonaname;
@@ -65,6 +66,7 @@ class TestingOrder {
     required this.sampleCode,
     required this.sampleName,
     required this.samplecategory,
+    required this.samplecatname,
     required this.servicetype,
     required this.zonacode,
     required this.zonaname,
@@ -92,6 +94,7 @@ class TestingOrder {
       subzonaname: json['subzonaname'] ?? "",
       address: json['address'],
       samplingdate: json['samplingdate'] ?? "",
+      samplecatname: json['samplecatname'] ?? "",
     );
   }
 
@@ -113,6 +116,7 @@ class TestingOrder {
       "subzonaname": subzonaname,
       "address": address,
       "samplingdate": samplingdate,
+      "samplecatname": samplecatname,
     };
   }
 }

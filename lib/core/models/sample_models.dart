@@ -14,6 +14,7 @@ class SampleDetail {
   final String temperatur;
   final String branchcode;
   final String samplecode;
+  final String samplingby;
   final String ptsnumber;
   final String usercreated;
   final String description;
@@ -29,6 +30,7 @@ class SampleDetail {
     required this.tsdate,
     this.samplename,
     required this.sampleno,
+    required this.samplingby,
     required this.latitude,
     required this.longtitude,
     required this.geoTag,
@@ -62,6 +64,7 @@ class SampleDetail {
       weather: json['weather'] ?? '',
       winddirection: json['winddirection'] ?? '',
       temperatur: json['temperatur'] ?? '',
+      samplingby: json['samplingby'] ?? '',
       branchcode: json['branchcode'] ?? '',
       samplecode: json['samplecode'] ?? '',
       ptsnumber: json['ptsnumber'] ?? '',
@@ -102,6 +105,7 @@ class SampleDetail {
       'temperatur': temperatur,
       'branchcode': branchcode,
       'samplecode': samplecode,
+      'samplingby': samplingby,
       'ptsnumber': ptsnumber,
       'usercreated': usercreated,
       'description': description,

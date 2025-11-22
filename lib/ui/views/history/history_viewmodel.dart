@@ -64,6 +64,7 @@ class HistoryViewmodel extends FutureViewModel {
   getDataTaskHistory() async {
     setBusy(true);
     try {
+      tanggalCtrl?.text = '${DateFormat('yyyy-MM-dd').format(DateTime.now())}-${DateFormat('yyyy-MM-dd').format(DateTime.now())}';
       final response = await apiService.getTaskListHistory(tanggalCtrl?.text ?? '${DateFormat('yyyy-MM-dd').format(DateTime.now())}-${DateFormat('yyyy-MM-dd').format(DateTime.now())}');
       listTaskHistory = List.from(response!.data!.data ?? []);
       print("listTaskHistory : ${jsonEncode(listTaskHistory)}");
@@ -77,8 +78,22 @@ class HistoryViewmodel extends FutureViewModel {
     }
   }
 
+  getDate() async {
+    final now = DateTime.now();
+    final fromDate = DateTime(now.year, now.month, 1); // 1 tanggal awal bulan
+    final toDate = now; // hari ini
+    final dateFormat = DateFormat('yyyy-MM-dd');
+    final fromDateStr = dateFormat.format(fromDate);
+    final toDateStr = dateFormat.format(toDate);
+
+    tanggalCtrl?.text = '${fromDateStr}-${toDateStr}';
+    await getDataTaskHistory();
+    notifyListeners();
+  }
+
   @override
   Future futureToRun() async {
-    await getDataTaskHistory();
+    await getDate();
+
   }
 }

@@ -70,6 +70,30 @@ class _TaskListViewState extends State<TaskListView> {
                             ),
                           ),
                         ),
+                        Positioned(
+                          right: 16,
+                          top: 0,
+                          bottom: 0,
+                          child: GestureDetector(
+                            onTap: () async {
+                              await vm.getListTask();
+                            },
+                            child: Center(
+                              child: Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.2),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(
+                                  Icons.refresh,
+                                  color: Colors.white,
+                                  size: 24,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -86,6 +110,7 @@ class _TaskListViewState extends State<TaskListView> {
                               onTap: () {
                                 vm.pickDateRange();
                               },
+
                               decoration: InputDecoration(
                                 hintText: AppLocalizations.of(context)?.date ?? "Date",
                                 hintStyle: TextStyle(
@@ -108,6 +133,14 @@ class _TaskListViewState extends State<TaskListView> {
                                     color: Colors.grey.shade300,
                                   ),
                                 ),
+                                suffixIcon: IconButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        vm.getDate();
+
+                                      });
+                                    },
+                                    icon: Icon(Icons.clear)),
                                 focusedBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(20),
                                   borderSide: BorderSide(

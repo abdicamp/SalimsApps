@@ -63,6 +63,7 @@ class TaskListViewmodel extends FutureViewModel {
   getListTask() async {
     setBusy(true);
     try {
+
       final response = await _apiServices.getTaskList(tanggalCtrl?.text ?? '${DateFormat('yyyy-MM-dd').format(DateTime.now())}-${DateFormat('yyyy-MM-dd').format(DateTime.now())}');
       listTask = response!.data!.data;
       print("jsondecode getListTask :${jsonEncode(listTask)}");
@@ -96,8 +97,22 @@ class TaskListViewmodel extends FutureViewModel {
     }
   }
 
+  getDate() async {
+    final now = DateTime.now();
+    final fromDate = DateTime(now.year, now.month, 1); // 1 tanggal awal bulan
+    final toDate = now; // hari ini
+    final dateFormat = DateFormat('yyyy-MM-dd');
+    final fromDateStr = dateFormat.format(fromDate);
+    final toDateStr = dateFormat.format(toDate);
+
+    tanggalCtrl?.text = '${fromDateStr}-${toDateStr}';
+    await  getListTask();
+    notifyListeners();
+  }
+
   @override
   Future futureToRun() async {
-    await getListTask();
+    await getDate();
+    // await getListTask();
   }
 }

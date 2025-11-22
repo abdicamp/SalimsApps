@@ -4,6 +4,7 @@ import 'package:salims_apps_new/core/utils/app_localizations.dart';
 import 'package:salims_apps_new/state_global/state_global.dart';
 import 'package:salims_apps_new/ui/views/home/home_viewmodel.dart';
 import 'package:badges/badges.dart' as badges;
+import 'package:salims_apps_new/ui/views/notification_history/notification_history_view.dart';
 import 'package:stacked/stacked.dart';
 import 'package:provider/provider.dart';
 
@@ -17,13 +18,37 @@ class HomeView extends StatefulWidget {
   State<HomeView> createState() => _HomeViewState();
 }
 
-class _HomeViewState extends State<HomeView> {
+class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
   bool _lastBusyState = false;
+  HomeViewmodel? _viewModel;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // Refresh notification count when app comes to foreground
+      _viewModel?.checkNewNotifications();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return ViewModelBuilder.reactive(
       viewModelBuilder: () => HomeViewmodel(context: context),
+      onViewModelReady: (vm) {
+        _viewModel = vm;
+      },
       builder: (context, vm, child) {
         // Only update loading state if it changed to avoid unnecessary callbacks
         if (_lastBusyState != vm.isBusy) {
@@ -44,13 +69,13 @@ class _HomeViewState extends State<HomeView> {
         return Stack(
           children: [
             Scaffold(
-
               backgroundColor: Colors.white,
               body: RefreshIndicator(
                 onRefresh: () async {
                   await vm.runAllFunction();
                 },
                 child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Column(
@@ -65,48 +90,117 @@ class _HomeViewState extends State<HomeView> {
                                 Padding(
                                   padding: const EdgeInsets.all(15),
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
                                         children: [
                                           Text(
-                                            AppLocalizations.of(context)?.hello ?? "Hello!",
+                                            AppLocalizations.of(context)
+                                                    ?.hello ??
+                                                "Hello!",
                                             style: GoogleFonts.poppins(
                                               fontSize: 30,
                                               fontWeight: FontWeight.bold,
                                             ),
                                           ),
                                           Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.end,
                                             children: [
-                                              badges.Badge(
-                                                showBadge: 1 > 0,
-                                                badgeContent: const Text(
-                                                  '1',
-                                                  style: TextStyle(
-                                                    color: Colors.white,
-                                                    fontSize: 12,
+                                              // Notifikasi dengan gradient background
+                                              InkWell(
+                                                onTap: () async {
+                                                  // Mark notifications as read when tapped
+                                                  await vm.markNotificationsAsRead();
+                                                  Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                      builder: (context) => NotificationHistoryView(),
+                                                    ),
+                                                  );
+                                                },
+                                                child: Container(
+                                                  padding:
+                                                      const EdgeInsets.all(10),
+                                                  decoration:
+                                                      const BoxDecoration(
+                                                    shape: BoxShape.circle,
+                                                    gradient: LinearGradient(
+                                                      colors: [
+                                                        AppColors.skyBlue,
+                                                        AppColors.limeLight,
+                                                      ],
+                                                      begin: Alignment.topLeft,
+                                                      end:
+                                                          Alignment.bottomRight,
+                                                    ),
+                                                  ),
+                                                  child: badges.Badge(
+                                                    showBadge: vm.newNotificationCount > 0,
+                                                    badgeContent: Text(
+                                                      vm.newNotificationCount > 99 
+                                                          ? '99+' 
+                                                          : '${vm.newNotificationCount}',
+                                                      style: const TextStyle(
+                                                        color: Colors.white,
+                                                        fontSize: 12,
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                      ),
+                                                    ),
+                                                    badgeStyle:
+                                                        const badges.BadgeStyle(
+                                                      badgeColor: Colors.red,
+                                                      padding:
+                                                          EdgeInsets.all(5),
+                                                    ),
+                                                    child: const Icon(
+                                                      Icons
+                                                          .notifications_outlined,
+                                                      color: Colors.white,
+                                                      size: 26,
+                                                    ),
                                                   ),
                                                 ),
-                                                badgeStyle: const badges.BadgeStyle(
-                                                  badgeColor: Colors.red,
-                                                ),
-                                                child: const Icon(
-                                                  Icons.notifications,
-                                                  color: Colors.black, // warna icon notifikasi
-                                                  size: 28,
+                                              ),
+
+                                              const SizedBox(width: 14),
+
+                                              // Logout dengan gradient background yang sama
+                                              InkWell(
+                                                borderRadius:
+                                                    BorderRadius.circular(50),
+                                                onTap: () => vm.logout(),
+                                                child: Container(
+                                                  padding:
+                                                      const EdgeInsets.all(10),
+                                                  decoration:
+                                                      const BoxDecoration(
+                                                    shape: BoxShape.circle,
+                                                    gradient: LinearGradient(
+                                                      colors: [
+                                                        AppColors.skyBlue,
+                                                        AppColors.limeLight,
+                                                      ],
+                                                      begin: Alignment.topLeft,
+                                                      end:
+                                                          Alignment.bottomRight,
+                                                    ),
+                                                  ),
+                                                  child: const Icon(
+                                                    Icons.logout,
+                                                    color: Colors.white,
+                                                    size: 26,
+                                                  ),
                                                 ),
                                               ),
-                                              const SizedBox(width: 20),
-                                              IconButton(
-                                                onPressed: () {
-                                                  vm.logout();
-                                                },
-                                                icon: const Icon(Icons.logout, color: Colors.black),
-                                              ),
-                                              const SizedBox(width: 10),
+
+                                              const SizedBox(width: 12),
                                             ],
-                                          ),
+                                          )
                                         ],
                                       ),
                                       Text(
@@ -127,9 +221,11 @@ class _HomeViewState extends State<HomeView> {
                                     children: [
                                       // Lapisan 1
                                       Card(
-                                        color: const Color(0xFF004D40), // hijau tua cenderung biru
+                                        color: const Color(
+                                            0xFF004D40), // hijau tua cenderung biru
                                         child: SizedBox(
-                                          width: MediaQuery.of(context).size.width,
+                                          width:
+                                              MediaQuery.of(context).size.width,
                                           height: 50,
                                         ),
                                       ),
@@ -138,7 +234,8 @@ class _HomeViewState extends State<HomeView> {
                                       const Padding(
                                         padding: EdgeInsets.only(top: 4),
                                         child: Card(
-                                          color: Color(0xFF00695C), // hijau teal lebih muda
+                                          color: Color(
+                                              0xFF00695C), // hijau teal lebih muda
                                           child: SizedBox(
                                             width: double.infinity,
                                             height: 50,
@@ -150,7 +247,8 @@ class _HomeViewState extends State<HomeView> {
                                       const Padding(
                                         padding: EdgeInsets.only(top: 8),
                                         child: Card(
-                                          color: Color(0xFF00796B), // hijau kebiruan
+                                          color: Color(
+                                              0xFF00796B), // hijau kebiruan
                                           child: SizedBox(
                                             width: double.infinity,
                                             height: 50,
@@ -162,7 +260,8 @@ class _HomeViewState extends State<HomeView> {
                                       const Padding(
                                         padding: EdgeInsets.only(top: 12),
                                         child: Card(
-                                          color: Color(0xFF26A69A), // hijau teal terang
+                                          color: Color(
+                                              0xFF26A69A), // hijau teal terang
                                           child: SizedBox(
                                             width: double.infinity,
                                             height: 50,
@@ -176,10 +275,13 @@ class _HomeViewState extends State<HomeView> {
                                         child: Card(
                                           elevation: 8,
                                           shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(12),
+                                            borderRadius:
+                                                BorderRadius.circular(12),
                                           ),
                                           child: Container(
-                                            width: MediaQuery.of(context).size.width,
+                                            width: MediaQuery.of(context)
+                                                .size
+                                                .width,
                                             decoration: BoxDecoration(
                                               gradient: const LinearGradient(
                                                 colors: [
@@ -189,20 +291,23 @@ class _HomeViewState extends State<HomeView> {
                                                 begin: Alignment.topLeft,
                                                 end: Alignment.bottomRight,
                                               ),
-                                              borderRadius: BorderRadius.circular(12),
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
                                             ),
                                             padding: const EdgeInsets.all(16),
                                             child: Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
                                               children: [
                                                 // Judul card
                                                 Text(
                                                   AppLocalizations.of(context)
-                                                      ?.nearestAssignmentLocation ??
+                                                          ?.nearestAssignmentLocation ??
                                                       "Nearest Assignment Location",
                                                   style: const TextStyle(
                                                     fontSize: 15,
-                                                    color: Colors.white, // teks hijau tua
+                                                    color: Colors
+                                                        .white, // teks hijau tua
                                                     fontWeight: FontWeight.bold,
                                                   ),
                                                 ),
@@ -222,7 +327,8 @@ class _HomeViewState extends State<HomeView> {
                                                       style: const TextStyle(
                                                         fontSize: 12,
                                                         color: Colors.white,
-                                                        fontWeight: FontWeight.bold,
+                                                        fontWeight:
+                                                            FontWeight.bold,
                                                       ),
                                                     ),
                                                   ],
@@ -243,7 +349,8 @@ class _HomeViewState extends State<HomeView> {
                                                       style: const TextStyle(
                                                         fontSize: 12,
                                                         color: Colors.white,
-                                                        fontWeight: FontWeight.bold,
+                                                        fontWeight:
+                                                            FontWeight.bold,
                                                       ),
                                                     ),
                                                   ],
@@ -256,7 +363,10 @@ class _HomeViewState extends State<HomeView> {
                                                     const SizedBox(width: 22),
                                                     SizedBox(
                                                       width:
-                                                      MediaQuery.of(context).size.width / 2,
+                                                          MediaQuery.of(context)
+                                                                  .size
+                                                                  .width /
+                                                              2,
                                                       child: const Text(
                                                         // kalau mau, bisa ganti jadi non-const biar pakai vm langsung
                                                         // tapi di sini ikut pattern kamu:
@@ -276,12 +386,15 @@ class _HomeViewState extends State<HomeView> {
                                                     const SizedBox(width: 22),
                                                     SizedBox(
                                                       width:
-                                                      MediaQuery.of(context).size.width / 2,
+                                                          MediaQuery.of(context)
+                                                                  .size
+                                                                  .width /
+                                                              2.2,
                                                       child: Text(
                                                         "${vm.dataNearestLocation?.address ?? ''}",
                                                         style: const TextStyle(
                                                           fontSize: 10,
-                                                          color: Color(0xFF004D40),
+                                                          color: Colors.white,
                                                         ),
                                                       ),
                                                     ),
@@ -293,43 +406,61 @@ class _HomeViewState extends State<HomeView> {
                                                 // Tombol Check Location
                                                 InkWell(
                                                   onTap: () {
-                                                    vm.openMap(vm.lat, vm.lng);
+                                                    if (vm
+                                                        .listTask.isNotEmpty) {
+                                                      vm.openMap(
+                                                          vm.lat, vm.lng);
+                                                    }
                                                   },
                                                   child: Container(
-                                                    padding: const EdgeInsets.symmetric(
+                                                    padding: const EdgeInsets
+                                                        .symmetric(
                                                       horizontal: 10,
                                                       vertical: 4,
                                                     ),
                                                     decoration: BoxDecoration(
-                                                      color: Colors.white.withOpacity(0.2),
-                                                      borderRadius: BorderRadius.circular(10),
+                                                      color: Colors.white
+                                                          .withOpacity(0.2),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              10),
                                                       boxShadow: [
                                                         BoxShadow(
-                                                          color:
-                                                          Colors.black.withOpacity(0.05),
+                                                          color: Colors.black
+                                                              .withOpacity(
+                                                                  0.05),
                                                           blurRadius: 2,
-                                                          offset: const Offset(0, 1),
+                                                          offset: const Offset(
+                                                              0, 1),
                                                         ),
                                                       ],
                                                     ),
                                                     child: Row(
-                                                      mainAxisSize: MainAxisSize.min,
+                                                      mainAxisSize:
+                                                          MainAxisSize.min,
                                                       children: [
                                                         Text(
-                                                          AppLocalizations.of(context)
-                                                              ?.checkLocation ??
+                                                          AppLocalizations.of(
+                                                                      context)
+                                                                  ?.checkLocation ??
                                                               "Check Location",
-                                                          style: GoogleFonts.poppins(
+                                                          style: GoogleFonts
+                                                              .poppins(
                                                             fontSize: 11,
-                                                            fontWeight: FontWeight.w600,
-                                                            color: Colors.white.withOpacity(0.9),
+                                                            fontWeight:
+                                                                FontWeight.w600,
+                                                            color: Colors.white
+                                                                .withOpacity(
+                                                                    0.9),
                                                           ),
                                                         ),
-                                                        const SizedBox(width: 4),
+                                                        const SizedBox(
+                                                            width: 4),
                                                         Icon(
                                                           Icons.chevron_right,
                                                           size: 13,
-                                                          color: Colors.white.withOpacity(0.6),
+                                                          color: Colors.white
+                                                              .withOpacity(0.6),
                                                         ),
                                                       ],
                                                     ),
@@ -340,50 +471,71 @@ class _HomeViewState extends State<HomeView> {
                                                 // Tombol To Do Task
                                                 InkWell(
                                                   onTap: () {
-                                                    Navigator.of(context).push(
-                                                      MaterialPageRoute(
-                                                        builder: (context) => DetailTaskView(
-                                                          listData:
-                                                          vm.dataNearestLocation,
+                                                    if (vm
+                                                        .listTask.isNotEmpty) {
+                                                      Navigator.of(context)
+                                                          .push(
+                                                        MaterialPageRoute(
+                                                          builder: (context) =>
+                                                              DetailTaskView(
+                                                            listData: vm
+                                                                .dataNearestLocation,
+                                                            isDetailhistory:
+                                                                false,
+                                                          ),
                                                         ),
-                                                      ),
-                                                    );
+                                                      );
+                                                    }
                                                   },
                                                   child: Container(
-                                                    padding: const EdgeInsets.symmetric(
+                                                    padding: const EdgeInsets
+                                                        .symmetric(
                                                       horizontal: 10,
                                                       vertical: 4,
                                                     ),
                                                     decoration: BoxDecoration(
-                                                      color: Colors.white.withOpacity(0.2),
-                                                      borderRadius: BorderRadius.circular(10),
+                                                      color: Colors.white
+                                                          .withOpacity(0.2),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              10),
                                                       boxShadow: [
                                                         BoxShadow(
-                                                          color:
-                                                          Colors.black.withOpacity(0.05),
+                                                          color: Colors.black
+                                                              .withOpacity(
+                                                                  0.05),
                                                           blurRadius: 2,
-                                                          offset: const Offset(0, 1),
+                                                          offset: const Offset(
+                                                              0, 1),
                                                         ),
                                                       ],
                                                     ),
                                                     child: Row(
-                                                      mainAxisSize: MainAxisSize.min,
+                                                      mainAxisSize:
+                                                          MainAxisSize.min,
                                                       children: [
                                                         Text(
-                                                          AppLocalizations.of(context)
-                                                              ?.toDoTask ??
+                                                          AppLocalizations.of(
+                                                                      context)
+                                                                  ?.toDoTask ??
                                                               "To do task",
-                                                          style: GoogleFonts.poppins(
+                                                          style: GoogleFonts
+                                                              .poppins(
                                                             fontSize: 11,
-                                                            fontWeight: FontWeight.w600,
-                                                            color: Colors.white.withOpacity(0.9),
+                                                            fontWeight:
+                                                                FontWeight.w600,
+                                                            color: Colors.white
+                                                                .withOpacity(
+                                                                    0.9),
                                                           ),
                                                         ),
-                                                        const SizedBox(width: 4),
+                                                        const SizedBox(
+                                                            width: 4),
                                                         Icon(
                                                           Icons.chevron_right,
                                                           size: 13,
-                                                          color: Colors.white.withOpacity(0.6),
+                                                          color: Colors.white
+                                                              .withOpacity(0.6),
                                                         ),
                                                       ],
                                                     ),
@@ -406,12 +558,11 @@ class _HomeViewState extends State<HomeView> {
                               right: 0,
                               child: Image.asset(
                                 "assets/images/logo.png",
-                                width: 200,
+                                width: 180,
                               ),
                             ),
                           ],
-                        )
-,
+                        ),
                         SizedBox(height: 20),
                         Stack(
                           children: [
@@ -463,7 +614,9 @@ class _HomeViewState extends State<HomeView> {
                                                 CrossAxisAlignment.start,
                                             children: [
                                               Text(
-                                                AppLocalizations.of(context)?.outstanding ?? "Outstanding",
+                                                AppLocalizations.of(context)
+                                                        ?.outstanding ??
+                                                    "Outstanding",
                                                 style: GoogleFonts.poppins(
                                                   fontSize: 16,
                                                   fontWeight: FontWeight.w600,
@@ -506,7 +659,9 @@ class _HomeViewState extends State<HomeView> {
                                           ),
                                           const SizedBox(height: 4),
                                           Text(
-                                            AppLocalizations.of(context)?.percentCompleted ?? "% Completed",
+                                            AppLocalizations.of(context)
+                                                    ?.percentCompleted ??
+                                                "% Completed",
                                             style: GoogleFonts.poppins(
                                               fontSize: 10,
                                               color: Colors.grey[600],
@@ -575,7 +730,9 @@ class _HomeViewState extends State<HomeView> {
                                                 CrossAxisAlignment.start,
                                             children: [
                                               Text(
-                                                AppLocalizations.of(context)?.finish ?? "Finish",
+                                                AppLocalizations.of(context)
+                                                        ?.finish ??
+                                                    "Finish",
                                                 style: GoogleFonts.poppins(
                                                   fontSize: 16,
                                                   fontWeight: FontWeight.w600,
@@ -617,7 +774,9 @@ class _HomeViewState extends State<HomeView> {
                                           ),
                                           const SizedBox(height: 4),
                                           Text(
-                                            AppLocalizations.of(context)?.percentCompleted ?? "% Completed",
+                                            AppLocalizations.of(context)
+                                                    ?.percentCompleted ??
+                                                "% Completed",
                                             style: GoogleFonts.poppins(
                                               fontSize: 10,
                                               color: Colors.grey[600],
@@ -686,7 +845,9 @@ class _HomeViewState extends State<HomeView> {
                                                 CrossAxisAlignment.start,
                                             children: [
                                               Text(
-                                                AppLocalizations.of(context)?.performa ?? "Performa",
+                                                AppLocalizations.of(context)
+                                                        ?.performa ??
+                                                    "Performa",
                                                 style: GoogleFonts.poppins(
                                                   fontSize: 16,
                                                   fontWeight: FontWeight.w600,
@@ -742,7 +903,9 @@ class _HomeViewState extends State<HomeView> {
                                           ),
                                           const SizedBox(height: 4),
                                           Text(
-                                            AppLocalizations.of(context)?.percentCompleted ?? "% Completed",
+                                            AppLocalizations.of(context)
+                                                    ?.percentCompleted ??
+                                                "% Completed",
                                             style: GoogleFonts.poppins(
                                               fontSize: 10,
                                               color: Colors.grey[600],

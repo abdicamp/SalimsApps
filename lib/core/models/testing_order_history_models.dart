@@ -42,6 +42,7 @@ class TestingOrderData {
   String PtsNumber;
   String SampleNo;
   String SampleCategory;
+  String Samplecatname;
   String ServiceType;
   String ZonaCode;
   String ZonaName;
@@ -49,12 +50,14 @@ class TestingOrderData {
   String SubZonaName;
   String Address;
   String SamplingDate;
+  String TsDate;
 
   TestingOrderData({
     required this.ReqNumber,
     required this.PtsNumber,
     required this.SampleNo,
     required this.SampleCategory,
+    required this.Samplecatname,
     required this.ServiceType,
     required this.ZonaCode,
     required this.ZonaName,
@@ -62,12 +65,14 @@ class TestingOrderData {
     required this.SubZonaName,
     required this.Address,
     required this.SamplingDate,
+    required this.TsDate,
   });
 
   factory TestingOrderData.fromJson(Map<String, dynamic> json) {
     return TestingOrderData(
       ReqNumber: json['reqnumber']?.toString() ?? '',
       PtsNumber: json['ptsnumber']?.toString() ?? '',
+      Samplecatname: json['samplecatname']?.toString() ?? '',
       SampleNo: json['sampleno']?.toString() ?? '',
       SampleCategory: json['samplecategory']?.toString() ?? '',
       ServiceType: json['servicetype']?.toString() ?? '',
@@ -76,6 +81,7 @@ class TestingOrderData {
       SubZonaCode: json['subzonacode']?.toString() ?? '',
       SubZonaName: json['subzonaname']?.toString() ?? '',
       Address: json['address']?.toString() ?? '',
+      TsDate: json['tsdate']?.toString() ?? '',
       SamplingDate: json['samplingdate']?.toString() ?? '',
     );
   }
@@ -86,6 +92,7 @@ class TestingOrderData {
       'ptsnumber': PtsNumber,
       'sampleno': SampleNo,
       'samplecategory': SampleCategory,
+      'samplecatname': Samplecatname,
       'servicetype': ServiceType,
       'zonacode': ZonaCode,
       'zonaname': ZonaName,
@@ -93,6 +100,7 @@ class TestingOrderData {
       'subzonaname': SubZonaName,
       'address': Address,
       'samplingdate': SamplingDate,
+      'tsdate': TsDate,
     };
   }
 }
