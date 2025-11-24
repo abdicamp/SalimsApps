@@ -113,13 +113,15 @@ class DetailTaskViewmodel extends FutureViewModel {
     try {
       final cekTokens = await apiService.cekToken();
       if (cekTokens) {
+
         final responseSampleLoc = await apiService.getSampleLoc();
         final responseUnitList = await apiService.getUnitList();
         final responseParameterAndEquipment = await apiService.getParameterAndEquipment(
             '${listTaskList?.ptsnumber}', '${listTaskList?.sampleno}');
         print("responseParameterAndEquipment : ${responseParameterAndEquipment}");
         // Convert List<dynamic> to List<TestingOrderParameter>
-        final dataPars = responseParameterAndEquipment?.data['data']['testing_order_parameters'];
+        final dataPars = responseParameterAndEquipment?.data?['data']?['testing_order_parameters'];
+
         if (dataPars is List) {
           listParameter = dataPars
               .map((e) => TestingOrderParameter.fromJson(e as Map<String, dynamic>))
@@ -128,13 +130,8 @@ class DetailTaskViewmodel extends FutureViewModel {
           listParameter = [];
         }
         
-        print("listParameter length: ${listParameter.length}");
-        if (listParameter.isNotEmpty) {
-          print("First parameter: ${listParameter.first.parcode}");
-        }
-        
         // Convert List<dynamic> to List<Equipment>
-        final dataEquipments = responseParameterAndEquipment?.data['data']['testing_order_equipment'];
+        final dataEquipments = responseParameterAndEquipment?.data?['data']?['testing_order_equipment'];
         if (dataEquipments is List) {
           equipmentlist = dataEquipments
               .map((e) => Equipment.fromJson(e as Map<String, dynamic>))
@@ -143,13 +140,9 @@ class DetailTaskViewmodel extends FutureViewModel {
           equipmentlist = [];
         }
         
-        print("equipmentlist length: ${equipmentlist?.length ?? 0}");
-        if (equipmentlist != null && equipmentlist!.isNotEmpty) {
-          print("First equipment: ${equipmentlist!.first.equipmentcode}");
-        }
-        
         sampleLocationList = responseSampleLoc?.data?.data;
         unitList = responseUnitList?.data?.data;
+
         locationController!.text = listTaskList!.geotag!;
         latlang = listTaskList!.geotag!;
 
@@ -507,43 +500,92 @@ class DetailTaskViewmodel extends FutureViewModel {
   }
 
   getOneTaskList() async {
-    setBusy(true);
+    // Jangan setBusy(true) di sini karena FutureViewModel sudah mengatur isBusy
     try {
-      print("listTaskList?.tsnumber : ${listTaskList?.tsnumber}");
-      if (listTaskList?.tsnumber != '') {
-        final response =
-        await apiService.getOneTaskList(listTaskList?.tsnumber);
+      print("📞 getOneTaskList called - tsnumber: ${listTaskList?.tsnumber}");
+      
+      if (listTaskList?.tsnumber == null || listTaskList!.tsnumber == '') {
+        print("⚠️ Warning: tsnumber is null or empty");
+        return;
+      }
 
-        descriptionController!.text = response['description'] ?? '';
-        weatherController!.text = response['weather'];
-        windDIrectionController!.text = response['winddirection'];
-        temperaturController!.text = response['temperatur'];
-        print("response get one : ${response}");
-        // ✅ Ambil list URL gambar dari API
-        imageString.clear();
-        if (response['documents'] != null) {
-          // Kalau response berisi list gambar (misal array)
-          for (var url in response['documents']) {
+      final response = await apiService.getOneTaskList(listTaskList?.tsnumber);
+      print("📥 Response received: ${response != null ? 'OK' : 'NULL'}");
+
+      // Cek jika response adalah error
+      if (response == null) {
+        print("❌ Response is null");
+        return;
+      }
+
+      if (response is Map && response.containsKey('error')) {
+        print("❌ Error from API: ${response['error']}");
+        return;
+      }
+
+      // Parse response data
+      descriptionController!.text = response['description'] ?? '';
+      weatherController!.text = response['weather'] ?? '';
+      windDIrectionController!.text = response['winddirection'] ?? '';
+      temperaturController!.text = response['temperatur'] ?? '';
+      locationController!.text = response['geotag'] ?? '';
+      addressController!.text = response['address'] ?? '';
+      print("📊 Response data parsed:");
+      print("   - description: ${descriptionController!.text}");
+      print("   - weather: ${weatherController!.text}");
+      print("   - winddirection: ${windDIrectionController!.text}");
+      print("   - temperatur: ${temperaturController!.text}");
+      
+      // ✅ Ambil list URL gambar dari API
+      imageString.clear();
+      imageOldString.clear();
+      if (response['documents'] != null && response['documents'] is List) {
+        for (var url in response['documents']) {
+          if (url != null && url['pathname'] != null) {
             imageString.add(url['pathname'].toString());
             imageOldString.add(url['pathname'].toString());
           }
-          print("imageString length : ${imageString.length} , ${imageString}");
         }
-
-        for (var i in response['taking_sample_parameters']) {
-          listTakingSampleParameter.add(TakingSampleParameter.fromJson(i));
-          incrementDetailNoPar = incrementDetailNoPar! + 1;
-        }
-
-        for (var i in response['taking_sample_ci']) {
-          listTakingSampleCI.add(TakingSampleCI.fromJson(i));
-          incrementDetailNoCI = incrementDetailNoCI! + 1;
-        }
+        print("🖼️  Image count: ${imageString.length}");
       }
-      setBusy(false);
+
+      // Clear list sebelum menambahkan data baru
+      listTakingSampleParameter.clear();
+      listTakingSampleCI.clear();
+      incrementDetailNoPar = 0;
+      incrementDetailNoCI = 0;
+
+      if (response['taking_sample_parameters'] != null && response['taking_sample_parameters'] is List) {
+        for (var i in response['taking_sample_parameters']) {
+          try {
+            listTakingSampleParameter.add(TakingSampleParameter.fromJson(i));
+            incrementDetailNoPar = incrementDetailNoPar! + 1;
+          } catch (e) {
+            print("⚠️ Error parsing parameter: $e");
+          }
+        }
+        print("📋 Parameters loaded: ${listTakingSampleParameter.length}");
+      }
+
+      if (response['taking_sample_ci'] != null && response['taking_sample_ci'] is List) {
+        for (var i in response['taking_sample_ci']) {
+          try {
+            listTakingSampleCI.add(TakingSampleCI.fromJson(i));
+            incrementDetailNoCI = incrementDetailNoCI! + 1;
+          } catch (e) {
+            print("⚠️ Error parsing CI: $e");
+          }
+        }
+        print("📦 CI loaded: ${listTakingSampleCI.length}");
+      }
+
       notifyListeners();
-    } catch (e) {
-      print("error get one task : ${e}");
+      print("✅ getOneTaskList completed successfully");
+    } catch (e, stackTrace) {
+      print("❌ Error in getOneTaskList: $e");
+      print("📚 Stack trace: $stackTrace");
+      notifyListeners();
+      rethrow; // Re-throw agar error bisa di-handle di futureToRun
     }
   }
 
@@ -626,9 +668,55 @@ class DetailTaskViewmodel extends FutureViewModel {
 
   @override
   Future futureToRun() async {
-    await getData();
-    await getOneTaskList();
-    await validasiConfirm();
+    try {
+      print("═══════════════════════════════════════════════════════");
+      print("🚀 futureToRun started - isDetailhistory: $isDetailhistory");
+      print("📋 listTaskList?.tsnumber: ${listTaskList?.tsnumber}");
+      print("═══════════════════════════════════════════════════════");
+      
+      if (isDetailhistory == true) {
+        // Untuk history, hanya load data detail saja
+        print("📜 Loading history data...");
+        await getOneTaskList();
+        // Set location controller dari data yang sudah ada
+        print("📍 Setting location from listTaskList...");
+        print("   - listTaskList?.geotag: ${listTaskList?.geotag}");
+        if (listTaskList?.geotag != null && listTaskList!.geotag!.isNotEmpty) {
+          locationController!.text = listTaskList!.geotag!;
+          latlang = listTaskList!.geotag!;
+
+          print("   ✅ Location set: ${locationController!.text}");
+        } else {
+          print("   ⚠️ Geotag is null or empty");
+        }
+        print("✅ History data loaded successfully");
+        print("📊 Data summary:");
+        print("   - listTakingSampleParameter: ${listTakingSampleParameter.length}");
+        print("   - listTakingSampleCI: ${listTakingSampleCI.length}");
+        print("   - imageString: ${imageString.length}");
+        print("   - locationController: ${locationController!.text}");
+        print("   - weatherController: ${weatherController!.text}");
+        print("   - descriptionController: ${descriptionController!.text}");
+      } else {
+        // Untuk task baru, load semua data termasuk parameter dan equipment
+        print("📝 Loading new task data...");
+        await getData();
+        await getOneTaskList();
+        await validasiConfirm();
+        print("✅ New task data loaded successfully");
+      }
+      
+      // Pastikan notifyListeners dipanggil untuk trigger rebuild
+      notifyListeners();
+      print("🔄 notifyListeners() called");
+      print("═══════════════════════════════════════════════════════");
+    } catch (e, stackTrace) {
+      print("❌ Error in futureToRun: $e");
+      print("📚 Stack trace: $stackTrace");
+      // Pastikan setBusy false meskipun ada error
+      setBusy(false);
+      notifyListeners();
+    }
     // await setLocationName();
   }
 }

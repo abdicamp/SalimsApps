@@ -226,7 +226,7 @@ class ApiService {
     }
   }
 
-  Future<ApiResponse<TestingOrderHistoryModel>?> getTaskListHistory(
+  Future<ApiResponse<TaskListModels>?> getTaskListHistory(
       String? filterDate
   ) async {
     try {
@@ -239,7 +239,7 @@ class ApiService {
 
       // Bangun URL dengan query parameters (karena GET tidak bisa body)
       final uri = Uri.parse(
-        "${baseUrl}/transaction/taking-sample/testing-order-sampling-date?branchcode=${getData.data?.branchcode}&labourcode=${getData.data?.labourcode}",
+        "${baseUrl}/transaction/taking-sample/testing-order-sampling-date?branchcode=${getData.data?.branchcode}&samplingby=${getData.data?.username}",
       );
 
       final response = await http.get(
@@ -263,7 +263,7 @@ class ApiService {
       // Model sudah bisa handle status false dan data kosong dengan baik
       try {
         final data = jsonDecode(response.body);
-        final taskListResponse = TestingOrderHistoryModel.fromJson(data);
+        final taskListResponse = TaskListModels.fromJson(data);
         
         // Log untuk debug
         print("getTaskListHistory parsed - status: ${taskListResponse.status}, code: ${taskListResponse.code}, data length: ${taskListResponse.data.length}");

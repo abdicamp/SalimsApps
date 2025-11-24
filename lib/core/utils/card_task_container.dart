@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:salims_apps_new/core/utils/custom_text_field.dart';
 import 'package:salims_apps_new/core/utils/data_table_CI_view.dart';
 import 'package:salims_apps_new/core/utils/search_dropdown.dart';
+import 'package:salims_apps_new/core/utils/app_localizations.dart';
 import 'package:salims_apps_new/ui/views/detail_task/detail_task_viewmodel.dart';
 
 class CardTaskContainer extends StatefulWidget {
@@ -18,6 +19,15 @@ class CardTaskContainer extends StatefulWidget {
 class _CardTaskContainerState extends State<CardTaskContainer> {
   @override
   Widget build(BuildContext context) {
+    // Debug logging
+    if (widget.isDetailhistory == true) {
+      print("🔄 CardTaskContainer rebuild - isDetailhistory: true");
+      print("   - vm is null: ${widget.vm == null}");
+      if (widget.vm != null) {
+        print("   - listTakingSampleCI: ${widget.vm!.listTakingSampleCI.length}");
+      }
+    }
+    
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
       child: SingleChildScrollView(
@@ -42,11 +52,22 @@ class _CardTaskContainerState extends State<CardTaskContainer> {
                         padding: const EdgeInsets.all(14),
                         child:
 
-                       widget.isDetailhistory == true ? DataTableCIView(
-                         listTakingSample:
-                         widget.vm?.listTakingSampleCI,
-                         vm: widget.vm!,
-                       ) : Column(
+                       widget.isDetailhistory == true 
+                         ? (widget.vm?.listTakingSampleCI == null || widget.vm!.listTakingSampleCI.isEmpty
+                            ? Center(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(20.0),
+                                  child: Text(
+                                    'No container information available',
+                                    style: TextStyle(color: Colors.grey[600]),
+                                  ),
+                                ),
+                              )
+                            : DataTableCIView(
+                                listTakingSample: widget.vm!.listTakingSampleCI,
+                                vm: widget.vm!,
+                              ))
+                         : Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
@@ -75,12 +96,12 @@ class _CardTaskContainerState extends State<CardTaskContainer> {
                                   child: CustomSearchableDropDown(
                                     isReadOnly: widget.isDetailhistory!,
                                     items: widget.vm!.equipmentlist ?? [],
-                                    label: 'Search Equipment',
+                                    label: AppLocalizations.of(context)?.searchEquipment ?? 'Search Equipment',
                                     padding: EdgeInsets.zero,
                                     // searchBarHeight: SDP.sdp(40),
                                     hint: 'Search Equipment',
                                     // initialIndex: index,
-                                    dropdownHintText: 'Cari Search Equipment',
+                                    dropdownHintText: AppLocalizations.of(context)?.searchEquipmentHint ?? 'Search Equipment',
                                     dropdownItemStyle: GoogleFonts.getFont(
                                       "Lato",
                                     ),
@@ -109,12 +130,12 @@ class _CardTaskContainerState extends State<CardTaskContainer> {
                                     readOnly: widget.isDetailhistory!,
                                     validator: (value) {
                                       if (value == null || value.isEmpty) {
-                                        return 'Please enter some text';
+                                        return AppLocalizations.of(context)?.pleaseEnterSomeText ?? 'Please enter some text';
                                       }
                                       return null;
                                     },
                                     controller: widget.vm!.conQTYController!,
-                                    label: 'Unit QTY',
+                                    label: AppLocalizations.of(context)?.unitQTY ?? 'Unit QTY',
                                   ),
                                 ),
                                 SizedBox(width: 7),
@@ -148,7 +169,7 @@ class _CardTaskContainerState extends State<CardTaskContainer> {
                                             value: widget.vm!.conSelect?.code,
                                             isExpanded: true,
                                             underline: SizedBox(),
-                                            hint: Text("Con UOM"),
+                                            hint: Text(AppLocalizations.of(context)?.conUOM ?? "Con UOM"),
                                             padding: EdgeInsets.all(4),
                                             style: TextStyle(
                                               fontSize: 12,
@@ -198,12 +219,12 @@ class _CardTaskContainerState extends State<CardTaskContainer> {
                                     ],
                                     validator: (value) {
                                       if (value == null || value.isEmpty) {
-                                        return 'Please enter some text';
+                                        return AppLocalizations.of(context)?.pleaseEnterSomeText ?? 'Please enter some text';
                                       }
                                       return null;
                                     },
                                     controller: widget.vm!.volQTYController!,
-                                    label: 'Volume QTY',
+                                    label: AppLocalizations.of(context)?.volumeQTY ?? 'Volume QTY',
                                   ),
                                 ),
                                 SizedBox(width: 7),
@@ -214,7 +235,7 @@ class _CardTaskContainerState extends State<CardTaskContainer> {
                                         CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        'Volume UOM',
+                                        AppLocalizations.of(context)?.volumeUOM ?? 'Volume UOM',
                                         style: const TextStyle(
                                           fontSize: 12,
                                           fontWeight: FontWeight.w600,
@@ -236,7 +257,7 @@ class _CardTaskContainerState extends State<CardTaskContainer> {
                                             value: widget.vm!.volSelect?.code,
                                             isExpanded: true,
                                             underline: SizedBox(),
-                                            hint: Text("Vol UOM"),
+                                            hint: Text(AppLocalizations.of(context)?.volUOM ?? "Vol UOM"),
                                             padding: EdgeInsets.all(4),
                                             style: TextStyle(
                                               fontSize: 12,
@@ -282,7 +303,7 @@ class _CardTaskContainerState extends State<CardTaskContainer> {
                                 return null;
                               },
                               controller: widget.vm!.descriptionCIController!,
-                              label: 'Description',
+                              label: AppLocalizations.of(context)?.description ?? 'Description',
                             ),
                             SizedBox(height: 5),
                             SizedBox(
@@ -310,7 +331,7 @@ class _CardTaskContainerState extends State<CardTaskContainer> {
                                           SnackBar(
                                             duration: Duration(seconds: 2),
                                             content:
-                                                Text("Form tidak boleh Kosong"),
+                                                Text(AppLocalizations.of(context)?.formCannotBeEmpty ?? "Form cannot be empty"),
                                             backgroundColor: Colors.red,
                                           ),
                                         );

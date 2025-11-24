@@ -9,6 +9,19 @@ class DataTableCIView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Handle null atau empty list
+    if (listTakingSample == null || listTakingSample!.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Text(
+            'No container information available',
+            style: TextStyle(color: Colors.grey[600]),
+          ),
+        ),
+      );
+    }
+
     final dataSource = DataTableCi(listTakingSample!, vm);
 
     return Theme(
@@ -34,7 +47,7 @@ class DataTableCIView extends StatelessWidget {
           DataColumn(label: Text('')),
         ],
         source: dataSource,
-        rowsPerPage: listTakingSample!.length,
+        rowsPerPage: listTakingSample!.isEmpty ? 10 : listTakingSample!.length,
       ),
     );
   }
@@ -59,18 +72,21 @@ class DataTableCi extends DataTableSource {
         DataCell(Text('${eq.volqty}')),
         DataCell(Text('${eq.voluom}')),
         DataCell(Text(eq.description)),
-        DataCell(Row(
-          children: [
-            TextButton(
-                onPressed: () {
-      
-                  vm?.removeListCi(index);
-    
-                  notifyListeners();
-                },
-                child: Text("Hapus")),
-          ],
-        )),
+        DataCell(
+          // Untuk history, tidak tampilkan tombol hapus
+          vm?.isDetailhistory == true 
+            ? SizedBox.shrink()
+            : Row(
+                children: [
+                  TextButton(
+                    onPressed: () {
+                      vm?.removeListCi(index);
+                      notifyListeners();
+                    },
+                    child: Text("Hapus")),
+                ],
+              ),
+        ),
       ],
     );
   }

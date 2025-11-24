@@ -326,7 +326,9 @@ class _MyAppState extends State<MyApp> {
         
         if (apnsToken == null) {
           print("⚠️ APNS token is null. Make sure Push Notifications capability is enabled in Xcode.");
-          return;
+          print("⚠️ Note: APNS token will be null in iOS Simulator. Use physical device for testing.");
+          // Tidak return early, tetap lanjut untuk mendapatkan FCM token
+          // FCM token mungkin tetap bisa didapat meskipun APNS null (tapi tidak akan berfungsi untuk push)
         }
       }
 

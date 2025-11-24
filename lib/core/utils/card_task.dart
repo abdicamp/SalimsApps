@@ -34,6 +34,7 @@ class TaskItem extends StatelessWidget {
                 children: [
                   // Card utama
                   Card(
+
                     color: Colors.white,
                     elevation: 6,
                     shape: RoundedRectangleBorder(
@@ -58,7 +59,7 @@ class TaskItem extends StatelessWidget {
                               }
                             },
                             child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
                                 // Kalender Mini (Tanggal)
                                 Container(
@@ -125,7 +126,7 @@ class TaskItem extends StatelessWidget {
                                       ),
                                       const SizedBox(height: 6),
                                       Text(
-                                        "${listData!.sampleno} • ${listData!.samplecatname}",
+                                        "${listData!.samplecatname}",
                                         style: GoogleFonts.poppins(
                                           fontSize: 13,
                                           color: Colors.grey[700],

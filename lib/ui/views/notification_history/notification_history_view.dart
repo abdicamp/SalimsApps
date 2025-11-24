@@ -3,6 +3,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:salims_apps_new/core/utils/rounded_clipper.dart';
+import 'package:salims_apps_new/core/utils/app_localizations.dart';
 import 'package:salims_apps_new/ui/views/notification_history/notification_history_viewmodel.dart';
 import 'package:stacked/stacked.dart';
 import 'package:intl/intl.dart';
@@ -59,7 +60,7 @@ class _NotificationHistoryViewState extends State<NotificationHistoryView> {
                             ),
                             child: Center(
                               child: Text(
-                                "Notification History",
+                                AppLocalizations.of(context)?.notificationHistory ?? "Notification History",
                                 style: GoogleFonts.lato(
                                   color: Colors.white,
                                   fontSize: 22,
@@ -102,7 +103,7 @@ class _NotificationHistoryViewState extends State<NotificationHistoryView> {
                                 });
                               },
                               decoration: InputDecoration(
-                                hintText: "Search notification...",
+                                hintText: AppLocalizations.of(context)?.searchNotification ?? "Search notification...",
                                 hintStyle: TextStyle(
                                   color: Colors.grey.shade500,
                                   fontSize: 14,
@@ -145,7 +146,7 @@ class _NotificationHistoryViewState extends State<NotificationHistoryView> {
                                         ),
                                         const SizedBox(height: 16),
                                         Text(
-                                          "No notifications found",
+                                          AppLocalizations.of(context)?.noNotificationsFound ?? "No notifications found",
                                           style: GoogleFonts.poppins(
                                             fontSize: 16,
                                             color: Colors.grey.shade600,
@@ -270,7 +271,7 @@ class NotificationItemCard extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                notification.title ?? 'No Title',
+                                notification.title ?? (AppLocalizations.of(context)?.noTitle ?? 'No Title'),
                                 style: GoogleFonts.poppins(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
@@ -279,7 +280,7 @@ class NotificationItemCard extends StatelessWidget {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                notification.description ?? 'No description',
+                                notification.description ?? (AppLocalizations.of(context)?.noDescription ?? 'No description'),
                                 style: GoogleFonts.poppins(
                                   fontSize: 13,
                                   color: Colors.grey.shade700,
@@ -306,7 +307,7 @@ class NotificationItemCard extends StatelessWidget {
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
-                            notification.status?.toUpperCase() ?? 'UNKNOWN',
+                            notification.status?.toUpperCase() ?? (AppLocalizations.of(context)?.unknown ?? 'UNKNOWN'),
                             style: GoogleFonts.poppins(
                               fontSize: 10,
                               fontWeight: FontWeight.bold,
@@ -374,7 +375,7 @@ class NotificationItemCard extends StatelessWidget {
                               ),
                               const SizedBox(width: 4),
                               Text(
-                                '${notification.userCount} users',
+                                '${notification.userCount} ${AppLocalizations.of(context)?.users ?? 'users'}',
                                 style: GoogleFonts.poppins(
                                   fontSize: 11,
                                   color: Colors.grey.shade600,
