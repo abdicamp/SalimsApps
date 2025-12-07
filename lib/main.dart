@@ -20,7 +20,7 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 // 🔔 Global instance untuk notifikasi
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-    FlutterLocalNotificationsPlugin();
+FlutterLocalNotificationsPlugin();
 
 // 🔔 Channel Android
 const AndroidNotificationChannel channel = AndroidNotificationChannel(
@@ -34,7 +34,7 @@ const AndroidNotificationChannel channel = AndroidNotificationChannel(
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  
+
   print("═══════════════════════════════════════════════════════");
   print("📩 PUSH NOTIFICATION RECEIVED (BACKGROUND)");
   print("═══════════════════════════════════════════════════════");
@@ -47,27 +47,27 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   print("📊 Data: ${message.data}");
   print("🔗 Screen: ${message.data['screen'] ?? 'N/A'}");
   print("═══════════════════════════════════════════════════════");
-  
+
   // Initialize local notifications plugin
   final FlutterLocalNotificationsPlugin localNotifications = FlutterLocalNotificationsPlugin();
-  
+
   const AndroidInitializationSettings initSettingsAndroid =
-      AndroidInitializationSettings('@mipmap/ic_launcher');
+  AndroidInitializationSettings('@mipmap/ic_launcher');
   const DarwinInitializationSettings initSettingsIOS =
-      DarwinInitializationSettings();
+  DarwinInitializationSettings();
   const InitializationSettings initSettings = InitializationSettings(
     android: initSettingsAndroid,
     iOS: initSettingsIOS,
   );
-  
+
   await localNotifications.initialize(initSettings);
-  
+
   // Create notification channel for Android
   await localNotifications
       .resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin>()
+      AndroidFlutterLocalNotificationsPlugin>()
       ?.createNotificationChannel(channel);
-  
+
   // Show notification
   final RemoteNotification? notification = message.notification;
   if (notification != null) {
@@ -121,13 +121,13 @@ void main() async {
   await initNotifications();
 
   // Setup selesai, lanjut ke aplikasi
-  
+
   // Setup token expired callback untuk auto logout
   ApiService.setTokenExpiredCallback(() {
     // Navigate ke splash screen (yang akan redirect ke login jika tidak ada user data)
     navigatorKey.currentState?.pushAndRemoveUntil(
       MaterialPageRoute(builder: (context) => SplashScreenView()),
-      (route) => false,
+          (route) => false,
     );
   });
 
@@ -144,10 +144,10 @@ void main() async {
 
 Future<void> initNotifications() async {
   const AndroidInitializationSettings initSettingsAndroid =
-      AndroidInitializationSettings('@mipmap/ic_launcher');
+  AndroidInitializationSettings('@mipmap/ic_launcher');
 
   const DarwinInitializationSettings initSettingsIOS =
-      DarwinInitializationSettings(
+  DarwinInitializationSettings(
     requestAlertPermission: true,
     requestBadgePermission: true,
     requestSoundPermission: true,
@@ -177,13 +177,13 @@ Future<void> initNotifications() async {
   // ✅ Buat channel Android
   await flutterLocalNotificationsPlugin
       .resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin>()
+      AndroidFlutterLocalNotificationsPlugin>()
       ?.createNotificationChannel(channel);
 
   // ✅ Request permission untuk Android 13+
   await flutterLocalNotificationsPlugin
       .resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin>()
+      AndroidFlutterLocalNotificationsPlugin>()
       ?.requestNotificationsPermission();
 
   // ✅ Listener untuk pesan di foreground
@@ -202,7 +202,7 @@ Future<void> initNotifications() async {
     print("📦 Collapse Key: ${message.collapseKey ?? 'N/A'}");
     print("🔑 Message Type: ${message.messageType ?? 'N/A'}");
     print("═══════════════════════════════════════════════════════");
-    
+
     RemoteNotification? notification = message.notification;
     AndroidNotification? android = message.notification?.android;
 
@@ -245,7 +245,7 @@ Future<void> initNotifications() async {
         print("📤 Displaying notification from data payload:");
         print("   - Title: $title");
         print("   - Body: $body");
-        
+
         await flutterLocalNotificationsPlugin.show(
           message.hashCode,
           title,
@@ -277,7 +277,7 @@ Future<void> initNotifications() async {
       }
     }
   });
-  
+
   // ✅ Handle notification tap (app sudah terbuka)
   FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
     print("═══════════════════════════════════════════════════════");
@@ -317,18 +317,16 @@ class _MyAppState extends State<MyApp> {
           sound: true,
           provisional: false,
         );
-        
+
         print("🔔 Notification permission status: ${settings.authorizationStatus}");
 
         // For iOS, wait for APNS token first
         final apnsToken = await FirebaseMessaging.instance.getAPNSToken();
         print("📱 APNS Token: $apnsToken");
-        
+
         if (apnsToken == null) {
           print("⚠️ APNS token is null. Make sure Push Notifications capability is enabled in Xcode.");
-          print("⚠️ Note: APNS token will be null in iOS Simulator. Use physical device for testing.");
-          // Tidak return early, tetap lanjut untuk mendapatkan FCM token
-          // FCM token mungkin tetap bisa didapat meskipun APNS null (tapi tidak akan berfungsi untuk push)
+          return;
         }
       }
 
@@ -336,11 +334,11 @@ class _MyAppState extends State<MyApp> {
       String? token;
       int retryCount = 0;
       const maxRetries = 3;
-      
+
       print("═══════════════════════════════════════════════════════");
       print("🔑 GETTING FCM TOKEN");
       print("═══════════════════════════════════════════════════════");
-      
+
       while (token == null && retryCount < maxRetries) {
         try {
           token = await FirebaseMessaging.instance.getToken();
@@ -355,22 +353,22 @@ class _MyAppState extends State<MyApp> {
         } catch (e) {
           retryCount++;
           print("⚠️ Error getting FCM token (attempt $retryCount/$maxRetries): $e");
-          
+
           // Jika error SERVICE_NOT_AVAILABLE, mungkin Google Play Services tidak tersedia
           if (e.toString().contains('SERVICE_NOT_AVAILABLE')) {
             print("⚠️ Google Play Services mungkin tidak tersedia atau tidak ter-update.");
             print("⚠️ Pastikan device memiliki Google Play Services yang ter-update.");
-            
+
             // Tidak retry lagi untuk SERVICE_NOT_AVAILABLE
             break;
           }
-          
+
           if (retryCount < maxRetries) {
             await Future.delayed(const Duration(seconds: 2));
           }
         }
       }
-      
+
       if (token == null) {
         print("❌ FCM Token tidak dapat diperoleh setelah $maxRetries attempts");
         print("═══════════════════════════════════════════════════════");
@@ -381,7 +379,7 @@ class _MyAppState extends State<MyApp> {
       print("═══════════════════════════════════════════════════════");
       print("❌ Error: $e");
       print("📚 Stack trace: $stackTrace");
-      
+
       // Log lebih detail untuk debugging
       if (e.toString().contains('SERVICE_NOT_AVAILABLE')) {
         print("⚠️ SERVICE_NOT_AVAILABLE error biasanya terjadi karena:");
@@ -395,10 +393,10 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    
+
     // Initialize messaging
     _initializeMessaging();
-    
+
     // Check initial message (jika app dibuka dari notification saat app terminated)
     FirebaseMessaging.instance.getInitialMessage().then((RemoteMessage? message) {
       if (message != null) {
@@ -444,20 +442,20 @@ class _MyAppState extends State<MyApp> {
             Locale('id'), // Indonesian
             Locale('en'), // English
           ],
-            theme: ThemeData(
-              scaffoldBackgroundColor: AppColors.background,
-              primaryColor: AppColors.skyBlue,
-              textTheme: GoogleFonts.poppinsTextTheme().apply(
-                bodyColor: AppColors.textPrimary,
-                displayColor: AppColors.textPrimary,
-              ),
-              colorScheme: ColorScheme.fromSeed(
-                seedColor: AppColors.skyBlue,
-                primary: AppColors.skyBlue,
-                secondary: AppColors.lime,
-                background: AppColors.background,
-              ),
+          theme: ThemeData(
+            scaffoldBackgroundColor: AppColors.background,
+            primaryColor: AppColors.skyBlue,
+            textTheme: GoogleFonts.poppinsTextTheme().apply(
+              bodyColor: AppColors.textPrimary,
+              displayColor: AppColors.textPrimary,
             ),
+            colorScheme: ColorScheme.fromSeed(
+              seedColor: AppColors.skyBlue,
+              primary: AppColors.skyBlue,
+              secondary: AppColors.lime,
+              background: AppColors.background,
+            ),
+          ),
           home: SplashScreenView(),
         );
       },

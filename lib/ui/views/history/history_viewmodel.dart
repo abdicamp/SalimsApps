@@ -20,6 +20,7 @@ class HistoryViewmodel extends FutureViewModel {
   List<TestingOrder> listTaskHistorySearch = [];
   HistoryViewmodel({this.context});
 
+
   void pickDateRange() async {
     DateTimeRange? newRange = await showDateRangePicker(
       context: context!,
@@ -32,7 +33,7 @@ class HistoryViewmodel extends FutureViewModel {
       selectedRange = newRange;
       tanggalCtrl!.text =
           '${_formatDate(selectedRange!.start)}-${_formatDate(selectedRange!.end)}';
-
+      getDataTaskHistory();
       notifyListeners();
     }
   }
@@ -87,7 +88,7 @@ class HistoryViewmodel extends FutureViewModel {
     final fromDateStr = dateFormat.format(fromDate);
     final toDateStr = dateFormat.format(toDate);
 
-    tanggalCtrl?.text = '${fromDateStr}-${toDateStr}';
+    tanggalCtrl?.text = '';
     await getDataTaskHistory();
     notifyListeners();
   }

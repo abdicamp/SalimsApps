@@ -23,6 +23,8 @@ class HomeViewmodel extends FutureViewModel {
   double lat = 0;
   double lng = 0;
   int newNotificationCount = 0;
+  DateTimeRange? selectedRange;
+  TextEditingController? dateFilterController = TextEditingController();
 
   getUserData() async {
     try {
@@ -176,18 +178,62 @@ class HomeViewmodel extends FutureViewModel {
     }
   }
 
-  getDataTask() async {
+  void pickDateRange() async {
     final now = DateTime.now();
-    final fromDate = DateTime(now.year, now.month, 1); // 1 tanggal awal bulan
-    final toDate = now; // hari ini
+    final initialRange = selectedRange ?? 
+        DateTimeRange(
+          start: DateTime(now.year, now.month, 1),
+          end: now,
+        );
+    
+    DateTimeRange? newRange = await showDateRangePicker(
+      context: context!,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2100),
+      initialDateRange: initialRange,
+    );
+
+    if (newRange != null) {
+      selectedRange = newRange;
+      dateFilterController!.text =
+          '${_formatDate(selectedRange!.start)} - ${_formatDate(selectedRange!.end)}';
+      getDataTask();
+      notifyListeners();
+    }
+  }
+
+  String _formatDate(DateTime date) {
+    return DateFormat('yyyy-MM-dd').format(date);
+  }
+
+  void resetDateFilter() {
+    selectedRange = null;
+    dateFilterController!.clear();
+    getDataTask();
+    notifyListeners();
+  }
+
+  getDataTask() async {
+    DateTime fromDate;
+    DateTime toDate;
+    
+    if (selectedRange != null) {
+      fromDate = selectedRange!.start;
+      toDate = selectedRange!.end;
+    } else {
+      final now = DateTime.now();
+      fromDate = DateTime(now.year, now.month, 1); // 1 tanggal awal bulan
+      toDate = now; // hari ini
+    }
+    
     final dateFormat = DateFormat('yyyy-MM-dd');
     final fromDateStr = dateFormat.format(fromDate);
     final toDateStr = dateFormat.format(toDate);
 
     final responseTaskList =
-        await apiService.getTaskList('${fromDateStr}-${toDateStr}');
+        await apiService.getTaskList('${fromDateStr} - ${toDateStr}');
     final responseTaskListHistory =
-        await apiService.getTaskListHistory('${fromDateStr}-${toDateStr}');
+        await apiService.getTaskListHistory('${fromDateStr} - ${toDateStr}');
     
     if (responseTaskList?.data?.data != null) {
       totalListTask = responseTaskList!.data!.data.length;
@@ -304,6 +350,10 @@ class HomeViewmodel extends FutureViewModel {
   @override
   Future futureToRun() async {
     setBusy(true);
+    // Initialize date filter controller
+    if (dateFilterController == null) {
+      dateFilterController = TextEditingController();
+    }
     await runAllFunction();
   }
 }

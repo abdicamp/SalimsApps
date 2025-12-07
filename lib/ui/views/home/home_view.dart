@@ -564,6 +564,64 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
                           ],
                         ),
                         SizedBox(height: 20),
+                        
+                        // Filter Date Section
+                        TextField(
+                          readOnly: true,
+                          controller: vm.dateFilterController,
+                          onTap: () {
+                            vm.pickDateRange();
+                          },
+                          decoration: InputDecoration(
+                            hintText: AppLocalizations.of(context)?.date ?? "Date",
+                            hintStyle: TextStyle(
+                              color: Colors.grey.shade500,
+                              fontSize: 14,
+                            ),
+                            prefixIcon: Icon(
+                              Icons.date_range,
+                              color: Colors.grey.shade600,
+                              size: 20,
+                            ),
+                            suffixIcon: vm.dateFilterController?.text.isNotEmpty ?? false
+                                ? IconButton(
+                                    onPressed: () {
+                                      vm.resetDateFilter();
+                                    },
+                                    icon: Icon(
+                                      Icons.clear,
+                                      color: Colors.grey.shade600,
+                                      size: 20,
+                                    ),
+                                  )
+                                : null,
+                            filled: true,
+                            fillColor: Colors.grey.shade100,
+                            contentPadding: const EdgeInsets.symmetric(
+                              vertical: 12,
+                              horizontal: 16,
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(20),
+                              borderSide: BorderSide(
+                                color: Colors.grey.shade300,
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(20),
+                              borderSide: BorderSide(
+                                color: Colors.blue.shade400,
+                                width: 1.5,
+                              ),
+                            ),
+                          ),
+                          style: GoogleFonts.poppins(
+                            fontSize: 14,
+                          ),
+                        ),
+                        
+                        const SizedBox(height: 12),
+                        
                         Stack(
                           children: [
                             Card(

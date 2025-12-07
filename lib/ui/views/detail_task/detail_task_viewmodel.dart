@@ -272,37 +272,62 @@ class DetailTaskViewmodel extends FutureViewModel {
       return;
     }
 
-    userPosition = await Geolocator.getCurrentPosition(
-      desiredAccuracy: LocationAccuracy.high,
-    );
+    try {
+      userPosition = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
 
-    currentLocation = LatLng(userPosition!.latitude, userPosition!.longitude);
-    latlang = '${currentLocation!.latitude},${currentLocation!.longitude}';
-    latitude = '${currentLocation!.latitude}';
-    longitude = '${currentLocation!.longitude}';
-    print("latlang : ${latlang}");
-    locationController?.text = latlang!;
-    List<Placemark> placemarks = await placemarkFromCoordinates(
-      currentLocation!.latitude,
-      currentLocation!.longitude,
-    );
+      currentLocation = LatLng(userPosition!.latitude, userPosition!.longitude);
+      latlang = '${currentLocation!.latitude},${currentLocation!.longitude}';
+      latitude = '${currentLocation!.latitude}';
+      longitude = '${currentLocation!.longitude}';
+      print("latlang : ${latlang}");
+      locationController?.text = latlang!;
+      
+      try {
+        List<Placemark> placemarks = await placemarkFromCoordinates(
+          currentLocation!.latitude,
+          currentLocation!.longitude,
+        );
 
-    print("placemarks : ${placemarks}");
-    Placemark placemark = placemarks[0];
+        print("placemarks : ${placemarks}");
 
-    if (placemarks.isNotEmpty) {
-      Placemark placemark = placemarks[0];
-      String safe(String? val) => val ?? '';
+        if (placemarks.isNotEmpty) {
+          Placemark placemark = placemarks[0];
+          String safe(String? val) => val ?? '';
 
-      address =
-          "${safe(placemark.street)}, ${safe(placemark.name)}, ${safe(placemark.subLocality)}, ${safe(placemark.postalCode)}, ${safe(placemark.locality)}, ${safe(placemark.subAdministrativeArea)}, ${safe(placemark.administrativeArea)}, ${safe(placemark.country)}";
-      namaJalan = safe(placemark.street);
+          address =
+              "${safe(placemark.street)}, ${safe(placemark.name)}, ${safe(placemark.subLocality)}, ${safe(placemark.postalCode)}, ${safe(placemark.locality)}, ${safe(placemark.subAdministrativeArea)}, ${safe(placemark.administrativeArea)}, ${safe(placemark.country)}";
+          namaJalan = safe(placemark.street);
 
+          addressController?.text = namaJalan!;
+          isChangeLocation = true;
+        } else {
+          // Jika tidak ada placemark, set default address
+          address = "Location: ${latlang}";
+          namaJalan = "Location";
+          addressController?.text = namaJalan!;
+          isChangeLocation = true;
+        }
+      } catch (e) {
+        // Handle geocoding error (permission denied, network error, etc.)
+        print("Error getting placemark: $e");
+        // Set default address dengan koordinat
+        address = "Location: ${latlang}";
+        namaJalan = "Location";
+        addressController?.text = namaJalan!;
+        isChangeLocation = true;
+      }
+    } catch (e) {
+      print("Error getting location: $e");
+      // Set default values jika gagal mendapatkan lokasi
+      address = "Location unavailable";
+      namaJalan = "Location";
       addressController?.text = namaJalan!;
-      isChangeLocation = true;
+    } finally {
       setBusy(false);
+      notifyListeners();
     }
-    notifyListeners();
   }
 
   Future<void> confirmPost() async {
