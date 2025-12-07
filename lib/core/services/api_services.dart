@@ -181,9 +181,15 @@ class ApiService {
     try {
       final getData = await _storage.getUserData();
       // print("${baseUrl}/transaction/taking-sample/testing-order?branchcode=${getData?.data?.branchcode}&labour_id=${getData?.data?.labour_id}&rangeDate=${filterDate == '' ? '${DateFormat('yyyy-MM-dd').format(DateTime.now())}-${DateFormat('yyyy-MM-dd').format(DateTime.now())}' : filterDate}");
+      print("getTaskList filterDate: $filterDate");
+      print("getTaskList branchcode: ${getData?.data?.branchcode}");
+      print("getTaskList labourcode: ${getData?.data?.labourcode}");
+      print("getTaskList rangeDate: ${filterDate == '' ? '${DateFormat('yyyy-MM-dd').format(DateTime.now())}-${DateFormat('yyyy-MM-dd').format(DateTime.now())}' : filterDate}");
+      print("getTaskList url: ${baseUrl}/transaction/taking-sample/testing-order?branchcode=${getData?.data?.branchcode}&labourcode=${getData?.data?.labourcode}&rangedate=${filterDate == '' ? '${DateFormat('yyyy-MM-dd').format(DateTime.now())} - ${DateFormat('yyyy-MM-dd').format(DateTime.now())}' : filterDate}");
+      
       final response = await http.get(
         Uri.parse(
-            "${baseUrl}/transaction/taking-sample/testing-order?branchcode=${getData?.data?.branchcode}&labourcode=${getData?.data?.labourcode}&rangeDate=${filterDate == '' ? '${DateFormat('yyyy-MM-dd').format(DateTime.now())}-${DateFormat('yyyy-MM-dd').format(DateTime.now())}' : filterDate}"),
+            "${baseUrl}/transaction/taking-sample/testing-order?branchcode=${getData?.data?.branchcode}&labourcode=${getData?.data?.labourcode}&rangedate=${filterDate}"),
         headers: {
           "Content-Type": "application/json",
           "Authorization": "Bearer ${getData?.accessToken}",
@@ -226,7 +232,7 @@ class ApiService {
     }
   }
 
-  Future<ApiResponse<TestingOrderHistoryModel>?> getTaskListHistory(
+  Future<ApiResponse<TaskListModels>?> getTaskListHistory(
       String? filterDate
   ) async {
     try {
@@ -239,7 +245,7 @@ class ApiService {
 
       // Bangun URL dengan query parameters (karena GET tidak bisa body)
       final uri = Uri.parse(
-        "${baseUrl}/transaction/taking-sample/testing-order-sampling-date?branchcode=${getData.data?.branchcode}&labourcode=${getData.data?.labourcode}",
+        "${baseUrl}/transaction/taking-sample/testing-order-sampling-date?branchcode=${getData.data?.branchcode}&samplingby=${getData.data?.username}",
       );
 
       final response = await http.get(
@@ -263,7 +269,7 @@ class ApiService {
       // Model sudah bisa handle status false dan data kosong dengan baik
       try {
         final data = jsonDecode(response.body);
-        final taskListResponse = TestingOrderHistoryModel.fromJson(data);
+        final taskListResponse = TaskListModels.fromJson(data);
         
         // Log untuk debug
         print("getTaskListHistory parsed - status: ${taskListResponse.status}, code: ${taskListResponse.code}, data length: ${taskListResponse.data.length}");

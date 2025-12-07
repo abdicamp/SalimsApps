@@ -115,6 +115,45 @@ class AppLocalizations {
   
   // History
   String get searchTaskHistory => _localizedValues[locale.languageCode]?['searchTaskHistory'] ?? 'Search task history...';
+  
+  // Notification History
+  String get notificationHistory => _localizedValues[locale.languageCode]?['notificationHistory'] ?? 'Notification History';
+  String get searchNotification => _localizedValues[locale.languageCode]?['searchNotification'] ?? 'Search notification...';
+  String get noNotificationsFound => _localizedValues[locale.languageCode]?['noNotificationsFound'] ?? 'No notifications found';
+  String get noTitle => _localizedValues[locale.languageCode]?['noTitle'] ?? 'No Title';
+  String get noDescription => _localizedValues[locale.languageCode]?['noDescription'] ?? 'No description';
+  String get unknown => _localizedValues[locale.languageCode]?['unknown'] ?? 'UNKNOWN';
+  String get users => _localizedValues[locale.languageCode]?['users'] ?? 'users';
+  
+  // Dialog
+  String get confirmDialog => _localizedValues[locale.languageCode]?['confirmDialog'] ?? 'Confirm';
+  String get confirmChangeLocation => _localizedValues[locale.languageCode]?['confirmChangeLocation'] ?? 'Are you sure you want to change the location?';
+  
+  // Form Labels
+  String get attachment => _localizedValues[locale.languageCode]?['attachment'] ?? 'Attachment';
+  String get conUOM => _localizedValues[locale.languageCode]?['conUOM'] ?? 'Con UOM';
+  String get volUOM => _localizedValues[locale.languageCode]?['volUOM'] ?? 'Vol UOM';
+  String get isCalibration => _localizedValues[locale.languageCode]?['isCalibration'] ?? 'Is Calibration';
+  String get formCannotBeEmpty => _localizedValues[locale.languageCode]?['formCannotBeEmpty'] ?? 'Form cannot be empty';
+  String get pleaseEnterSomeText => _localizedValues[locale.languageCode]?['pleaseEnterSomeText'] ?? 'Please enter some text';
+  
+  // Form Field Labels
+  String get searchParameter => _localizedValues[locale.languageCode]?['searchParameter'] ?? 'Search Parameter';
+  String get searchEquipment => _localizedValues[locale.languageCode]?['searchEquipment'] ?? 'Search Equipment';
+  String get unitQTY => _localizedValues[locale.languageCode]?['unitQTY'] ?? 'Unit QTY';
+  String get volumeQTY => _localizedValues[locale.languageCode]?['volumeQTY'] ?? 'Volume QTY';
+  String get volumeUOM => _localizedValues[locale.languageCode]?['volumeUOM'] ?? 'Volume UOM';
+  String get instituResult => _localizedValues[locale.languageCode]?['instituResult'] ?? 'Institu Result';
+  String get description => _localizedValues[locale.languageCode]?['description'] ?? 'Description';
+  String get geotag => _localizedValues[locale.languageCode]?['geotag'] ?? 'Geotag';
+  String get address => _localizedValues[locale.languageCode]?['address'] ?? 'Address';
+  String get weather => _localizedValues[locale.languageCode]?['weather'] ?? 'Weather';
+  String get windDirection => _localizedValues[locale.languageCode]?['windDirection'] ?? 'Wind Direction';
+  String get temperatur => _localizedValues[locale.languageCode]?['temperatur'] ?? 'Temperatur';
+  
+  // Hint Text
+  String get searchParameterHint => _localizedValues[locale.languageCode]?['searchParameterHint'] ?? 'Search Parameter';
+  String get searchEquipmentHint => _localizedValues[locale.languageCode]?['searchEquipmentHint'] ?? 'Search Equipment';
 
   static final Map<String, Map<String, String>> _localizedValues = {
     'id': {
@@ -190,6 +229,35 @@ class AppLocalizations {
       'formContainerInfoEmpty': 'Form Container Info Kosong',
       'imageCannotBeEmpty': 'Gambar tidak boleh kosong',
       'searchTaskHistory': 'Cari riwayat tugas...',
+      'notificationHistory': 'Riwayat Notifikasi',
+      'searchNotification': 'Cari notifikasi...',
+      'noNotificationsFound': 'Tidak ada notifikasi ditemukan',
+      'noTitle': 'Tidak Ada Judul',
+      'noDescription': 'Tidak ada deskripsi',
+      'unknown': 'TIDAK DIKETAHUI',
+      'users': 'pengguna',
+      'confirmDialog': 'Konfirmasi',
+      'confirmChangeLocation': 'Apakah kamu yakin ingin mengubah lokasi nya ?',
+      'attachment': 'Lampiran',
+      'conUOM': 'Con UOM',
+      'volUOM': 'Vol UOM',
+      'isCalibration': 'Apakah Kalibrasi',
+      'formCannotBeEmpty': 'Form tidak boleh Kosong',
+      'pleaseEnterSomeText': 'Harap masukkan beberapa teks',
+      'searchParameter': 'Cari Parameter',
+      'searchEquipment': 'Cari Peralatan',
+      'unitQTY': 'Unit QTY',
+      'volumeQTY': 'Volume QTY',
+      'volumeUOM': 'Volume UOM',
+      'instituResult': 'Hasil Institu',
+      'description': 'Deskripsi',
+      'geotag': 'Geotag',
+      'address': 'Alamat',
+      'weather': 'Cuaca',
+      'windDirection': 'Arah Angin',
+      'temperatur': 'Suhu',
+      'searchParameterHint': 'Cari Parameter',
+      'searchEquipmentHint': 'Cari Peralatan',
     },
     'en': {
       'appName': 'Salims Apps',
@@ -264,6 +332,35 @@ class AppLocalizations {
       'formContainerInfoEmpty': 'Form Container Info is Empty',
       'imageCannotBeEmpty': 'Image cannot be empty',
       'searchTaskHistory': 'Search task history...',
+      'notificationHistory': 'Notification History',
+      'searchNotification': 'Search notification...',
+      'noNotificationsFound': 'No notifications found',
+      'noTitle': 'No Title',
+      'noDescription': 'No description',
+      'unknown': 'UNKNOWN',
+      'users': 'users',
+      'confirmDialog': 'Confirm',
+      'confirmChangeLocation': 'Are you sure you want to change the location?',
+      'attachment': 'Attachment',
+      'conUOM': 'Con UOM',
+      'volUOM': 'Vol UOM',
+      'isCalibration': 'Is Calibration',
+      'formCannotBeEmpty': 'Form cannot be empty',
+      'pleaseEnterSomeText': 'Please enter some text',
+      'searchParameter': 'Search Parameter',
+      'searchEquipment': 'Search Equipment',
+      'unitQTY': 'Unit QTY',
+      'volumeQTY': 'Volume QTY',
+      'volumeUOM': 'Volume UOM',
+      'instituResult': 'Institu Result',
+      'description': 'Description',
+      'geotag': 'Geotag',
+      'address': 'Address',
+      'weather': 'Weather',
+      'windDirection': 'Wind Direction',
+      'temperatur': 'Temperatur',
+      'searchParameterHint': 'Search Parameter',
+      'searchEquipmentHint': 'Search Equipment',
     },
   };
 }

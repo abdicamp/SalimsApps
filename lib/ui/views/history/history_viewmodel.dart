@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:salims_apps_new/core/models/task_list_history_models.dart';
+import 'package:salims_apps_new/core/models/task_list_models.dart';
 import 'package:salims_apps_new/core/services/api_services.dart';
 import 'package:stacked/stacked.dart';
 
@@ -15,9 +16,10 @@ class HistoryViewmodel extends FutureViewModel {
   String? toDate;
   DateTimeRange? selectedRange;
   TextEditingController? tanggalCtrl = new TextEditingController();
-  List<TestingOrderData> listTaskHistory = [];
-  List<TestingOrderData> listTaskHistorySearch = [];
+  List<TestingOrder> listTaskHistory = [];
+  List<TestingOrder> listTaskHistorySearch = [];
   HistoryViewmodel({this.context});
+
 
   void pickDateRange() async {
     DateTimeRange? newRange = await showDateRangePicker(
@@ -31,7 +33,7 @@ class HistoryViewmodel extends FutureViewModel {
       selectedRange = newRange;
       tanggalCtrl!.text =
           '${_formatDate(selectedRange!.start)}-${_formatDate(selectedRange!.end)}';
-
+      getDataTaskHistory();
       notifyListeners();
     }
   }
@@ -46,13 +48,13 @@ class HistoryViewmodel extends FutureViewModel {
         : listTaskHistorySearch
             .where(
               (item) =>
-                  item.ReqNumber.toString().toLowerCase().contains(
+                  item.reqnumber.toString().toLowerCase().contains(
                         text.toLowerCase(),
                       ) ||
-                  item.PtsNumber.toString().toLowerCase().contains(
+                  item.ptsnumber.toString().toLowerCase().contains(
                         text.toLowerCase(),
                       ) ||
-                  item.ZonaName.toString().toLowerCase().contains(
+                  item.zonaname.toString().toLowerCase().contains(
                         text.toLowerCase(),
                       ),
             )
@@ -86,7 +88,7 @@ class HistoryViewmodel extends FutureViewModel {
     final fromDateStr = dateFormat.format(fromDate);
     final toDateStr = dateFormat.format(toDate);
 
-    tanggalCtrl?.text = '${fromDateStr}-${toDateStr}';
+    tanggalCtrl?.text = '';
     await getDataTaskHistory();
     notifyListeners();
   }

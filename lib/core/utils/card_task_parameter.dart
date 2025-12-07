@@ -5,6 +5,7 @@ import 'package:salims_apps_new/core/utils/custom_text_field.dart';
 import 'package:salims_apps_new/core/utils/data_table_CI_view.dart';
 import 'package:salims_apps_new/core/utils/data_table_Par_view.dart';
 import 'package:salims_apps_new/core/utils/search_dropdown.dart';
+import 'package:salims_apps_new/core/utils/app_localizations.dart';
 import 'package:salims_apps_new/ui/views/detail_task/detail_task_viewmodel.dart';
 
 class CardTaskParameter extends StatefulWidget {
@@ -19,6 +20,15 @@ class CardTaskParameter extends StatefulWidget {
 class _CardTaskParameterState extends State<CardTaskParameter> {
   @override
   Widget build(BuildContext context) {
+    // Debug logging
+    if (widget.isDetailhistory == true) {
+      print("🔄 CardTaskParameter rebuild - isDetailhistory: true");
+      print("   - vm is null: ${widget.vm == null}");
+      if (widget.vm != null) {
+        print("   - listTakingSampleParameter: ${widget.vm!.listTakingSampleParameter.length}");
+      }
+    }
+    
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
       child: SingleChildScrollView(
@@ -43,11 +53,23 @@ class _CardTaskParameterState extends State<CardTaskParameter> {
                         padding: const EdgeInsets.all(14),
                         child:
 
-                       widget.isDetailhistory == true ? DataTableParView(
-                         listTakingSampleParameter:
-                         widget.vm?.listTakingSampleParameter,
-                         vm: widget.vm!,
-                       ) :  Column(
+
+                       widget.isDetailhistory == true 
+                         ? (widget.vm?.listTakingSampleParameter == null || widget.vm!.listTakingSampleParameter.isEmpty
+                            ? Center(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(20.0),
+                                  child: Text(
+                                    'No parameter information available',
+                                    style: TextStyle(color: Colors.grey[600]),
+                                  ),
+                                ),
+                              )
+                            : DataTableParView(
+                                listTakingSampleParameter: widget.vm!.listTakingSampleParameter,
+                                vm: widget.vm!,
+                              ))
+                         : Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
@@ -76,12 +98,12 @@ class _CardTaskParameterState extends State<CardTaskParameter> {
                                   child: CustomSearchableDropDown(
                                     isReadOnly: false,
                                     items: widget.vm!.listParameter,
-                                    label: 'Search Parameter',
+                                    label: AppLocalizations.of(context)?.searchParameter ?? 'Search Parameter',
                                     padding: EdgeInsets.zero,
                                     // searchBarHeight: SDP.sdp(40),
                                     hint: 'Search Parameter',
                                     // initialIndex: index,
-                                    dropdownHintText: 'Cari Search Parameter',
+                                    dropdownHintText: AppLocalizations.of(context)?.searchParameterHint ?? 'Search Parameter',
                                     dropdownItemStyle: GoogleFonts.getFont(
                                       "Lato",
                                     ),
@@ -105,12 +127,12 @@ class _CardTaskParameterState extends State<CardTaskParameter> {
                             CustomTextField(
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
-                                  return 'Please enter some text';
+                                  return AppLocalizations.of(context)?.pleaseEnterSomeText ?? 'Please enter some text';
                                 }
                                 return null;
                               },
                               controller: widget.vm!.institutController!,
-                              label: 'Institu Result',
+                              label: AppLocalizations.of(context)?.instituResult ?? 'Institu Result',
                             ),
                             SizedBox(height: 5),
                             SizedBox(height: 5),
@@ -118,16 +140,16 @@ class _CardTaskParameterState extends State<CardTaskParameter> {
                               maxLines: 4,
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
-                                  return 'Please enter some text';
+                                  return AppLocalizations.of(context)?.pleaseEnterSomeText ?? 'Please enter some text';
                                 }
                                 return null;
                               },
                               controller: widget.vm!.descriptionParController!,
-                              label: 'Description',
+                              label: AppLocalizations.of(context)?.description ?? 'Description',
                             ),
                             Row(
                               children: [
-                                Text("Is Calibration"),
+                                Text(AppLocalizations.of(context)?.isCalibration ?? "Is Calibration"),
                                 Checkbox(
                                   checkColor: Colors.black,
                                   fillColor:
@@ -164,7 +186,7 @@ class _CardTaskParameterState extends State<CardTaskParameter> {
                                           SnackBar(
                                             duration: Duration(seconds: 2),
                                             content:
-                                            Text("Form tidak boleh Kosong"),
+                                            Text(AppLocalizations.of(context)?.formCannotBeEmpty ?? "Form cannot be empty"),
                                             backgroundColor: Colors.red,
                                           ),
                                         );

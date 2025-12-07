@@ -29,7 +29,8 @@ class TaskListViewmodel extends FutureViewModel {
     if (newRange != null) {
       selectedRange = newRange;
       tanggalCtrl!.text =
-          '${_formatDate(selectedRange!.start)}-${_formatDate(selectedRange!.end)}';
+          '${_formatDate(selectedRange!.start)} - ${_formatDate(selectedRange!.end)}';
+      print("pickDateRange tanggalCtrl?.text: ${tanggalCtrl?.text}");
       getListTask();
       notifyListeners();
     }
@@ -63,8 +64,9 @@ class TaskListViewmodel extends FutureViewModel {
   getListTask() async {
     setBusy(true);
     try {
-
-      final response = await _apiServices.getTaskList(tanggalCtrl?.text ?? '${DateFormat('yyyy-MM-dd').format(DateTime.now())}-${DateFormat('yyyy-MM-dd').format(DateTime.now())}');
+      print("getListTask tanggalCtrl?.text: ${tanggalCtrl?.text}");
+      // final response = await _apiServices.getTaskList(tanggalCtrl?.text ?? '${DateFormat('yyyy-MM-dd').format(DateTime.now())} - ${DateFormat('yyyy-MM-dd').format(DateTime.now())}');
+      final response = await _apiServices.getTaskList(tanggalCtrl?.text ?? '');
       listTask = response!.data!.data;
       print("jsondecode getListTask :${jsonEncode(listTask)}");
       listTaskSearch = response.data!.data;
@@ -105,7 +107,7 @@ class TaskListViewmodel extends FutureViewModel {
     final fromDateStr = dateFormat.format(fromDate);
     final toDateStr = dateFormat.format(toDate);
 
-    tanggalCtrl?.text = '${fromDateStr}-${toDateStr}';
+    tanggalCtrl?.text = '';
     await  getListTask();
     notifyListeners();
   }

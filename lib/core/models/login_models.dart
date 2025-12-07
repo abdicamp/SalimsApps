@@ -50,9 +50,11 @@ class UserData {
   final String branchcode;
   final String username;
   final String? grouptran;
+  final String? groupcode;
   final String? addauthority;
   final String? editauthority;
   final String? delauthority;
+  final String? viewauthority;
   final String? finauthority;
   final String? prnauthority;
   final String? prsauthority;
@@ -63,27 +65,30 @@ class UserData {
   final String? buildingauthority;
   final String? zonaauthority;
   final String? description;
-  final int? islogin;
+  final bool? islogin;
   final String? userip;
   final String? labourcode;
-  final int? labour_id;
+  final String? logincode;
   final String? usercreated;
   final String? datecreated;
   final String? timecreated;
   final String? usermodified;
   final String? datemodified;
   final String? timemodified;
+  final bool? isadmin;
+  final bool? issuspend;
 
   UserData({
     required this.branchcode,
     required this.username,
     this.grouptran,
+    this.groupcode,
     this.addauthority,
     this.editauthority,
     this.delauthority,
+    this.viewauthority,
     this.finauthority,
     this.prnauthority,
-    this.labour_id,
     this.prsauthority,
     this.branchauthority,
     this.warehouseauthority,
@@ -95,12 +100,15 @@ class UserData {
     this.islogin,
     this.userip,
     this.labourcode,
+    this.logincode,
     this.usercreated,
     this.datecreated,
     this.timecreated,
     this.usermodified,
     this.datemodified,
     this.timemodified,
+    this.isadmin,
+    this.issuspend,
   });
 
   factory UserData.fromJson(Map<String, dynamic> json) {
@@ -108,9 +116,11 @@ class UserData {
       branchcode: json['branchcode'] ?? "",
       username: json['usernam'] ?? "", // key di responsenya memang "usernam"
       grouptran: json['grouptran'],
+      groupcode: json['groupcode'],
       addauthority: json['addauthority'],
       editauthority: json['editauthority'],
       delauthority: json['delauthority'],
+      viewauthority: json['viewauthority'],
       finauthority: json['finauthority'],
       prnauthority: json['prnauthority'],
       prsauthority: json['prsauthority'],
@@ -124,28 +134,31 @@ class UserData {
       islogin: json['islogin'],
       userip: json['userip'],
       labourcode: json['labourcode'],
-      labour_id: json['labour_id'],
+      logincode: json['logincode'],
       usercreated: json['usercreated'],
       datecreated: json['datecreated'],
       timecreated: json['timecreated'],
       usermodified: json['usermodified'],
       datemodified: json['datemodified'],
       timemodified: json['timemodified'],
+      isadmin: json['isadmin'],
+      issuspend: json['issuspend'],
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       "branchcode": branchcode,
+      "groupcode": groupcode,
       "usernam": username,
       "grouptran": grouptran,
       "addauthority": addauthority,
       "editauthority": editauthority,
       "delauthority": delauthority,
+      "viewauthority": viewauthority,
       "finauthority": finauthority,
       "prnauthority": prnauthority,
       "prsauthority": prsauthority,
-      "labour_id": labour_id,
       "branchauthority": branchauthority,
       "warehouseauthority": warehouseauthority,
       "departmentauthority": departmentauthority,
@@ -156,12 +169,15 @@ class UserData {
       "islogin": islogin,
       "userip": userip,
       "labourcode": labourcode,
+      "logincode": logincode,
       "usercreated": usercreated,
       "datecreated": datecreated,
       "timecreated": timecreated,
       "usermodified": usermodified,
       "datemodified": datemodified,
       "timemodified": timemodified,
+      "isadmin": isadmin,
+      "issuspend": issuspend,
     };
   }
 }
