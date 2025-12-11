@@ -189,15 +189,17 @@ class _TaskListViewState extends State<TaskListView> {
                               ),
                             ),
                             SizedBox(height: 15),
-                            Column(
-                              children: vm.listTask.map((e) {
+                            ListView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: vm.listTask.length,
+                              itemBuilder: (context, index) {
                                 return TaskItem(
                                   vm: vm,
-                                  listData: e,
-
-
+                                  listParameterAndEquipment: vm.listTaskParameterAndEquipment[index],
+                                  listData: vm.listTask[index],
                                 );
-                              }).toList(),
+                              },
                             )
                           ],
                         ),

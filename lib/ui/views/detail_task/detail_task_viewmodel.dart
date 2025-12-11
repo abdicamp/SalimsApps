@@ -280,7 +280,7 @@ class DetailTaskViewmodel extends FutureViewModel {
       currentLocation = LatLng(userPosition!.latitude, userPosition!.longitude);
       latlang = '${currentLocation!.latitude},${currentLocation!.longitude}';
       latitude = '${currentLocation!.latitude}';
-      longitude = '${currentLocation!.longitude}';
+      longitude  = '${currentLocation!.longitude}';
       print("latlang : ${latlang}");
       locationController?.text = latlang!;
       

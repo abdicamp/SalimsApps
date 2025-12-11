@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:salims_apps_new/core/models/task_list_models.dart';
+import 'package:salims_apps_new/core/models/parameter_models.dart';
+import 'package:salims_apps_new/core/models/equipment_response_models.dart';
 import 'package:salims_apps_new/ui/views/detail_task/detail_task_view.dart';
 import 'package:salims_apps_new/ui/views/task_list/task_list_viewmodel.dart';
 
@@ -9,8 +11,9 @@ import 'colors.dart';
 class TaskItem extends StatelessWidget {
   TaskListViewmodel? vm;
   final TestingOrder? listData;
+  final dynamic listParameterAndEquipment;
 
-  TaskItem({super.key, this.listData, this.vm});
+  TaskItem({super.key, this.listData, this.listParameterAndEquipment ,this.vm});
 
   @override
   Widget build(BuildContext context) {
@@ -175,6 +178,10 @@ class TaskItem extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(height: 10),
+                          // ExpansionTile untuk Parameter dan Equipment
+                          if (listParameterAndEquipment != null)
+                            _buildParameterAndEquipmentExpansion(),
+                          const SizedBox(height: 10),
                           listData!.tsnumber != ""
                               ? Align(
                                   alignment: Alignment
@@ -291,5 +298,225 @@ class TaskItem extends StatelessWidget {
       "Des",
     ];
     return months[month - 1];
+  }
+
+  Widget _buildParameterAndEquipmentExpansion() {
+    // Parse data dari listParameterAndEquipment
+    List<TestingOrderParameter> parameters = [];
+    List<Equipment> equipments = [];
+
+    if (listParameterAndEquipment != null) {
+      try {
+        // Ambil testing_order_parameters
+        final dataPars = listParameterAndEquipment['testing_order_parameters'];
+        if (dataPars is List) {
+          parameters = dataPars
+              .map((e) => TestingOrderParameter.fromJson(e as Map<String, dynamic>))
+              .toList();
+        }
+
+        // Ambil testing_order_equipment
+        final dataEquipments = listParameterAndEquipment['testing_order_equipment'];
+        if (dataEquipments is List) {
+          equipments = dataEquipments
+              .map((e) => Equipment.fromJson(e as Map<String, dynamic>))
+              .toList();
+        }
+      } catch (e) {
+        print("Error parsing parameter and equipment: $e");
+      }
+    }
+
+    // Jika tidak ada data, jangan tampilkan ExpansionTile
+    if (parameters.isEmpty && equipments.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return ExpansionTile(
+      tilePadding: EdgeInsets.zero,
+      childrenPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      title: Row(
+        children: [
+          Icon(Icons.science, size: 18, color: AppColors.skyBlue),
+          const SizedBox(width: 8),
+          Text(
+            "Parameter & Equipment",
+            style: GoogleFonts.poppins(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: Colors.black87,
+            ),
+          ),
+        ],
+      ),
+      children: [
+        // Section Parameters
+        if (parameters.isNotEmpty) ...[
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.blue.shade50,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.list_alt, size: 16, color: Colors.blue.shade700),
+                    const SizedBox(width: 6),
+                    Text(
+                      "Parameters (${parameters.length})",
+                      style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.blue.shade700,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                ...parameters.map((param) => Padding(
+                      padding: const EdgeInsets.only(bottom: 6),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            width: 6,
+                            height: 6,
+                            margin: const EdgeInsets.only(top: 6, right: 8),
+                            decoration: BoxDecoration(
+                              color: Colors.blue.shade400,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  param.parname,
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                                if (param.parcode.isNotEmpty)
+                                  Text(
+                                    "Code: ${param.parcode}",
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 11,
+                                      color: Colors.grey[600],
+                                    ),
+                                  ),
+                                if (param.methodid.isNotEmpty)
+                                  Text(
+                                    "Method ID: ${param.methodid}",
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 11,
+                                      color: Colors.grey[600],
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    )),
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
+        ],
+
+        // Section Equipment
+        if (equipments.isNotEmpty) ...[
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.green.shade50,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.build, size: 16, color: Colors.green.shade700),
+                    const SizedBox(width: 6),
+                    Text(
+                      "Equipment (${equipments.length})",
+                      style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.green.shade700,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                ...equipments.map((equip) => Padding(
+                      padding: const EdgeInsets.only(bottom: 6),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            width: 6,
+                            height: 6,
+                            margin: const EdgeInsets.only(top: 6, right: 8),
+                            decoration: BoxDecoration(
+                              color: Colors.green.shade400,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  equip.equipmentname,
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                                if (equip.equipmentcode.isNotEmpty)
+                                  Text(
+                                    "Code: ${equip.equipmentcode}",
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 11,
+                                      color: Colors.grey[600],
+                                    ),
+                                  ),
+                                if (equip.serialnumber.isNotEmpty)
+                                  Text(
+                                    "Serial: ${equip.serialnumber}",
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 11,
+                                      color: Colors.grey[600],
+                                    ),
+                                  ),
+                                if (equip.type.isNotEmpty)
+                                  Text(
+                                    "Type: ${equip.type}",
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 11,
+                                      color: Colors.grey[600],
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    )),
+              ],
+            ),
+          ),
+        ],
+      ],
+    );
   }
 }

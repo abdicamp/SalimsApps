@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
+import 'package:salims_apps_new/core/models/parameter_models.dart';
 import 'package:salims_apps_new/core/services/api_services.dart';
 import 'package:salims_apps_new/core/models/task_list_models.dart';
 import 'package:salims_apps_new/core/services/local_Storage_Services.dart';
@@ -16,6 +17,7 @@ class TaskListViewmodel extends FutureViewModel {
   final ApiService _apiServices = ApiService();
   final LocalStorageService localStorageService = LocalStorageService();
   List<TestingOrder> listTask = [];
+  List<dynamic> listTaskParameterAndEquipment = [];
   List<TestingOrder> listTaskSearch = [];
 
   void pickDateRange() async {
@@ -44,19 +46,19 @@ class TaskListViewmodel extends FutureViewModel {
     listTask = text.isEmpty || text == 'All'
         ? listTaskSearch
         : listTaskSearch
-        .where(
-          (item) =>
-      item.reqnumber.toString().toLowerCase().contains(
-        text.toLowerCase(),
-      ) ||
-          item.ptsnumber.toString().toLowerCase().contains(
-            text.toLowerCase(),
-          ) ||
-          item.zonaname.toString().toLowerCase().contains(
-            text.toLowerCase(),
-          ) ,
-    )
-        .toList();
+            .where(
+              (item) =>
+                  item.reqnumber.toString().toLowerCase().contains(
+                        text.toLowerCase(),
+                      ) ||
+                  item.ptsnumber.toString().toLowerCase().contains(
+                        text.toLowerCase(),
+                      ) ||
+                  item.zonaname.toString().toLowerCase().contains(
+                        text.toLowerCase(),
+                      ),
+            )
+            .toList();
 
     notifyListeners();
   }
@@ -67,9 +69,21 @@ class TaskListViewmodel extends FutureViewModel {
       print("getListTask tanggalCtrl?.text: ${tanggalCtrl?.text}");
       // final response = await _apiServices.getTaskList(tanggalCtrl?.text ?? '${DateFormat('yyyy-MM-dd').format(DateTime.now())} - ${DateFormat('yyyy-MM-dd').format(DateTime.now())}');
       final response = await _apiServices.getTaskList(tanggalCtrl?.text ?? '');
+
       listTask = response!.data!.data;
       print("jsondecode getListTask :${jsonEncode(listTask)}");
       listTaskSearch = response.data!.data;
+      if (listTask.isNotEmpty) {
+        listTaskParameterAndEquipment.clear();
+        for (var item in listTask) {
+          final responseParameterAndEquipment =
+              await _apiServices.getParameterAndEquipment(
+                  '${item.ptsnumber}', '${item.sampleno}');
+          final dataPars = responseParameterAndEquipment?.data?['data'];
+         listTaskParameterAndEquipment.add(dataPars);
+         print("listTaskParameterAndEquipment : ${jsonEncode(listTaskParameterAndEquipment)}");
+        }
+      }
       notifyListeners();
       setBusy(false);
     } catch (e) {}
@@ -94,7 +108,7 @@ class TaskListViewmodel extends FutureViewModel {
 
       setBusy(false);
       notifyListeners();
-    }catch (e) {
+    } catch (e) {
       print("error get one task : ${e}");
     }
   }
@@ -108,7 +122,7 @@ class TaskListViewmodel extends FutureViewModel {
     final toDateStr = dateFormat.format(toDate);
 
     tanggalCtrl?.text = '';
-    await  getListTask();
+    await getListTask();
     notifyListeners();
   }
 
