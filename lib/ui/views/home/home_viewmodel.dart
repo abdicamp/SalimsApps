@@ -22,10 +22,13 @@ class HomeViewmodel extends FutureViewModel {
   int? radius = 0;
   double lat = 0;
   double lng = 0;
+  int newNotificationCount = 0;
+  DateTimeRange? selectedRange;
+  TextEditingController? dateFilterController = TextEditingController();
 
   getUserData() async {
     try {
-      await Future.delayed(Duration(seconds: 1));
+      // Remove unnecessary delay for faster loading
       final getData = await _storage.getUserData();
       username = getData?.data?.username;
 
@@ -73,24 +76,94 @@ class HomeViewmodel extends FutureViewModel {
 
   runAllFunction() async {
     setBusy(true);
+    notifyListeners(); // Immediately notify to show loading
     try {
       final cekToken = await apiService.cekToken();
 
       if (cekToken) {
-        await getDataTask();
-        await getMonthlyReport();
-        await getUserData();
+        // Run getUserData in parallel with getDataTask for faster loading
+        await Future.wait<void>([
+          getDataTask(),
+          getUserData(),
+          checkNewNotifications(),
+        ]);
+        // getMonthlyReport depends on getDataTask, so run it after
+        getMonthlyReport();
         setBusy(false);
+        notifyListeners();
       } else {
         await _storage.clear();
+        setBusy(false);
+        notifyListeners();
         Navigator.of(context!).pushReplacement(
             new MaterialPageRoute(builder: (context) => SplashScreenView()));
+      }
+    } catch (e) {
+      setBusy(false);
+      notifyListeners();
+      print("Error in runAllFunction: $e");
+    }
+  }
 
-        setBusy(false);
+  checkNewNotifications() async {
+    try {
+      final response = await apiService.getNotificationHistory();
+      if (response?.data?.data != null) {
+        final notifications = response!.data!.data!.data;
+        if (notifications.isNotEmpty) {
+          // Get the latest notification ID
+          final latestNotificationId = notifications.first.id ?? 0;
+          
+          // Get last checked notification ID from storage
+          final lastCheckedId = await _storage.getLastCheckedNotificationId();
+          
+          // Count notifications that are newer than last checked
+          if (lastCheckedId == null) {
+            // First time, count all notifications
+            newNotificationCount = notifications.length;
+            // Save the latest notification ID as last checked
+            if (latestNotificationId > 0) {
+              await _storage.saveLastCheckedNotificationId(latestNotificationId);
+            }
+          } else {
+            // Count notifications with ID greater than last checked
+            newNotificationCount = notifications
+                .where((notification) {
+                  final notificationId = notification.id ?? 0;
+                  return notificationId > lastCheckedId;
+                })
+                .length;
+          }
+        } else {
+          newNotificationCount = 0;
+        }
+      } else {
+        newNotificationCount = 0;
       }
       notifyListeners();
     } catch (e) {
-      setBusy(false);
+      print("Error checkNewNotifications: $e");
+      newNotificationCount = 0;
+      notifyListeners();
+    }
+  }
+
+  markNotificationsAsRead() async {
+    try {
+      final response = await apiService.getNotificationHistory();
+      if (response?.data?.data != null) {
+        final notifications = response!.data!.data!.data;
+        if (notifications.isNotEmpty) {
+          final latestNotificationId = notifications.first.id ?? 0;
+          if (latestNotificationId > 0) {
+            await _storage.saveLastCheckedNotificationId(latestNotificationId);
+            newNotificationCount = 0;
+            notifyListeners();
+          }
+        }
+      }
+    } catch (e) {
+      print("Error markNotificationsAsRead: $e");
     }
   }
 
@@ -105,23 +178,80 @@ class HomeViewmodel extends FutureViewModel {
     }
   }
 
-  getDataTask() async {
+  void pickDateRange() async {
     final now = DateTime.now();
-    final fromDate = DateTime(now.year, now.month, 1); // 1 tanggal awal bulan
-    final toDate = now; // hari ini
+    final initialRange = selectedRange ?? 
+        DateTimeRange(
+          start: DateTime(now.year, now.month, 1),
+          end: now,
+        );
+    
+    DateTimeRange? newRange = await showDateRangePicker(
+      context: context!,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2100),
+      initialDateRange: initialRange,
+    );
+
+    if (newRange != null) {
+      selectedRange = newRange;
+      dateFilterController!.text =
+          '${_formatDate(selectedRange!.start)} - ${_formatDate(selectedRange!.end)}';
+      getDataTask();
+      notifyListeners();
+    }
+  }
+
+  String _formatDate(DateTime date) {
+    return DateFormat('yyyy-MM-dd').format(date);
+  }
+
+  void resetDateFilter() {
+    selectedRange = null;
+    dateFilterController!.clear();
+    getDataTask();
+    notifyListeners();
+  }
+
+  getDataTask() async {
+    DateTime fromDate;
+    DateTime toDate;
+    
+    if (selectedRange != null) {
+      fromDate = selectedRange!.start;
+      toDate = selectedRange!.end;
+    } else {
+      final now = DateTime.now();
+      fromDate = DateTime(now.year, now.month, 1); // 1 tanggal awal bulan
+      toDate = now; // hari ini
+    }
+    
     final dateFormat = DateFormat('yyyy-MM-dd');
     final fromDateStr = dateFormat.format(fromDate);
     final toDateStr = dateFormat.format(toDate);
 
     final responseTaskList =
-        await apiService.getTaskList('${fromDateStr}-${toDateStr}');
-    print("fromDateStr : ${fromDateStr} , toDateStr : ${toDateStr}");
+        await apiService.getTaskList('${fromDateStr} - ${toDateStr}');
     final responseTaskListHistory =
-        await apiService.getTaskListHistory(fromDateStr, toDateStr);
-
-    totalListTask = responseTaskList!.data!.data.length;
-    totalListTaskHistory = responseTaskListHistory!.data!.data.length;
-    listTask = List.from(responseTaskList.data!.data);
+        await apiService.getTaskListHistory('${fromDateStr} - ${toDateStr}');
+    
+    if (responseTaskList?.data?.data != null) {
+      totalListTask = responseTaskList!.data!.data.length;
+      listTask = List.from(responseTaskList.data!.data);
+    } else {
+      totalListTask = 0;
+      listTask = [];
+    }
+    
+    // Handle responseTaskListHistory - bisa status false dengan data kosong
+    if (responseTaskListHistory?.data != null) {
+      totalListTaskHistory = responseTaskListHistory!.data!.data.length;
+    } else {
+      totalListTaskHistory = 0;
+      if (responseTaskListHistory?.error != null) {
+        print("Error getTaskListHistory: ${responseTaskListHistory!.error}");
+      }
+    }
     dataNearestLocation = await getNearestLocation();
     notifyListeners();
   }
@@ -161,19 +291,38 @@ class HomeViewmodel extends FutureViewModel {
 
       double minDistance = double.infinity;
       TestingOrder? nearestPlace;
-
+      print("listTask : ${listTask}");
+      
+      // Jika listTask kosong, return null
+      if (listTask.isEmpty) {
+        radius = 0;
+        return null;
+      }
+      
       for (var place in listTask) {
         String? latlong = place.geotag;
-        var latLngSplit = latlong?.split(',');
+        if (latlong == null || latlong.isEmpty) {
+          continue; // Skip jika geotag null atau empty
+        }
+        
+        var latLngSplit = latlong.split(',');
+        if (latLngSplit.length < 2) {
+          continue; // Skip jika format tidak valid
+        }
 
-        lat = double.tryParse(latLngSplit![0]) ?? 0.0;
+        lat = double.tryParse(latLngSplit[0]) ?? 0.0;
         lng = double.tryParse(latLngSplit[1]) ?? 0.0;
+        
+        if (lat == 0.0 && lng == 0.0) {
+          continue; // Skip jika parsing gagal
+        }
+        
         print("data location : ${lat},${lng}");
         double distance = Geolocator.distanceBetween(
           current.latitude,
           current.longitude,
-          lat!,
-          lng!,
+          lat,
+          lng,
         );
 
         if (distance < minDistance) {
@@ -181,6 +330,13 @@ class HomeViewmodel extends FutureViewModel {
           nearestPlace = place;
         }
       }
+      
+      // Cek apakah minDistance masih infinity (tidak ada tempat yang valid ditemukan)
+      if (minDistance.isInfinite || minDistance.isNaN) {
+        radius = 0;
+        return null;
+      }
+      
       radius = minDistance.round();
       print(
           "Lokasi terdekat: ${nearestPlace?.subzonaname} (${minDistance.round()} m) , Current Location : ${current.latitude},${current.longitude} , data location : ${nearestPlace?.geotag}");
@@ -193,6 +349,11 @@ class HomeViewmodel extends FutureViewModel {
 
   @override
   Future futureToRun() async {
+    setBusy(true);
+    // Initialize date filter controller
+    if (dateFilterController == null) {
+      dateFilterController = TextEditingController();
+    }
     await runAllFunction();
   }
 }

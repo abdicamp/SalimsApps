@@ -6,16 +6,20 @@ class SampleDetail {
   String? samplename;
   final String sampleno;
   final String geoTag;
+  final String longtitude;
+  final String latitude;
   final String address;
   final String weather;
   final String winddirection;
   final String temperatur;
   final String branchcode;
   final String samplecode;
+  final String samplingby;
   final String ptsnumber;
   final String usercreated;
   final String description;
   final List<String>? uploadFotoSample; // ✅ Tambah ini
+  final List<String>? photoOld;
   final List<TakingSampleParameter> takingSampleParameters;
   final List<TakingSampleCI> takingSampleCI;
 
@@ -26,6 +30,9 @@ class SampleDetail {
     required this.tsdate,
     this.samplename,
     required this.sampleno,
+    required this.samplingby,
+    required this.latitude,
+    required this.longtitude,
     required this.geoTag,
     required this.address,
     required this.weather,
@@ -39,6 +46,7 @@ class SampleDetail {
     required this.takingSampleParameters,
     required this.takingSampleCI,
     this.uploadFotoSample, // ✅ Tambah ini juga
+    this.photoOld, // ✅ Tambah ini juga
   });
 
   factory SampleDetail.fromJson(Map<String, dynamic> json) {
@@ -50,10 +58,13 @@ class SampleDetail {
       samplename: json['samplename'] ?? '',
       sampleno: json['sampleno'] ?? '',
       geoTag: json['geotag'] ?? '',
+      latitude: json['latitude'] ?? '',
+      longtitude: json['longtitude'] ?? '',
       address: json['address'] ?? '',
       weather: json['weather'] ?? '',
       winddirection: json['winddirection'] ?? '',
       temperatur: json['temperatur'] ?? '',
+      samplingby: json['samplingby'] ?? '',
       branchcode: json['branchcode'] ?? '',
       samplecode: json['samplecode'] ?? '',
       ptsnumber: json['ptsnumber'] ?? '',
@@ -71,6 +82,9 @@ class SampleDetail {
       uploadFotoSample: json['upload_foto_sample'] != null
           ? List<String>.from(json['upload_foto_sample'])
           : [], // ✅ Parsing URL list
+      photoOld: json['photo_old'] != null
+          ? List<String>.from(json['photo_old'])
+          : [], // ✅ Parsing URL list
     );
   }
 
@@ -83,12 +97,15 @@ class SampleDetail {
       'samplename': samplename,
       'sampleno': sampleno,
       'geotag': geoTag,
+      'latitude': latitude,
+      'longtitude': longtitude,
       'address': address,
       'weather': weather,
       'winddirection': winddirection,
       'temperatur': temperatur,
       'branchcode': branchcode,
       'samplecode': samplecode,
+      'samplingby': samplingby,
       'ptsnumber': ptsnumber,
       'usercreated': usercreated,
       'description': description,
@@ -96,6 +113,7 @@ class SampleDetail {
           takingSampleParameters.map((e) => e.toJson()).toList(),
       'taking_sample_ci': takingSampleCI.map((e) => e.toJson()).toList(),
       "upload_foto_sample": uploadFotoSample, // ✅ pastikan ikut di toJson
+      "photo_old": photoOld, // ✅ pastikan ikut di toJson
     };
   }
 }

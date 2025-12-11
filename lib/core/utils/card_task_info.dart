@@ -3,19 +3,92 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:salims_apps_new/core/utils/custom_text_field.dart';
 import 'package:salims_apps_new/core/utils/search_dropdown.dart';
+import 'package:salims_apps_new/core/utils/app_localizations.dart';
 import 'package:salims_apps_new/ui/views/detail_task/detail_task_viewmodel.dart';
 
 import '../assets/assets.gen.dart';
 
 class CardTaskInfo extends StatefulWidget {
+  bool? isDetailhistory;
   DetailTaskViewmodel? vm;
-  CardTaskInfo({super.key, this.vm});
+  CardTaskInfo({super.key, this.vm, this.isDetailhistory});
 
   @override
   State<CardTaskInfo> createState() => _CardTaskInfoState();
 }
 
 class _CardTaskInfoState extends State<CardTaskInfo> {
+  void _showFullScreenImage(String imageUrl) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => Scaffold(
+          backgroundColor: Colors.black,
+          appBar: AppBar(
+            backgroundColor: Colors.black,
+            iconTheme: const IconThemeData(color: Colors.white),
+            leading: IconButton(
+              icon: const Icon(Icons.close, color: Colors.white),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+          ),
+          body: Center(
+            child: InteractiveViewer(
+              minScale: 0.5,
+              maxScale: 4.0,
+              child: Image.network(
+                imageUrl,
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) => const Center(
+                  child: Icon(Icons.broken_image, color: Colors.grey, size: 100),
+                ),
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return Center(
+                    child: CircularProgressIndicator(
+                      value: loadingProgress.expectedTotalBytes != null
+                          ? loadingProgress.cumulativeBytesLoaded /
+                              loadingProgress.expectedTotalBytes!
+                          : null,
+                      color: Colors.white,
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showFullScreenImageFile(dynamic imageFile) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => Scaffold(
+          backgroundColor: Colors.black,
+          appBar: AppBar(
+            backgroundColor: Colors.black,
+            iconTheme: const IconThemeData(color: Colors.white),
+            leading: IconButton(
+              icon: const Icon(Icons.close, color: Colors.white),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+          ),
+          body: Center(
+            child: InteractiveViewer(
+              minScale: 0.5,
+              maxScale: 4.0,
+              child: Image.file(
+                imageFile,
+                fit: BoxFit.contain,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   void _showDialog() {
     showDialog(
       context: context,
@@ -29,11 +102,11 @@ class _CardTaskInfoState extends State<CardTaskInfo> {
             children: [
               Icon(Icons.warning, color: Colors.orange),
               SizedBox(width: 8),
-              Text("Konfirmasi"),
+              Text(AppLocalizations.of(context)?.confirmDialog ?? "Confirm"),
             ],
           ),
           content: Text(
-            "Apakah kamu yakin ingin mengubah lokasi nya ?",
+            AppLocalizations.of(context)?.confirmChangeLocation ?? "Are you sure you want to change the location?",
             style: TextStyle(fontSize: 16),
           ),
           actions: [
@@ -43,7 +116,7 @@ class _CardTaskInfoState extends State<CardTaskInfo> {
                   Navigator.pop(context); // Menutup dialog
                 });
               },
-              child: Text("Cancel"),
+              child: Text(AppLocalizations.of(context)?.cancel ?? "Cancel"),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
@@ -53,7 +126,7 @@ class _CardTaskInfoState extends State<CardTaskInfo> {
                 widget.vm!.setLocationName();
                 Navigator.pop(context); // Menutup dialog
               },
-              child: Text("Yes"),
+              child: Text(AppLocalizations.of(context)?.yes ?? "Yes"),
             ),
           ],
         );
@@ -63,6 +136,27 @@ class _CardTaskInfoState extends State<CardTaskInfo> {
 
   @override
   Widget build(BuildContext context) {
+    // Debug logging
+    if (widget.isDetailhistory == true) {
+      print("🔄 CardTaskInfo rebuild - isDetailhistory: true");
+      print("   - vm is null: ${widget.vm == null}");
+      if (widget.vm != null) {
+        print("   - locationController: ${widget.vm!.locationController?.text}");
+        print("   - weatherController: ${widget.vm!.weatherController?.text}");
+        print("   - imageString: ${widget.vm!.imageString.length}");
+      }
+    }
+    
+    // Null check untuk vm
+    if (widget.vm == null) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Text('ViewModel is null'),
+        ),
+      );
+    }
+    
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
       child: SingleChildScrollView(
@@ -90,126 +184,168 @@ class _CardTaskInfoState extends State<CardTaskInfo> {
                           children: [
                             Container(
                               width: MediaQuery.of(context).size.width,
-                              child: widget.vm!.imageFiles.isEmpty
+                              child: (widget.vm!.imageFiles.isEmpty && widget.vm!.imageString.isEmpty)
                                   ? GestureDetector(
-                                      onTap: () async {
-                                        await widget.vm!.pickImage();
-                                        print("klik");
-                                      },
-                                      child: DottedBorder(
-                                        borderType: BorderType.RRect,
-                                        color: Colors.grey,
-                                        radius: const Radius.circular(18.0),
-                                        dashPattern: const [8, 4],
-                                        child: Center(
-                                          child: SizedBox(
-                                            height: 120.0,
-                                            child: Column(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              children: [
-                                                Assets.icons.image.svg(),
-                                                const Text('Lampiran'),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    )
-                                  : DottedBorder(
-                                      borderType: BorderType.RRect,
-                                      color: Colors.grey,
-                                      radius: const Radius.circular(18.0),
-                                      dashPattern: const [8, 4],
-                                      child: ClipRRect(
-                                        borderRadius: const BorderRadius.all(
-                                          Radius.circular(18.0),
-                                        ),
-                                        child: GridView.builder(
-                                          shrinkWrap:
-                                              true, // penting jika tidak berada dalam Expanded
-                                          physics:
-                                              const NeverScrollableScrollPhysics(), // biar tidak tabrakan scroll
-                                          gridDelegate:
-                                              const SliverGridDelegateWithFixedCrossAxisCount(
-                                            crossAxisCount: 3,
-                                            crossAxisSpacing: 4.0,
-                                            mainAxisSpacing: 4.0,
-                                          ),
-                                          itemCount:
-                                              widget.vm!.imageFiles.length + 1,
-                                          itemBuilder: (context, index) {
-                                            final totalUrl = widget.vm!.imageString.length;
-
-                                            if (index == totalUrl + widget.vm!.imageFiles.length) {
-                                              // Tombol tambah gambar
-                                              return Padding(
-                                                padding: const EdgeInsets.all(10),
-                                                child: GestureDetector(
-                                                  onTap: () async {
-                                                    await widget.vm!.pickImage();
-                                                  },
-                                                  child: Image.asset("assets/images/add_image.jpeg", height: 50),
-                                                ),
-                                              );
-                                            } else if (index < totalUrl) {
-                                              // ✅ Gambar dari URL
-                                              return Stack(
-                                                children: [
-                                                  Padding(
-                                                    padding: const EdgeInsets.all(8.0),
-                                                    child: ClipRRect(
-                                                      borderRadius: const BorderRadius.all(Radius.circular(10)),
-                                                      child: Image.network(
-                                                        widget.vm!.imageString[index],
-                                                        height: 120.0,
-                                                        fit: BoxFit.cover,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  InkWell(
-                                                    onTap: () {
-                                                      setState(() {
-                                                        widget.vm!.imageString.removeAt(index);
-                                                      });
-                                                    },
-                                                    child: const Icon(Icons.delete, color: Colors.red),
-                                                  ),
-                                                ],
-                                              );
-                                            } else {
-                                              // ✅ Gambar dari File lokal
-                                              final fileIndex = index - totalUrl;
-                                              return Stack(
-                                                children: [
-                                                  Padding(
-                                                    padding: const EdgeInsets.all(8.0),
-                                                    child: ClipRRect(
-                                                      borderRadius: const BorderRadius.all(Radius.circular(10)),
-                                                      child: Image.file(
-                                                        widget.vm!.imageFiles[fileIndex],
-                                                        height: 120.0,
-                                                        fit: BoxFit.cover,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  InkWell(
-                                                    onTap: () {
-                                                      setState(() {
-                                                        widget.vm!.imageFiles.removeAt(fileIndex);
-                                                      });
-                                                    },
-                                                    child: const Icon(Icons.delete, color: Colors.red),
-                                                  ),
-                                                ],
-                                              );
-                                            }
-                                          },
-
-                                        ),
+                                onTap: () async {
+                                  if(widget.isDetailhistory! == false){
+                                    await widget.vm!.pickImage();
+                                    print("klik");
+                                  }
+                                },
+                                child: DottedBorder(
+                                  borderType: BorderType.RRect,
+                                  color: Colors.grey,
+                                  radius: const Radius.circular(18.0),
+                                  dashPattern: const [8, 4],
+                                  child: Center(
+                                    child: SizedBox(
+                                      height: 120.0,
+                                      child: Column(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Assets.icons.image.svg(),
+                                          Text(AppLocalizations.of(context)?.attachment ?? 'Attachment'),
+                                        ],
                                       ),
                                     ),
+                                  ),
+                                ),
+                              )
+                                  : Builder(
+                                      builder: (context) {
+                                        print("🖼️  Rendering GridView - imageString: ${widget.vm!.imageString.length}, imageFiles: ${widget.vm!.imageFiles.length}");
+                                        // Untuk history, tidak tampilkan tombol add image
+                                        final itemCount = widget.isDetailhistory == true
+                                            ? widget.vm!.imageString.length + widget.vm!.imageFiles.length
+                                            : widget.vm!.imageString.length + widget.vm!.imageFiles.length + 1;
+                                        
+                                        return DottedBorder(
+                                          borderType: BorderType.RRect,
+                                          color: Colors.grey,
+                                          radius: const Radius.circular(18.0),
+                                          dashPattern: const [8, 4],
+                                          child: ClipRRect(
+                                            borderRadius: const BorderRadius.all(Radius.circular(18.0)),
+                                            child: GridView.builder(
+                                              shrinkWrap: true,
+                                              physics: const NeverScrollableScrollPhysics(),
+                                              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                                                crossAxisCount: 3,
+                                                crossAxisSpacing: 4.0,
+                                                mainAxisSpacing: 4.0,
+                                              ),
+                                              itemCount: itemCount,
+                                              itemBuilder: (context, index) {
+                                                final urlCount = widget.vm!.imageString.length;
+                                                
+                                                // Tombol add image hanya untuk non-history
+                                                if (widget.isDetailhistory == false && index == urlCount + widget.vm!.imageFiles.length) {
+                                                  return Padding(
+                                                    padding: const EdgeInsets.all(10),
+                                                    child: GestureDetector(
+                                                      onTap: () async {
+                                                        await widget.vm!.pickImage();
+                                                      },
+                                                      child: Image.asset(
+                                                        "assets/images/add_image.jpeg",
+                                                        height: 50,
+                                                        fit: BoxFit.cover,
+                                                      ),
+                                                    ),
+                                                  );
+                                                }
+
+                                                // 🟦 Gambar dari URL
+                                                if (index < urlCount) {
+                                                  return Stack(
+                                                    children: [
+                                                      Padding(
+                                                        padding: const EdgeInsets.all(8.0),
+                                                        child: ClipRRect(
+                                                          borderRadius: const BorderRadius.all(Radius.circular(10)),
+                                                          child: GestureDetector(
+                                                            onTap: () {
+                                                              _showFullScreenImage(widget.vm!.imageString[index]);
+                                                            },
+                                                            child: Image.network(
+                                                              widget.vm!.imageString[index],
+                                                              height: 120.0,
+                                                              fit: BoxFit.cover,
+                                                              errorBuilder: (context, error, stackTrace) => const Icon(Icons.broken_image, color: Colors.grey),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      // Tombol close hanya untuk non-history
+                                                      if (widget.isDetailhistory == false)
+                                                        Positioned(
+                                                          top: 4,
+                                                          right: 4,
+                                                          child: GestureDetector(
+                                                            onTap: () {
+                                                              setState(() {
+                                                                widget.vm!.imageString.removeAt(index);
+                                                              });
+                                                            },
+                                                            child: const CircleAvatar(
+                                                              radius: 12,
+                                                              backgroundColor: Colors.black54,
+                                                              child: Icon(Icons.close, color: Colors.white, size: 16),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                    ],
+                                                  );
+                                                }
+
+                                                // 🟨 Gambar dari File Lokal
+                                                final fileIndex = index - urlCount;
+                                                return Stack(
+                                                  children: [
+                                                    Padding(
+                                                      padding: const EdgeInsets.all(8.0),
+                                                      child: ClipRRect(
+                                                        borderRadius: const BorderRadius.all(Radius.circular(10)),
+                                                        child: GestureDetector(
+                                                          onTap: () {
+                                                            _showFullScreenImageFile(widget.vm!.imageFiles[fileIndex]);
+                                                          },
+                                                          child: Image.file(
+                                                            widget.vm!.imageFiles[fileIndex],
+                                                            height: 120.0,
+                                                            fit: BoxFit.cover,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    // Tombol close hanya untuk non-history
+                                                    if (widget.isDetailhistory == false)
+                                                      Positioned(
+                                                        top: 4,
+                                                        right: 4,
+                                                        child: GestureDetector(
+                                                          onTap: () {
+                                                            setState(() {
+                                                              widget.vm!.imageFiles.removeAt(fileIndex);
+                                                            });
+                                                          },
+                                                          child: const CircleAvatar(
+                                                            radius: 12,
+                                                            backgroundColor: Colors.black54,
+                                                            child: Icon(Icons.close, color: Colors.white, size: 16),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                  ],
+                                                );
+                                              },
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    ),
                             ),
+
                             SizedBox(height: 5),
                             Row(
                               children: [
@@ -219,7 +355,7 @@ class _CardTaskInfoState extends State<CardTaskInfo> {
                                   child: CustomTextField(
                                     readOnly: true,
                                     controller: widget.vm!.locationController!,
-                                    label: 'Geotag',
+                                    label: AppLocalizations.of(context)?.geotag ?? 'Geotag',
                                   ),
                                 ),
                                 const SizedBox(width: 8),
@@ -240,7 +376,10 @@ class _CardTaskInfoState extends State<CardTaskInfo> {
                                       icon: const Icon(Icons.location_searching,
                                           color: Colors.black),
                                       onPressed: () {
-                                        _showDialog();
+                                        if(widget.isDetailhistory! == false){
+                                          _showDialog();
+                                        }
+
                                       },
                                     ),
                                   ),
@@ -248,57 +387,62 @@ class _CardTaskInfoState extends State<CardTaskInfo> {
                               ],
                             ),
                             SizedBox(height: 5),
-                            widget.vm!.isChangeLocation == true
+                            widget.vm!.isChangeLocation == true || widget.isDetailhistory == true
                                 ? CustomTextField(
+                              readOnly: widget.isDetailhistory!,
                                     maxLines: 3,
                                     controller: widget.vm!.addressController!,
-                                    label: 'Addres',
+                                    label: AppLocalizations.of(context)?.address ?? 'Address',
                                   )
                                 : Stack(),
                             SizedBox(height: 5),
                             CustomTextField(
+                              readOnly: widget.isDetailhistory!,
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
-                                  return 'Please enter some text';
+                                  return AppLocalizations.of(context)?.pleaseEnterSomeText ?? 'Please enter some text';
                                 }
                                 return null;
                               },
                               controller: widget.vm!.weatherController!,
-                              label: 'Weather',
+                              label: AppLocalizations.of(context)?.weather ?? 'Weather',
                             ),
                             SizedBox(height: 5),
                             CustomTextField(
+                              readOnly: widget.isDetailhistory!,
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
-                                  return 'Please enter some text';
+                                  return AppLocalizations.of(context)?.pleaseEnterSomeText ?? 'Please enter some text';
                                 }
                                 return null;
                               },
                               controller: widget.vm!.windDIrectionController!,
-                              label: 'Wind Direction',
+                              label: AppLocalizations.of(context)?.windDirection ?? 'Wind Direction',
                             ),
                             SizedBox(height: 5),
                             CustomTextField(
+                              readOnly: widget.isDetailhistory!,
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
-                                  return 'Please enter some text';
+                                  return AppLocalizations.of(context)?.pleaseEnterSomeText ?? 'Please enter some text';
                                 }
                                 return null;
                               },
                               controller: widget.vm!.temperaturController!,
-                              label: 'Temperatur',
+                              label: AppLocalizations.of(context)?.temperatur ?? 'Temperatur',
                             ),
                             SizedBox(height: 5),
                             CustomTextField(
+                              readOnly: widget.isDetailhistory!,
                               maxLines: 4,
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
-                                  return 'Please enter some text';
+                                  return AppLocalizations.of(context)?.pleaseEnterSomeText ?? 'Please enter some text';
                                 }
                                 return null;
                               },
                               controller: widget.vm!.descriptionController!,
-                              label: 'Description',
+                              label: AppLocalizations.of(context)?.description ?? 'Description',
                             ),
                           ],
                         ),

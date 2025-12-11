@@ -9,6 +9,19 @@ class DataTableParView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Handle null atau empty list
+    if (listTakingSampleParameter == null || listTakingSampleParameter!.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Text(
+            'No parameter information available',
+            style: TextStyle(color: Colors.grey[600]),
+          ),
+        ),
+      );
+    }
+
     final dataSource = DataTablePar(listTakingSampleParameter!, vm);
 
     return Theme(
@@ -32,7 +45,7 @@ class DataTableParView extends StatelessWidget {
           DataColumn(label: Text('')),
         ],
         source: dataSource,
-        rowsPerPage: listTakingSampleParameter!.length,
+        rowsPerPage: listTakingSampleParameter!.isEmpty ? 10 : listTakingSampleParameter!.length,
       ),
     );
   }
@@ -55,18 +68,21 @@ class DataTablePar extends DataTableSource {
         DataCell(Text('${eq.insituresult}')),
         DataCell(Text('${eq.description}')),
         DataCell(Text('${eq.iscalibration}')),
-        DataCell(Row(
-          children: [
-            TextButton(
-                onPressed: () {
-      
-                  vm?.removeListPar(index);
-    
-                  notifyListeners();
-                },
-                child: Text("Hapus")),
-          ],
-        )),
+        DataCell(
+          // Untuk history, tidak tampilkan tombol hapus
+          vm?.isDetailhistory == true 
+            ? SizedBox.shrink()
+            : Row(
+                children: [
+                  TextButton(
+                    onPressed: () {
+                      vm?.removeListPar(index);
+                      notifyListeners();
+                    },
+                    child: Text("Hapus")),
+                ],
+              ),
+        ),
       ],
     );
   }

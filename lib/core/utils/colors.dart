@@ -1,6 +1,21 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
+  // Warna utama gradasi CIS
+  static const Color limeLight   = Color(0xFFCEE96A); // hijau lime paling terang
+  static const Color lime        = Color(0xFFB7DC45); // hijau lime utama
+  static const Color aqua        = Color(0xFF7EDFD8); // transisi hijau -> biru
+  static const Color skyBlue     = Color(0xFF55BFF5); // biru muda utama
+  static const Color skyBlueDark = Color(0xFF2FA6E4); // biru sedikit lebih tua
+
+  // Background & card
+  static const Color background  = Color(0xFFF6FAFF); // putih kebiruan sangat soft
+  static const Color card        = Colors.white;
+  static const Color borderSoft  = Color(0xFFE3EDF7);
+
+  // Teks
+  static const Color textPrimary   = Color(0xFF122438); // hampir navy
+  static const Color textSecondary = Color(0xFF7A8AA0);
   /// primary = #567DF4
   static const Color primary = Color(0xff567DF4);
 
@@ -32,7 +47,7 @@ class AppColors {
   static const Color red = Color(0xffF65151);
 
   /// card = #E5E5E5
-  static const Color card = Color(0xffE5E5E5);
+  // static const Color card = Color(0xffE5E5E5);
 
   /// card = #EFF0F6
   static const Color title = Color(0xffEFF0F6);
@@ -80,7 +95,7 @@ class AppColors {
   static const Color brown = Color(0xFFA36E00);
 
   static const Color warning = Color(0xFFEF7478);
-  static const Color background = Color(0xFFE0F0FC);
+  // static const Color background = Color(0xFFE0F0FC);
   static const Color backgroundLight = Color(0xFFECEFF9);
   static const Color hint = Color(0xFFa0a3a8);
   static const Color unselected = Color(0xFFC8C8C8);

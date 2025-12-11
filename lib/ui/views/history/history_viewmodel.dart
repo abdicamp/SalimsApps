@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:salims_apps_new/core/models/task_list_history_models.dart';
+import 'package:salims_apps_new/core/models/task_list_models.dart';
 import 'package:salims_apps_new/core/services/api_services.dart';
 import 'package:stacked/stacked.dart';
 
@@ -15,9 +16,10 @@ class HistoryViewmodel extends FutureViewModel {
   String? toDate;
   DateTimeRange? selectedRange;
   TextEditingController? tanggalCtrl = new TextEditingController();
-  List<TestingOrderData> listTaskHistory = [];
-  List<TestingOrderData> listTaskHistorySearch = [];
+  List<TestingOrder> listTaskHistory = [];
+  List<TestingOrder> listTaskHistorySearch = [];
   HistoryViewmodel({this.context});
+
 
   void pickDateRange() async {
     DateTimeRange? newRange = await showDateRangePicker(
@@ -31,8 +33,7 @@ class HistoryViewmodel extends FutureViewModel {
       selectedRange = newRange;
       tanggalCtrl!.text =
           '${_formatDate(selectedRange!.start)}-${_formatDate(selectedRange!.end)}';
-      getDataTaskHistory(
-          _formatDate(selectedRange!.start), _formatDate(selectedRange!.end));
+      getDataTaskHistory();
       notifyListeners();
     }
   }
@@ -47,13 +48,13 @@ class HistoryViewmodel extends FutureViewModel {
         : listTaskHistorySearch
             .where(
               (item) =>
-                  item.ReqNumber.toString().toLowerCase().contains(
+                  item.reqnumber.toString().toLowerCase().contains(
                         text.toLowerCase(),
                       ) ||
-                  item.PtsNumber.toString().toLowerCase().contains(
+                  item.ptsnumber.toString().toLowerCase().contains(
                         text.toLowerCase(),
                       ) ||
-                  item.ZonaName.toString().toLowerCase().contains(
+                  item.zonaname.toString().toLowerCase().contains(
                         text.toLowerCase(),
                       ),
             )
@@ -62,10 +63,11 @@ class HistoryViewmodel extends FutureViewModel {
     notifyListeners();
   }
 
-  getDataTaskHistory(String? fromDate, String? toDate) async {
+  getDataTaskHistory() async {
     setBusy(true);
     try {
-      final response = await apiService.getTaskListHistory(fromDate, toDate);
+      tanggalCtrl?.text = '${DateFormat('yyyy-MM-dd').format(DateTime.now())}-${DateFormat('yyyy-MM-dd').format(DateTime.now())}';
+      final response = await apiService.getTaskListHistory(tanggalCtrl?.text ?? '${DateFormat('yyyy-MM-dd').format(DateTime.now())}-${DateFormat('yyyy-MM-dd').format(DateTime.now())}');
       listTaskHistory = List.from(response!.data!.data ?? []);
       print("listTaskHistory : ${jsonEncode(listTaskHistory)}");
       print("listTaskHistory length : ${listTaskHistory.length}");
@@ -78,8 +80,22 @@ class HistoryViewmodel extends FutureViewModel {
     }
   }
 
+  getDate() async {
+    final now = DateTime.now();
+    final fromDate = DateTime(now.year, now.month, 1); // 1 tanggal awal bulan
+    final toDate = now; // hari ini
+    final dateFormat = DateFormat('yyyy-MM-dd');
+    final fromDateStr = dateFormat.format(fromDate);
+    final toDateStr = dateFormat.format(toDate);
+
+    tanggalCtrl?.text = '';
+    await getDataTaskHistory();
+    notifyListeners();
+  }
+
   @override
   Future futureToRun() async {
-    await getDataTaskHistory('', '');
+    await getDate();
+
   }
 }
