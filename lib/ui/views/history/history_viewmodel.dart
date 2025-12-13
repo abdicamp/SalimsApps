@@ -69,8 +69,6 @@ class HistoryViewmodel extends FutureViewModel {
       tanggalCtrl?.text = '${DateFormat('yyyy-MM-dd').format(DateTime.now())}-${DateFormat('yyyy-MM-dd').format(DateTime.now())}';
       final response = await apiService.getTaskListHistory(tanggalCtrl?.text ?? '${DateFormat('yyyy-MM-dd').format(DateTime.now())}-${DateFormat('yyyy-MM-dd').format(DateTime.now())}');
       listTaskHistory = List.from(response!.data!.data ?? []);
-      print("listTaskHistory : ${jsonEncode(listTaskHistory)}");
-      print("listTaskHistory length : ${listTaskHistory.length}");
       listTaskHistorySearch = List.from(response!.data!.data ?? []);
       setBusy(false);
       notifyListeners();

@@ -35,19 +35,6 @@ const AndroidNotificationChannel channel = AndroidNotificationChannel(
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
-  print("═══════════════════════════════════════════════════════");
-  print("📩 PUSH NOTIFICATION RECEIVED (BACKGROUND)");
-  print("═══════════════════════════════════════════════════════");
-  print("📱 Message ID: ${message.messageId}");
-  print("📅 Sent Time: ${message.sentTime}");
-  print("📧 From: ${message.from}");
-  print("🔔 Notification Title: ${message.notification?.title ?? 'N/A'}");
-  print("📝 Notification Body: ${message.notification?.body ?? 'N/A'}");
-  print("🖼️  Image URL: ${message.notification?.android?.imageUrl ?? message.notification?.apple?.imageUrl ?? 'N/A'}");
-  print("📊 Data: ${message.data}");
-  print("🔗 Screen: ${message.data['screen'] ?? 'N/A'}");
-  print("═══════════════════════════════════════════════════════");
-
   // Initialize local notifications plugin
   final FlutterLocalNotificationsPlugin localNotifications = FlutterLocalNotificationsPlugin();
 
@@ -71,7 +58,6 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   // Show notification
   final RemoteNotification? notification = message.notification;
   if (notification != null) {
-    print("📤 Displaying background notification...");
     await localNotifications.show(
       notification.hashCode,
       notification.title,
@@ -93,14 +79,6 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
       ),
       payload: message.data['screen'],
     );
-    print("✅ Background notification displayed successfully");
-    print("   - Notification ID: ${notification.hashCode}");
-    print("   - Channel: ${channel.id}");
-    print("═══════════════════════════════════════════════════════");
-  } else {
-    print("⚠️ WARNING: Notification payload is null in background handler");
-    print("📊 Available data: ${message.data}");
-    print("═══════════════════════════════════════════════════════");
   }
 }
 
@@ -110,7 +88,7 @@ void main() async {
     await initializeDateFormatting('id_ID', null);
   } catch (e) {
     // If date formatting initialization fails, continue anyway
-    print('Warning: Could not initialize date formatting: $e');
+    // Date formatting error handled silently
   }
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
@@ -161,9 +139,7 @@ Future<void> initNotifications() async {
   await flutterLocalNotificationsPlugin.initialize(
     initSettings,
     onDidReceiveNotificationResponse: (NotificationResponse response) {
-      if (response.payload != null) {
-        debugPrint("🔗 Payload notifikasi: ${response.payload}");
-      }
+      // Notification response handled
     },
   );
 
@@ -188,21 +164,6 @@ Future<void> initNotifications() async {
 
   // ✅ Listener untuk pesan di foreground
   FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
-    print("═══════════════════════════════════════════════════════");
-    print("📩 PUSH NOTIFICATION RECEIVED (FOREGROUND)");
-    print("═══════════════════════════════════════════════════════");
-    print("📱 Message ID: ${message.messageId}");
-    print("📅 Sent Time: ${message.sentTime}");
-    print("📧 From: ${message.from}");
-    print("🔔 Notification Title: ${message.notification?.title ?? 'N/A'}");
-    print("📝 Notification Body: ${message.notification?.body ?? 'N/A'}");
-    print("🖼️  Image URL: ${message.notification?.android?.imageUrl ?? message.notification?.apple?.imageUrl ?? 'N/A'}");
-    print("📊 Data: ${message.data}");
-    print("🔗 Screen: ${message.data['screen'] ?? 'N/A'}");
-    print("📦 Collapse Key: ${message.collapseKey ?? 'N/A'}");
-    print("🔑 Message Type: ${message.messageType ?? 'N/A'}");
-    print("═══════════════════════════════════════════════════════");
-
     RemoteNotification? notification = message.notification;
     AndroidNotification? android = message.notification?.android;
 
@@ -231,20 +192,11 @@ Future<void> initNotifications() async {
         ),
         payload: message.data['screen'],
       );
-      print("✅ Notification displayed successfully");
-      print("   - Notification ID: ${notification.hashCode}");
-      print("   - Channel: ${channel.id}");
-      print("═══════════════════════════════════════════════════════");
     } else {
-      print("⚠️ WARNING: Notification payload is null");
-      print("📊 Available data: ${message.data}");
       // Jika tidak ada notification payload, tapi ada data, tetap tampilkan
       if (message.data.isNotEmpty) {
         final title = message.data['title'] ?? 'Notification';
         final body = message.data['body'] ?? message.data['message'] ?? 'New notification';
-        print("📤 Displaying notification from data payload:");
-        print("   - Title: $title");
-        print("   - Body: $body");
 
         await flutterLocalNotificationsPlugin.show(
           message.hashCode,
@@ -268,34 +220,16 @@ Future<void> initNotifications() async {
           ),
           payload: message.data['screen'],
         );
-        print("✅ Notification displayed from data successfully");
-        print("   - Notification ID: ${message.hashCode}");
-        print("═══════════════════════════════════════════════════════");
-      } else {
-        print("❌ ERROR: No notification payload and no data available");
-        print("═══════════════════════════════════════════════════════");
       }
     }
   });
 
   // ✅ Handle notification tap (app sudah terbuka)
   FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-    print("═══════════════════════════════════════════════════════");
-    print("👆 NOTIFICATION TAPPED (App Already Open)");
-    print("═══════════════════════════════════════════════════════");
-    print("📱 Message ID: ${message.messageId}");
-    print("🔔 Notification Title: ${message.notification?.title ?? 'N/A'}");
-    print("📝 Notification Body: ${message.notification?.body ?? 'N/A'}");
-    print("📊 Data: ${message.data}");
-    print("🔗 Screen: ${message.data['screen'] ?? 'N/A'}");
     // Handle navigation jika diperlukan
     if (message.data['screen'] != null) {
-      print("🧭 Navigating to: ${message.data['screen']}");
       debugPrint("🔗 Navigate to: ${message.data['screen']}");
-    } else {
-      print("⚠️ No screen specified in notification data");
     }
-    print("═══════════════════════════════════════════════════════");
   });
 }
 
@@ -311,21 +245,17 @@ class _MyAppState extends State<MyApp> {
     try {
       // Request permission first (hanya untuk iOS, Android tidak perlu)
       if (DefaultFirebaseOptions.currentPlatform == DefaultFirebaseOptions.ios) {
-        final settings = await FirebaseMessaging.instance.requestPermission(
+        await FirebaseMessaging.instance.requestPermission(
           alert: true,
           badge: true,
           sound: true,
           provisional: false,
         );
 
-        print("🔔 Notification permission status: ${settings.authorizationStatus}");
-
         // For iOS, wait for APNS token first
         final apnsToken = await FirebaseMessaging.instance.getAPNSToken();
-        print("📱 APNS Token: $apnsToken");
 
         if (apnsToken == null) {
-          print("⚠️ APNS token is null. Make sure Push Notifications capability is enabled in Xcode.");
           return;
         }
       }
@@ -335,29 +265,21 @@ class _MyAppState extends State<MyApp> {
       int retryCount = 0;
       const maxRetries = 3;
 
-      print("═══════════════════════════════════════════════════════");
-      print("🔑 GETTING FCM TOKEN");
-      print("═══════════════════════════════════════════════════════");
-
       while (token == null && retryCount < maxRetries) {
         try {
           token = await FirebaseMessaging.instance.getToken();
           if (token != null) {
-            print("✅ FCM Token obtained successfully");
-            print("📱 FCM Token: $token");
-            print("═══════════════════════════════════════════════════════");
             // Token bisa digunakan untuk dikirim ke server jika diperlukan
             // Contoh: await sendTokenToServer(token);
             break;
           }
         } catch (e) {
           retryCount++;
-          print("⚠️ Error getting FCM token (attempt $retryCount/$maxRetries): $e");
+          // Error getting FCM token handled silently
 
           // Jika error SERVICE_NOT_AVAILABLE, mungkin Google Play Services tidak tersedia
           if (e.toString().contains('SERVICE_NOT_AVAILABLE')) {
-            print("⚠️ Google Play Services mungkin tidak tersedia atau tidak ter-update.");
-            print("⚠️ Pastikan device memiliki Google Play Services yang ter-update.");
+            // Google Play Services error handled silently
 
             // Tidak retry lagi untuk SERVICE_NOT_AVAILABLE
             break;
@@ -369,24 +291,8 @@ class _MyAppState extends State<MyApp> {
         }
       }
 
-      if (token == null) {
-        print("❌ FCM Token tidak dapat diperoleh setelah $maxRetries attempts");
-        print("═══════════════════════════════════════════════════════");
-      }
-    } catch (e, stackTrace) {
-      print("═══════════════════════════════════════════════════════");
-      print("❌ ERROR INITIALIZING MESSAGING");
-      print("═══════════════════════════════════════════════════════");
-      print("❌ Error: $e");
-      print("📚 Stack trace: $stackTrace");
-
-      // Log lebih detail untuk debugging
-      if (e.toString().contains('SERVICE_NOT_AVAILABLE')) {
-        print("⚠️ SERVICE_NOT_AVAILABLE error biasanya terjadi karena:");
-        print("   1. Google Play Services tidak tersedia atau tidak ter-update");
-        print("   2. Network connectivity issues");
-        print("   3. Firebase project configuration issues");
-      }
+    } catch (e) {
+      // Error initializing messaging handled silently
     }
   }
 
@@ -400,26 +306,10 @@ class _MyAppState extends State<MyApp> {
     // Check initial message (jika app dibuka dari notification saat app terminated)
     FirebaseMessaging.instance.getInitialMessage().then((RemoteMessage? message) {
       if (message != null) {
-        print("═══════════════════════════════════════════════════════");
-        print("🚀 APP OPENED FROM NOTIFICATION (App Was Terminated)");
-        print("═══════════════════════════════════════════════════════");
-        print("📱 Message ID: ${message.messageId}");
-        print("📅 Sent Time: ${message.sentTime}");
-        print("📧 From: ${message.from}");
-        print("🔔 Notification Title: ${message.notification?.title ?? 'N/A'}");
-        print("📝 Notification Body: ${message.notification?.body ?? 'N/A'}");
-        print("📊 Data: ${message.data}");
-        print("🔗 Screen: ${message.data['screen'] ?? 'N/A'}");
         // Handle navigation jika diperlukan
         if (message.data['screen'] != null) {
-          print("🧭 Navigating to: ${message.data['screen']}");
           debugPrint("🔗 Navigate to: ${message.data['screen']}");
-        } else {
-          print("⚠️ No screen specified in notification data");
         }
-        print("═══════════════════════════════════════════════════════");
-      } else {
-        print("ℹ️  App opened normally (not from notification)");
       }
     });
   }

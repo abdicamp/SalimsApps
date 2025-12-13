@@ -21,10 +21,7 @@ class _CardTaskContainerState extends State<CardTaskContainer> {
   Widget build(BuildContext context) {
     // Debug logging
     if (widget.isDetailhistory == true) {
-      print("🔄 CardTaskContainer rebuild - isDetailhistory: true");
-      print("   - vm is null: ${widget.vm == null}");
       if (widget.vm != null) {
-        print("   - listTakingSampleCI: ${widget.vm!.listTakingSampleCI.length}");
       }
     }
     
@@ -337,13 +334,6 @@ class _CardTaskContainerState extends State<CardTaskContainer> {
                                         );
                                       } else {
                                         widget.vm?.addListCI();
-                                        print(
-                                            "panjang data : ${widget.vm?.listTakingSampleCI.length}");
-                                        print(
-                                            "panjang data : ${widget.vm?.listTakingSampleCI.map((e) {
-                                          print("data item : ${e}");
-                                          return e.toJson();
-                                        }).toList()}");
                                       }
                                     }
                                   });

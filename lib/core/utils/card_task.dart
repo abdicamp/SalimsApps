@@ -323,7 +323,7 @@ class TaskItem extends StatelessWidget {
               .toList();
         }
       } catch (e) {
-        print("Error parsing parameter and equipment: $e");
+        // Error parsing parameter and equipment handled silently
       }
     }
 

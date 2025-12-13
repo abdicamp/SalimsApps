@@ -54,15 +54,6 @@ class _DetailTaskViewState extends State<DetailTaskView>
           DetailTaskViewmodel(context: context, listTaskList: widget.listData , isDetailhistory: widget.isDetailhistory),
       builder: (context, vm, child) {
         // Debug logging
-        print("═══════════════════════════════════════════════════════");
-        print("🔄 DetailTaskView REBUILD");
-        print("   - isBusy: ${vm.isBusy}");
-        print("   - isDetailhistory: ${widget.isDetailhistory}");
-        print("   - listTakingSampleParameter: ${vm.listTakingSampleParameter.length}");
-        print("   - listTakingSampleCI: ${vm.listTakingSampleCI.length}");
-        print("   - locationController: ${vm.locationController?.text}");
-        print("   - weatherController: ${vm.weatherController?.text}");
-        print("═══════════════════════════════════════════════════════");
         
         return GestureDetector(
           onTap: () {
@@ -182,7 +173,6 @@ class _DetailTaskViewState extends State<DetailTaskView>
                           Expanded(
                             child: Builder(
                               builder: (context) {
-                                print("📦 IndexedStack rendering - selectedIndex: $selectedIndex");
                                 return IndexedStack(
                                   index: selectedIndex,
                                   children: [

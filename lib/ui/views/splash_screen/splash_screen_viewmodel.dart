@@ -46,7 +46,7 @@ class SplashScreenViewmodel extends FutureViewModel {
     } catch (e) {
       setBusy(false);
       notifyListeners();
-      print("Error get data : ${e}");
+      // Error handled silently
     }
   }
 

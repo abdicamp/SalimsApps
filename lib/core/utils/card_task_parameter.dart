@@ -22,10 +22,7 @@ class _CardTaskParameterState extends State<CardTaskParameter> {
   Widget build(BuildContext context) {
     // Debug logging
     if (widget.isDetailhistory == true) {
-      print("🔄 CardTaskParameter rebuild - isDetailhistory: true");
-      print("   - vm is null: ${widget.vm == null}");
       if (widget.vm != null) {
-        print("   - listTakingSampleParameter: ${widget.vm!.listTakingSampleParameter.length}");
       }
     }
     
