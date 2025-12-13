@@ -1,9 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-<<<<<<< HEAD
-=======
-import 'package:http/http.dart';
->>>>>>> d9307d58676fc9c28c83e0c350d87b25294391cb
 import 'package:salims_apps_new/core/services/api_services.dart';
 import 'package:salims_apps_new/core/services/local_Storage_Services.dart';
 import 'package:salims_apps_new/core/utils/app_localizations.dart';
@@ -21,26 +17,19 @@ class ProfileViewModel extends FutureViewModel {
   final ApiService _apiServices = ApiService();
 
   String? username;
-<<<<<<< HEAD
   String? phone;
   String? email;
   String? profileImage;
-=======
->>>>>>> d9307d58676fc9c28c83e0c350d87b25294391cb
   bool? isChangePassword = false;
   bool? isShowPasswordOld = false;
   bool? isShowPasswordNew = false;
 
   getDataUser() async {
     final prefGetData = await localStorageService.getUserData();
-<<<<<<< HEAD
     username = prefGetData?.data?.username;
     phone = prefGetData?.data?.detail?.phone;
     email = prefGetData?.data?.detail?.email;
     profileImage = prefGetData?.data?.profileImage;
-=======
-    username = prefGetData!.data?.username;
->>>>>>> d9307d58676fc9c28c83e0c350d87b25294391cb
     notifyListeners();
   }
 

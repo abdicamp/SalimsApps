@@ -12,10 +12,7 @@ class LocalStorageService {
     String jsonString = jsonEncode(
       login.toJson(),
     ); // simpan sebagai string JSON
-<<<<<<< HEAD
     print("jsonString : ${jsonString}");
-=======
->>>>>>> d9307d58676fc9c28c83e0c350d87b25294391cb
     await prefs.setString(_loginKey, jsonString);
   }
 

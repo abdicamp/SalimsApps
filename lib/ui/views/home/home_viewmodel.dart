@@ -1,8 +1,5 @@
-<<<<<<< HEAD
 import 'dart:convert';
 
-=======
->>>>>>> d9307d58676fc9c28c83e0c350d87b25294391cb
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
