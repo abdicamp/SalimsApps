@@ -89,6 +89,7 @@ class _ProfileViewState extends State<ProfileView> {
                               CircleAvatar(
                                 radius: 45,
                                 backgroundColor: const Color(0xFF15C01E),
+<<<<<<< HEAD
                                 child: CircleAvatar(
                                   radius: 42,
                                   backgroundColor: Colors.white,
@@ -102,6 +103,13 @@ class _ProfileViewState extends State<ProfileView> {
                                           color: Colors.grey[400],
                                         )
                                       : null,
+=======
+                                child: const CircleAvatar(
+                                  radius: 42,
+                                  backgroundColor: Colors.white,
+                                  backgroundImage:
+                                      AssetImage('assets/images/logo.png',),
+>>>>>>> d9307d58676fc9c28c83e0c350d87b25294391cb
                                 ),
                               ),
                               const SizedBox(height: 16),
@@ -326,6 +334,7 @@ class _ProfileViewState extends State<ProfileView> {
                                       ),
                                       const SizedBox(height: 10),
                                       _buildInfoRow(
+<<<<<<< HEAD
                                         AppLocalizations.of(context)?.phone ?? "Phone", 
                                         "${vm.phone ?? '-'}"
                                       ),
@@ -334,6 +343,19 @@ class _ProfileViewState extends State<ProfileView> {
                                         "${vm.email ?? '-'}"
                                       ),
                                      
+=======
+                                        AppLocalizations.of(context)?.employeeId ?? "Employee ID", 
+                                        "EMP001"
+                                      ),
+                                      _buildInfoRow(
+                                        AppLocalizations.of(context)?.division ?? "Division", 
+                                        "Quality Control"
+                                      ),
+                                      _buildInfoRow(
+                                        AppLocalizations.of(context)?.joinDate ?? "Join Date", 
+                                        "01 Jan 2020"
+                                      ),
+>>>>>>> d9307d58676fc9c28c83e0c350d87b25294391cb
                                     ],
                                   ),
                           ),

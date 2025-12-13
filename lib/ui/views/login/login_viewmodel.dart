@@ -194,7 +194,10 @@ class LoginViewModel extends FutureViewModel {
       apiResponse = result;
 
       if (result.data != null) {
+<<<<<<< HEAD
         print("result.data : ${jsonEncode(result.data!.data?.detail)}");
+=======
+>>>>>>> d9307d58676fc9c28c83e0c350d87b25294391cb
         await _storage.saveLoginData(result.data!);
         logger.i("User login successful: ${jsonEncode(result.data!.data)}");
         
