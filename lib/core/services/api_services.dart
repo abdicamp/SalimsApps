@@ -30,21 +30,21 @@ class ApiService {
       printTime: true,
     ),
   );
-  
+
   // Callback untuk handle token expired (auto logout)
   static Function()? onTokenExpired;
-  
+
   // Set callback untuk token expired
   static void setTokenExpiredCallback(Function() callback) {
     onTokenExpired = callback;
   }
-  
+
   // Handle token expired - clear storage dan trigger logout
   Future<void> _handleTokenExpired() async {
     try {
       logger.w("Token expired, clearing storage and logging out");
       await _storage.clear();
-      
+
       // Trigger callback jika ada
       if (onTokenExpired != null) {
         onTokenExpired!();
@@ -53,7 +53,7 @@ class ApiService {
       logger.e("Error handling token expired: $e");
     }
   }
-  
+
   // Check jika response adalah token expired (401 atau 403)
   Future<bool> _checkAndHandleTokenExpired(http.Response response) async {
     // Cek HTTP status code
@@ -61,35 +61,41 @@ class ApiService {
       await _handleTokenExpired();
       return true;
     }
-    
+
     // Cek response body untuk token expired indicator
     try {
       final responseData = jsonDecode(response.body);
       final message = responseData['message']?.toString().toLowerCase() ?? '';
       final error = responseData['error']?.toString().toLowerCase() ?? '';
       final msg = responseData['msg']?.toString().toLowerCase() ?? '';
-      
-      if (message.contains('token') && 
-          (message.contains('expired') || message.contains('invalid') || message.contains('unauthorized'))) {
+
+      if (message.contains('token') &&
+          (message.contains('expired') ||
+              message.contains('invalid') ||
+              message.contains('unauthorized'))) {
         await _handleTokenExpired();
         return true;
       }
-      
-      if (error.contains('token') && 
-          (error.contains('expired') || error.contains('invalid') || error.contains('unauthorized'))) {
+
+      if (error.contains('token') &&
+          (error.contains('expired') ||
+              error.contains('invalid') ||
+              error.contains('unauthorized'))) {
         await _handleTokenExpired();
         return true;
       }
-      
-      if (msg.contains('token') && 
-          (msg.contains('expired') || msg.contains('invalid') || msg.contains('unauthorized'))) {
+
+      if (msg.contains('token') &&
+          (msg.contains('expired') ||
+              msg.contains('invalid') ||
+              msg.contains('unauthorized'))) {
         await _handleTokenExpired();
         return true;
       }
     } catch (e) {
       // Jika tidak bisa parse JSON, skip check response body
     }
-    
+
     return false;
   }
 
@@ -99,7 +105,7 @@ class ApiService {
       if (getData == null || getData.data == null) {
         return false;
       }
-      
+
       final response = await http.get(
         Uri.parse("$baseUrl/auth/check-token/${getData.data?.username}"),
         headers: {
@@ -139,21 +145,19 @@ class ApiService {
           "token_fcm": "${token}"
         }),
       );
-      print("status code : ${response.statusCode}");
-      print("response body : ${response.body}");
-      
+
       // Parse response body terlepas dari HTTP status code
       try {
         final data = jsonDecode(response.body);
         final loginResponse = LoginResponse.fromJson(data);
-        
+
         // Cek status dari JSON response body
         if (response.statusCode == 200 && loginResponse.status == true) {
           return ApiResponse.success(loginResponse);
         } else {
           // Handle error response (status false atau HTTP status code bukan 200)
           String errorMessage = "Login gagal";
-          
+
           if (loginResponse.msg != null && loginResponse.msg!.isNotEmpty) {
             // Jika msg mengandung '|', ambil bagian setelah '|'
             if (loginResponse.msg!.contains('|')) {
@@ -164,7 +168,7 @@ class ApiService {
               errorMessage = loginResponse.msg!;
             }
           }
-          
+
           logger.w("Login Api failed: ${response.body}");
           return ApiResponse.error(errorMessage);
         }
@@ -180,13 +184,7 @@ class ApiService {
   Future<ApiResponse<TaskListModels>?> getTaskList(String? filterDate) async {
     try {
       final getData = await _storage.getUserData();
-      // print("${baseUrl}/transaction/taking-sample/testing-order?branchcode=${getData?.data?.branchcode}&labour_id=${getData?.data?.labour_id}&rangeDate=${filterDate == '' ? '${DateFormat('yyyy-MM-dd').format(DateTime.now())}-${DateFormat('yyyy-MM-dd').format(DateTime.now())}' : filterDate}");
-      print("getTaskList filterDate: $filterDate");
-      print("getTaskList branchcode: ${getData?.data?.branchcode}");
-      print("getTaskList labourcode: ${getData?.data?.labourcode}");
-      print("getTaskList rangeDate: ${filterDate == '' ? '${DateFormat('yyyy-MM-dd').format(DateTime.now())}-${DateFormat('yyyy-MM-dd').format(DateTime.now())}' : filterDate}");
-      print("getTaskList url: ${baseUrl}/transaction/taking-sample/testing-order?branchcode=${getData?.data?.branchcode}&labourcode=${getData?.data?.labourcode}&rangedate=${filterDate == '' ? '${DateFormat('yyyy-MM-dd').format(DateTime.now())} - ${DateFormat('yyyy-MM-dd').format(DateTime.now())}' : filterDate}");
-      
+
       final response = await http.get(
         Uri.parse(
             "${baseUrl}/transaction/taking-sample/testing-order?branchcode=${getData?.data?.branchcode}&labourcode=${getData?.data?.labourcode}&rangedate=${filterDate}"),
@@ -196,21 +194,17 @@ class ApiService {
         },
       );
 
-      print("sampleResponse getTaskList : ${jsonDecode(response.body)}");
-      print("status code : ${response.statusCode}");
-      
       // Check token expired
       final isTokenExpired = await _checkAndHandleTokenExpired(response);
       if (isTokenExpired) {
         return ApiResponse.error("Session expired. Please login again.");
       }
-      
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         // Cek status dari JSON response body
         final status = data['status'];
         final code = data['code'];
-        
+
         if (status == false && code == 404) {
           // Return empty array untuk status false dan code 404
           final emptyResponse = TaskListModels(
@@ -221,9 +215,21 @@ class ApiService {
           );
           return ApiResponse.success(emptyResponse);
         }
-        
+
         final taskListResponse = TaskListModels.fromJson(data);
         return ApiResponse.success(taskListResponse);
+      } else if (response.statusCode == 404) {
+        final data = jsonDecode(response.body);
+        // Cek status dari JSON response body
+        final status = data['status'];
+        final code = data['code'];
+        final emptyResponse = TaskListModels(
+          status: false,
+          code: 404,
+          message: data['message'] ?? "Data not found",
+          data: [],
+        );
+        return ApiResponse.success(emptyResponse);
       } else {
         return ApiResponse.error("Failed get data: ${response.statusCode}");
       }
@@ -233,11 +239,10 @@ class ApiService {
   }
 
   Future<ApiResponse<TaskListModels>?> getTaskListHistory(
-      String? filterDate
-  ) async {
+      String? filterDate) async {
     try {
       final getData = await _storage.getUserData();
-      
+
       if (getData == null || getData.data == null) {
         logger.w("User data is null in getTaskListHistory");
         return ApiResponse.error("User data not found");
@@ -255,9 +260,6 @@ class ApiService {
           "Authorization": "Bearer ${getData.accessToken}",
         },
       );
-      
-      print("getTaskListHistory status code: ${response.statusCode}");
-      print("getTaskListHistory response body: ${response.body}");
 
       // Check token expired
       final isTokenExpired = await _checkAndHandleTokenExpired(response);
@@ -270,10 +272,7 @@ class ApiService {
       try {
         final data = jsonDecode(response.body);
         final taskListResponse = TaskListModels.fromJson(data);
-        
-        // Log untuk debug
-        print("getTaskListHistory parsed - status: ${taskListResponse.status}, code: ${taskListResponse.code}, data length: ${taskListResponse.data.length}");
-        
+
         return ApiResponse.success(taskListResponse);
       } catch (e) {
         logger.e("Error parsing JSON in getTaskListHistory: $e");
@@ -302,7 +301,7 @@ class ApiService {
       if (isTokenExpired) {
         return ApiResponse.error("Session expired. Please login again.");
       }
-      
+
       if (response.statusCode == 200) {
         return jsonDecode(response.body)['data'];
       } else {
@@ -329,13 +328,13 @@ class ApiService {
       if (isTokenExpired) {
         return ApiResponse.error("Session expired. Please login again.");
       }
-      
+
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         // Cek status dari JSON response body
         final status = data['status'];
         final code = data['code'];
-        
+
         if (status == false && code == 404) {
           // Return empty array untuk status false dan code 404
           final emptyResponse = SampleLocationResponse(
@@ -346,9 +345,8 @@ class ApiService {
           );
           return ApiResponse.success(emptyResponse);
         }
-        
+
         final sampleResponse = SampleLocationResponse.fromJson(data);
-        print("sampleResponse : ${jsonEncode(sampleResponse)}");
         return ApiResponse.success(sampleResponse);
       } else {
         return ApiResponse.error("Failed get data: ${response.statusCode}");
@@ -375,13 +373,13 @@ class ApiService {
       if (isTokenExpired) {
         return ApiResponse.error("Session expired. Please login again.");
       }
-      
+
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         // Cek status dari JSON response body
         final status = data['status'];
         final code = data['code'];
-        
+
         if (status == false && code == 404) {
           // Return empty array untuk status false dan code 404
           final emptyResponse = EquipmentResponse(
@@ -392,7 +390,7 @@ class ApiService {
           );
           return ApiResponse.success(emptyResponse);
         }
-        
+
         final equipmentResponse = EquipmentResponse.fromJson(data);
         return ApiResponse.success(equipmentResponse);
       } else {
@@ -419,13 +417,13 @@ class ApiService {
       if (isTokenExpired) {
         return ApiResponse.error("Session expired. Please login again.");
       }
-      
+
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         // Cek status dari JSON response body
         final status = data['status'];
         final code = data['code'];
-        
+
         if (status == false && code == 404) {
           // Return empty array untuk status false dan code 404
           final emptyResponse = UnitResponse(
@@ -436,7 +434,7 @@ class ApiService {
           );
           return ApiResponse.success(emptyResponse);
         }
-        
+
         final unitListResponse = UnitResponse.fromJson(data);
         return ApiResponse.success(unitListResponse);
       } else {
@@ -451,7 +449,6 @@ class ApiService {
       String? ptsNumber, String? sampleNo) async {
     try {
       final getData = await _storage.getUserData();
-      print("$baseUrl/transaction/taking-sample/testing-order-parameter?branchcode=${getData?.data?.branchcode}&pts_number=${ptsNumber}&sampleno=${sampleNo}");
       final response = await http.get(
         Uri.parse(
             "$baseUrl/transaction/taking-sample/testing-order-parameter?branchcode=${getData?.data?.branchcode}&pts_number=${ptsNumber}&sampleno=${sampleNo}"),
@@ -461,19 +458,18 @@ class ApiService {
         },
       );
 
-
       // Check token expired
       final isTokenExpired = await _checkAndHandleTokenExpired(response);
       if (isTokenExpired) {
         return ApiResponse.error("Session expired. Please login again.");
       }
-      
+
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         // Cek status dari JSON response body
         final status = data['status'];
         final code = data['code'];
-        
+
         if (status == false && code == 404) {
           // Return empty data untuk status false dan code 404
           final emptyData = {
@@ -484,7 +480,7 @@ class ApiService {
           };
           return ApiResponse.success(emptyData);
         }
-        
+
         return ApiResponse.success(data);
       } else {
         return ApiResponse.error("Failed get data: ${response.statusCode}");
@@ -511,10 +507,8 @@ class ApiService {
         if (isTokenExpired) {
           return ApiResponse.error("Session expired. Please login again.");
         }
-        
-        final data = jsonDecode(response.body);
 
-        print("data response post taking : ${data}");
+        final data = jsonDecode(response.body);
 
         if (response.statusCode == 201 || response.statusCode == 200) {
           return ApiResponse.success(data);
@@ -522,8 +516,7 @@ class ApiService {
           return ApiResponse.error(
               'Error ${data['code']} : ${data['message']}');
         }
-      }
-      else {
+      } else {
         final response = await http.put(
             Uri.parse("$baseUrl/transaction/taking-sample/update"),
             headers: {
@@ -537,10 +530,9 @@ class ApiService {
         if (isTokenExpired) {
           return ApiResponse.error("Session expired. Please login again.");
         }
-        
+
         logger.w("post failed: ${response.body}");
         final data = jsonDecode(response.body);
-        print("data update : ${data}");
         if (response.statusCode == 200) {
           return ApiResponse.success(data);
         } else {
@@ -549,7 +541,6 @@ class ApiService {
         }
       }
     } catch (e) {
-      print("error catch : ${e}");
       return ApiResponse.error('Error : ${e}');
     }
   }
@@ -578,17 +569,12 @@ class ApiService {
           },
           body: jsonEncode(dataJson));
 
-      print(
-          "jsonDecode(response.body) updateStatus : ${jsonDecode(response.body)}");
-      print(
-          "jsonDecode(response.body) updateStatus code : ${response.statusCode}");
-      
       // Check token expired
       final isTokenExpired = await _checkAndHandleTokenExpired(response);
       if (isTokenExpired) {
         return ApiResponse.error("Session expired. Please login again.");
       }
-      
+
       final data = jsonDecode(response.body);
 
       if (response.statusCode == 200) {
@@ -597,7 +583,6 @@ class ApiService {
         return ApiResponse.error('Error ${data['code']} : ${data['message']}');
       }
     } catch (e) {
-      print("error update status : ${e}");
       return ApiResponse.error('Error : ${e}');
     }
   }
@@ -619,16 +604,14 @@ class ApiService {
                 "Authorization": "Bearer ${getData?.accessToken}",
               },
               body: jsonEncode(dataJson));
-      
+
       // Check token expired
       final isTokenExpired = await _checkAndHandleTokenExpired(response);
       if (isTokenExpired) {
         return "Session expired. Please login again.";
       }
-      
+
       final responseData = jsonDecode(response.body);
-      print("responseData : ${responseData}");
-      print("responseData : ${response.statusCode}");
       if (response.statusCode == 200) {
         return responseData;
       } else {
@@ -639,13 +622,14 @@ class ApiService {
     }
   }
 
-  Future<ApiResponse<NotificationHistoryModels>?> getNotificationHistory() async {
+  Future<ApiResponse<NotificationHistoryModels>?>
+      getNotificationHistory() async {
     try {
       final getData = await _storage.getUserData();
-      
+
       // Get zonaauthority from user data
       final zonaauthority = getData?.data?.zonaauthority;
-      
+
       if (zonaauthority == null || zonaauthority.isEmpty) {
         return ApiResponse.error("Zona authority tidak ditemukan");
       }
@@ -663,9 +647,6 @@ class ApiService {
         },
       );
 
-      print("getNotificationHistory response: ${response.body}");
-      print("getNotificationHistory status code: ${response.statusCode}");
-
       // Check token expired
       final isTokenExpired = await _checkAndHandleTokenExpired(response);
       if (isTokenExpired) {
@@ -677,7 +658,7 @@ class ApiService {
         // Cek status dari JSON response body
         final status = data['status'];
         final code = data['code'];
-        
+
         if (status == false && code == 404) {
           // Return empty array untuk status false dan code 404
           final emptyData = NotificationData(data: [], pagination: null);
@@ -690,7 +671,7 @@ class ApiService {
           );
           return ApiResponse.success(emptyResponse);
         }
-        
+
         final notificationResponse = NotificationHistoryModels.fromJson(data);
         return ApiResponse.success(notificationResponse);
       } else {

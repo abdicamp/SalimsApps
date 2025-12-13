@@ -36,7 +36,6 @@ class HomeViewmodel extends FutureViewModel {
     } catch (e) {
       setBusy(false);
       notifyListeners();
-      print("Error get data : ${e}");
     }
   }
 
@@ -67,7 +66,6 @@ class HomeViewmodel extends FutureViewModel {
 
       notifyListeners();
     } catch (e) {
-      print("error : ${e}");
       setBusy(false);
 
       notifyListeners();
@@ -101,7 +99,6 @@ class HomeViewmodel extends FutureViewModel {
     } catch (e) {
       setBusy(false);
       notifyListeners();
-      print("Error in runAllFunction: $e");
     }
   }
 
@@ -142,7 +139,6 @@ class HomeViewmodel extends FutureViewModel {
       }
       notifyListeners();
     } catch (e) {
-      print("Error checkNewNotifications: $e");
       newNotificationCount = 0;
       notifyListeners();
     }
@@ -163,7 +159,7 @@ class HomeViewmodel extends FutureViewModel {
         }
       }
     } catch (e) {
-      print("Error markNotificationsAsRead: $e");
+      // Error handled silently
     }
   }
 
@@ -195,6 +191,7 @@ class HomeViewmodel extends FutureViewModel {
 
     if (newRange != null) {
       selectedRange = newRange;
+
       dateFilterController!.text =
           '${_formatDate(selectedRange!.start)} - ${_formatDate(selectedRange!.end)}';
       getDataTask();
@@ -229,9 +226,8 @@ class HomeViewmodel extends FutureViewModel {
     final dateFormat = DateFormat('yyyy-MM-dd');
     final fromDateStr = dateFormat.format(fromDate);
     final toDateStr = dateFormat.format(toDate);
-
     final responseTaskList =
-        await apiService.getTaskList('${fromDateStr} - ${toDateStr}');
+        await apiService.getTaskList('${dateFilterController!.text ?? ''}');
     final responseTaskListHistory =
         await apiService.getTaskListHistory('${fromDateStr} - ${toDateStr}');
     
@@ -248,9 +244,6 @@ class HomeViewmodel extends FutureViewModel {
       totalListTaskHistory = responseTaskListHistory!.data!.data.length;
     } else {
       totalListTaskHistory = 0;
-      if (responseTaskListHistory?.error != null) {
-        print("Error getTaskListHistory: ${responseTaskListHistory!.error}");
-      }
     }
     dataNearestLocation = await getNearestLocation();
     notifyListeners();
@@ -291,7 +284,6 @@ class HomeViewmodel extends FutureViewModel {
 
       double minDistance = double.infinity;
       TestingOrder? nearestPlace;
-      print("listTask : ${listTask}");
       
       // Jika listTask kosong, return null
       if (listTask.isEmpty) {
@@ -317,7 +309,6 @@ class HomeViewmodel extends FutureViewModel {
           continue; // Skip jika parsing gagal
         }
         
-        print("data location : ${lat},${lng}");
         double distance = Geolocator.distanceBetween(
           current.latitude,
           current.longitude,
@@ -338,11 +329,8 @@ class HomeViewmodel extends FutureViewModel {
       }
       
       radius = minDistance.round();
-      print(
-          "Lokasi terdekat: ${nearestPlace?.subzonaname} (${minDistance.round()} m) , Current Location : ${current.latitude},${current.longitude} , data location : ${nearestPlace?.geotag}");
       return nearestPlace;
     } catch (e) {
-      print("Error: $e");
       return null;
     }
   }

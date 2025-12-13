@@ -33,7 +33,6 @@ class ProfileViewModel extends FutureViewModel {
     try {
       final response = await _apiServices.chagePassword(
           oldPassword?.text, newPassword?.text);
-      print("response.data viewmodel : ${response}");
 
       if (response['status'] == true) {
         ScaffoldMessenger.of(ctx!).showSnackBar(

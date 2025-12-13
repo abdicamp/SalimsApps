@@ -138,12 +138,7 @@ class _CardTaskInfoState extends State<CardTaskInfo> {
   Widget build(BuildContext context) {
     // Debug logging
     if (widget.isDetailhistory == true) {
-      print("🔄 CardTaskInfo rebuild - isDetailhistory: true");
-      print("   - vm is null: ${widget.vm == null}");
       if (widget.vm != null) {
-        print("   - locationController: ${widget.vm!.locationController?.text}");
-        print("   - weatherController: ${widget.vm!.weatherController?.text}");
-        print("   - imageString: ${widget.vm!.imageString.length}");
       }
     }
     
@@ -189,7 +184,6 @@ class _CardTaskInfoState extends State<CardTaskInfo> {
                                 onTap: () async {
                                   if(widget.isDetailhistory! == false){
                                     await widget.vm!.pickImage();
-                                    print("klik");
                                   }
                                 },
                                 child: DottedBorder(
@@ -213,7 +207,6 @@ class _CardTaskInfoState extends State<CardTaskInfo> {
                               )
                                   : Builder(
                                       builder: (context) {
-                                        print("🖼️  Rendering GridView - imageString: ${widget.vm!.imageString.length}, imageFiles: ${widget.vm!.imageFiles.length}");
                                         // Untuk history, tidak tampilkan tombol add image
                                         final itemCount = widget.isDetailhistory == true
                                             ? widget.vm!.imageString.length + widget.vm!.imageFiles.length

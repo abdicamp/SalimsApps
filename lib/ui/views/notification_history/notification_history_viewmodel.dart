@@ -42,18 +42,16 @@ class NotificationHistoryViewmodel extends FutureViewModel {
         final notificationData = response!.data!.data!.data;
         listNotifications = List.from(notificationData);
         listNotificationsSearch = List.from(notificationData);
-        print("listNotifications length: ${listNotifications.length}");
       } else {
         listNotifications = [];
         listNotificationsSearch = [];
-        print("Error: ${response?.error}");
       }
       setBusy(false);
       notifyListeners();
     } catch (e) {
       setBusy(false);
       notifyListeners();
-      print("Error getNotificationHistory: $e");
+      // Error handled silently
     }
   }
 

@@ -32,7 +32,6 @@ class TaskListViewmodel extends FutureViewModel {
       selectedRange = newRange;
       tanggalCtrl!.text =
           '${_formatDate(selectedRange!.start)} - ${_formatDate(selectedRange!.end)}';
-      print("pickDateRange tanggalCtrl?.text: ${tanggalCtrl?.text}");
       getListTask();
       notifyListeners();
     }
@@ -66,12 +65,9 @@ class TaskListViewmodel extends FutureViewModel {
   getListTask() async {
     setBusy(true);
     try {
-      print("getListTask tanggalCtrl?.text: ${tanggalCtrl?.text}");
       // final response = await _apiServices.getTaskList(tanggalCtrl?.text ?? '${DateFormat('yyyy-MM-dd').format(DateTime.now())} - ${DateFormat('yyyy-MM-dd').format(DateTime.now())}');
       final response = await _apiServices.getTaskList(tanggalCtrl?.text ?? '');
-
       listTask = response!.data!.data;
-      print("jsondecode getListTask :${jsonEncode(listTask)}");
       listTaskSearch = response.data!.data;
       if (listTask.isNotEmpty) {
         listTaskParameterAndEquipment.clear();
@@ -81,9 +77,9 @@ class TaskListViewmodel extends FutureViewModel {
                   '${item.ptsnumber}', '${item.sampleno}');
           final dataPars = responseParameterAndEquipment?.data?['data'];
          listTaskParameterAndEquipment.add(dataPars);
-         print("listTaskParameterAndEquipment : ${jsonEncode(listTaskParameterAndEquipment)}");
         }
       }
+
       notifyListeners();
       setBusy(false);
     } catch (e) {}
@@ -104,12 +100,10 @@ class TaskListViewmodel extends FutureViewModel {
         'appdescription': '',
       };
 
-      print("data update : ${dataUpdate}");
-
       setBusy(false);
       notifyListeners();
     } catch (e) {
-      print("error get one task : ${e}");
+      // Error handled silently
     }
   }
 
