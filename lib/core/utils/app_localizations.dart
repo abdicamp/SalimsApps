@@ -23,7 +23,8 @@ class AppLocalizations {
   String get save => _localizedValues[locale.languageCode]?['save'] ?? 'Save';
   String get cancel => _localizedValues[locale.languageCode]?['cancel'] ?? 'Cancel';
   String get accountInformation => _localizedValues[locale.languageCode]?['accountInformation'] ?? 'Account Information';
-  String get employeeId => _localizedValues[locale.languageCode]?['employeeId'] ?? 'Employee ID';
+  String get phone => _localizedValues[locale.languageCode]?['phone'] ?? 'Phone';
+  String get email => _localizedValues[locale.languageCode]?['email'] ?? 'Email';
   String get division => _localizedValues[locale.languageCode]?['division'] ?? 'Division';
   String get joinDate => _localizedValues[locale.languageCode]?['joinDate'] ?? 'Join Date';
   
@@ -165,7 +166,8 @@ class AppLocalizations {
       'save': 'Simpan',
       'cancel': 'Batal',
       'accountInformation': 'Informasi Akun',
-      'employeeId': 'ID Karyawan',
+      'phone': 'Nomor Telepon',
+      'email': 'Email',
       'division': 'Divisi',
       'joinDate': 'Tanggal Bergabung',
       'language': 'Bahasa',
@@ -268,7 +270,8 @@ class AppLocalizations {
       'save': 'Save',
       'cancel': 'Cancel',
       'accountInformation': 'Account Information',
-      'employeeId': 'Employee ID',
+      'phone': 'Phone',
+      'email': 'Email',
       'division': 'Division',
       'joinDate': 'Join Date',
       'language': 'Language',

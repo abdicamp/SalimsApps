@@ -89,11 +89,19 @@ class _ProfileViewState extends State<ProfileView> {
                               CircleAvatar(
                                 radius: 45,
                                 backgroundColor: const Color(0xFF15C01E),
-                                child: const CircleAvatar(
+                                child: CircleAvatar(
                                   radius: 42,
                                   backgroundColor: Colors.white,
-                                  backgroundImage:
-                                      AssetImage('assets/images/logo.png',),
+                                  backgroundImage: vm.profileImage != null && vm.profileImage!.isNotEmpty
+                                      ? NetworkImage(vm.profileImage!)
+                                      : null,
+                                  child: vm.profileImage == null || vm.profileImage!.isEmpty
+                                      ? Icon(
+                                          Icons.person,
+                                          size: 50,
+                                          color: Colors.grey[400],
+                                        )
+                                      : null,
                                 ),
                               ),
                               const SizedBox(height: 16),
@@ -318,17 +326,14 @@ class _ProfileViewState extends State<ProfileView> {
                                       ),
                                       const SizedBox(height: 10),
                                       _buildInfoRow(
-                                        AppLocalizations.of(context)?.employeeId ?? "Employee ID", 
-                                        "EMP001"
+                                        AppLocalizations.of(context)?.phone ?? "Phone", 
+                                        "${vm.phone ?? '-'}"
                                       ),
                                       _buildInfoRow(
-                                        AppLocalizations.of(context)?.division ?? "Division", 
-                                        "Quality Control"
+                                        AppLocalizations.of(context)?.email ?? "Email", 
+                                        "${vm.email ?? '-'}"
                                       ),
-                                      _buildInfoRow(
-                                        AppLocalizations.of(context)?.joinDate ?? "Join Date", 
-                                        "01 Jan 2020"
-                                      ),
+                                     
                                     ],
                                   ),
                           ),
