@@ -493,6 +493,7 @@ class ApiService {
   Future<ApiResponse<dynamic>> postTakingSample(SampleDetail? sample) async {
     try {
       final getData = await _storage.getUserData();
+   
       if (sample?.tsnumber == "" || sample?.tsnumber == null) {
         final response = await http.post(
             Uri.parse("$baseUrl/transaction/taking-sample/store"),
