@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
@@ -51,43 +52,50 @@ class LoginViewModel extends FutureViewModel {
         sound: true,
         provisional: false,
       );
-      
-      logger.i("Notification permission status: ${settings.authorizationStatus}");
-      
+
+      logger
+          .i("Notification permission status: ${settings.authorizationStatus}");
+
       if (settings.authorizationStatus == AuthorizationStatus.denied) {
         logger.w("Notification permission denied");
         return null;
       }
-      
+
       // 2. Untuk iOS, coba tunggu APNS token (tapi jangan block jika null di simulator)
       if (Platform.isIOS) {
+        var iosInfo = await DeviceInfoPlugin().iosInfo;
+        if (!iosInfo.isPhysicalDevice) {
+          return "-";
+        }
         String? apnsToken;
         int retryCount = 0;
         const maxRetries = 10; // Tambah retry untuk memberi waktu lebih lama
-        
+
         while (apnsToken == null && retryCount < maxRetries) {
           apnsToken = await FirebaseMessaging.instance.getAPNSToken();
           if (apnsToken == null) {
             retryCount++;
-            logger.w("APNS token belum tersedia, retry ke-$retryCount/$maxRetries");
+            logger.w(
+                "APNS token belum tersedia, retry ke-$retryCount/$maxRetries");
             await Future.delayed(const Duration(milliseconds: 1000));
           } else {
             logger.i("APNS token berhasil didapat: $apnsToken");
             break;
           }
         }
-        
+
         // Di simulator, APNS token akan null, tapi kita tetap coba get FCM token
         if (apnsToken == null) {
-          logger.w("APNS token masih null setelah $maxRetries retry (mungkin di simulator atau belum dikonfigurasi). Tetap mencoba mendapatkan FCM token...");
+          logger.w(
+              "APNS token masih null setelah $maxRetries retry (mungkin di simulator atau belum dikonfigurasi). Tetap mencoba mendapatkan FCM token...");
         }
       }
-      
+
       // 3. Dapatkan FCM token dengan retry
       String? token;
       int tokenRetryCount = 0;
       const maxTokenRetries = 3;
-      
+
       while (token == null && tokenRetryCount < maxTokenRetries) {
         try {
           token = await FirebaseMessaging.instance.getToken();
@@ -95,7 +103,8 @@ class LoginViewModel extends FutureViewModel {
             logger.i("FCM token berhasil didapat: $token");
             return token;
           } else {
-            logger.w("FCM token null, retry ke-${tokenRetryCount + 1}/$maxTokenRetries");
+            logger.w(
+                "FCM token null, retry ke-${tokenRetryCount + 1}/$maxTokenRetries");
             tokenRetryCount++;
             if (tokenRetryCount < maxTokenRetries) {
               await Future.delayed(const Duration(milliseconds: 1000));
@@ -105,26 +114,29 @@ class LoginViewModel extends FutureViewModel {
           logger.w(
             "Error getting FCM token (attempt ${tokenRetryCount + 1}/$maxTokenRetries): $tokenError",
           );
-          
+
           final errorString = tokenError.toString();
-          
+
           // Jika error karena APNS token tidak tersedia (iOS)
-          if (errorString.contains('apns-token-not-set') || 
+          if (errorString.contains('apns-token-not-set') ||
               errorString.contains('APNS token has not been set')) {
-            logger.w("APNS token belum tersedia. Ini normal di simulator atau jika Push Notifications belum dikonfigurasi di Xcode.");
+            logger.w(
+                "APNS token belum tersedia. Ini normal di simulator atau jika Push Notifications belum dikonfigurasi di Xcode.");
             // Tidak retry lagi jika APNS token tidak tersedia
             break;
           }
-          
+
           // Jika error SERVICE_NOT_AVAILABLE (Android - Google Play Services tidak tersedia)
-          if (errorString.contains('SERVICE_NOT_AVAILABLE') || 
+          if (errorString.contains('SERVICE_NOT_AVAILABLE') ||
               errorString.contains('SERVICE_NOT_AVAILABLE')) {
-            logger.w("Google Play Services tidak tersedia atau tidak ter-update.");
-            logger.w("Ini mungkin terjadi di emulator tanpa Google Play Services atau device tanpa Google Play.");
+            logger.w(
+                "Google Play Services tidak tersedia atau tidak ter-update.");
+            logger.w(
+                "Ini mungkin terjadi di emulator tanpa Google Play Services atau device tanpa Google Play.");
             // Tidak retry lagi untuk SERVICE_NOT_AVAILABLE
             break;
           }
-          
+
           tokenRetryCount++;
           if (tokenRetryCount < maxTokenRetries) {
             await Future.delayed(const Duration(milliseconds: 1000));
@@ -138,8 +150,9 @@ class LoginViewModel extends FutureViewModel {
           }
         }
       }
-      
-      logger.w("FCM token tidak dapat diperoleh setelah $maxTokenRetries attempts");
+
+      logger.w(
+          "FCM token tidak dapat diperoleh setelah $maxTokenRetries attempts");
       return null;
     } catch (e, stackTrace) {
       logger.e(
@@ -157,17 +170,18 @@ class LoginViewModel extends FutureViewModel {
   doLogin() async {
     try {
       setBusy(true);
-      
+
       // Dapatkan FCM token
       final token = await _getFCMToken();
       if (token == null || token.isEmpty) {
-        logger.w("FCM token tidak dapat diperoleh. Tidak dapat melanjutkan login.");
+        logger.w(
+            "FCM token tidak dapat diperoleh. Tidak dapat melanjutkan login.");
         final currentContext = context;
         if (currentContext != null) {
-          final errorMessage = Platform.isIOS 
-            ? "Gagal mendapatkan token notifikasi.\n\nPastikan:\n1. Push Notifications capability diaktifkan di Xcode\n2. Izin notifikasi sudah diberikan\n3. Jika di simulator, gunakan device fisik untuk testing"
-            : "Gagal mendapatkan token notifikasi. Pastikan izin notifikasi sudah diberikan.";
-          
+          final errorMessage = Platform.isIOS
+              ? "Gagal mendapatkan token notifikasi.\n\nPastikan:\n1. Push Notifications capability diaktifkan di Xcode\n2. Izin notifikasi sudah diberikan\n3. Jika di simulator, gunakan device fisik untuk testing"
+              : "Gagal mendapatkan token notifikasi. Pastikan izin notifikasi sudah diberikan.";
+
           ScaffoldMessenger.of(currentContext).showSnackBar(
             SnackBar(
               duration: const Duration(seconds: 5),
@@ -197,7 +211,7 @@ class LoginViewModel extends FutureViewModel {
         print("result.data : ${jsonEncode(result.data!.data?.detail)}");
         await _storage.saveLoginData(result.data!);
         logger.i("User login successful: ${jsonEncode(result.data!.data)}");
-        
+
         final currentContext = context;
         if (currentContext != null) {
           Navigator.of(currentContext).pushReplacement(
@@ -207,7 +221,7 @@ class LoginViewModel extends FutureViewModel {
       } else {
         final errorMessage = result.error ?? "Login gagal. Silakan coba lagi.";
         logger.w("Login failed: $errorMessage");
-        
+
         final currentContext = context;
         if (currentContext != null) {
           ScaffoldMessenger.of(currentContext).showSnackBar(
@@ -225,13 +239,14 @@ class LoginViewModel extends FutureViewModel {
         error: e,
         stackTrace: stackTrace,
       );
-      
+
       final currentContext = context;
       if (currentContext != null) {
         ScaffoldMessenger.of(currentContext).showSnackBar(
           SnackBar(
             duration: Duration(seconds: 2),
-            content: Text(AppLocalizations.of(currentContext)?.loginError ?? "An error occurred during login. Please try again."),
+            content: Text(AppLocalizations.of(currentContext)?.loginError ??
+                "An error occurred during login. Please try again."),
             backgroundColor: Colors.red,
           ),
         );
@@ -299,19 +314,25 @@ class LoginViewModel extends FutureViewModel {
     showDialog(
       context: currentContext,
       builder: (dialogContext) => AlertDialog(
-        title: Text(AppLocalizations.of(currentContext)?.locationPermissionRequired ?? "Location Permission Required"),
-        content: Text(AppLocalizations.of(currentContext)?.locationPermissionDeniedPermanently ?? "You have permanently denied location permission. Please enable location permission in app settings."),
+        title: Text(
+            AppLocalizations.of(currentContext)?.locationPermissionRequired ??
+                "Location Permission Required"),
+        content: Text(AppLocalizations.of(currentContext)
+                ?.locationPermissionDeniedPermanently ??
+            "You have permanently denied location permission. Please enable location permission in app settings."),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: Text(AppLocalizations.of(currentContext)?.cancel ?? "Cancel"),
+            child:
+                Text(AppLocalizations.of(currentContext)?.cancel ?? "Cancel"),
           ),
           TextButton(
             onPressed: () {
               Geolocator.openAppSettings();
               Navigator.pop(dialogContext);
             },
-            child: Text(AppLocalizations.of(currentContext)?.openSettings ?? "Open Settings"),
+            child: Text(AppLocalizations.of(currentContext)?.openSettings ??
+                "Open Settings"),
           ),
         ],
       ),
