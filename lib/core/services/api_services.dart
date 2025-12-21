@@ -18,7 +18,7 @@ import '../models/testing_order_history_models.dart';
 import '../models/notification_models.dart';
 
 class ApiService {
-  final String baseUrl = "https://lims.pdam-sby.go.id/v1";
+  final String baseUrl = "https://api-salims.chemitechlogilab.com/v1";
   final LocalStorageService _storage = LocalStorageService();
   var logger = Logger(
     printer: PrettyPrinter(

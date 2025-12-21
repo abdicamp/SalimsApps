@@ -155,6 +155,10 @@ class AppLocalizations {
   // Hint Text
   String get searchParameterHint => _localizedValues[locale.languageCode]?['searchParameterHint'] ?? 'Search Parameter';
   String get searchEquipmentHint => _localizedValues[locale.languageCode]?['searchEquipmentHint'] ?? 'Search Equipment';
+  
+  // Image Picker
+  String get gallery => _localizedValues[locale.languageCode]?['gallery'] ?? 'Gallery';
+  String get camera => _localizedValues[locale.languageCode]?['camera'] ?? 'Camera';
 
   static final Map<String, Map<String, String>> _localizedValues = {
     'id': {
@@ -260,6 +264,8 @@ class AppLocalizations {
       'temperatur': 'Suhu',
       'searchParameterHint': 'Cari Parameter',
       'searchEquipmentHint': 'Cari Peralatan',
+      'gallery': 'Galeri',
+      'camera': 'Kamera',
     },
     'en': {
       'appName': 'Salims Apps',
@@ -364,6 +370,8 @@ class AppLocalizations {
       'temperatur': 'Temperatur',
       'searchParameterHint': 'Search Parameter',
       'searchEquipmentHint': 'Search Equipment',
+      'gallery': 'Gallery',
+      'camera': 'Camera',
     },
   };
 }

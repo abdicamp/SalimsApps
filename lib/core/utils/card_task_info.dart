@@ -89,50 +89,50 @@ class _CardTaskInfoState extends State<CardTaskInfo> {
     );
   }
 
-  void _showDialog() {
-    showDialog(
-      context: context,
-      barrierDismissible: false, // Tidak bisa ditutup dengan tap di luar dialog
-      builder: (context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          title: Row(
-            children: [
-              Icon(Icons.warning, color: Colors.orange),
-              SizedBox(width: 8),
-              Text(AppLocalizations.of(context)?.confirmDialog ?? "Confirm"),
-            ],
-          ),
-          content: Text(
-            AppLocalizations.of(context)?.confirmChangeLocation ?? "Are you sure you want to change the location?",
-            style: TextStyle(fontSize: 16),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                setState(() {
-                  Navigator.pop(context); // Menutup dialog
-                });
-              },
-              child: Text(AppLocalizations.of(context)?.cancel ?? "Cancel"),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-              onPressed: () {
-                setState(() {});
-                // TODO: tambahkan aksi sesuai kebutuhan
-                widget.vm!.setLocationName();
-                Navigator.pop(context); // Menutup dialog
-              },
-              child: Text(AppLocalizations.of(context)?.yes ?? "Yes"),
-            ),
-          ],
-        );
-      },
-    );
-  }
+  // void _showDialog() {
+  //   showDialog(
+  //     context: context,
+  //     barrierDismissible: false, // Tidak bisa ditutup dengan tap di luar dialog
+  //     builder: (context) {
+  //       return AlertDialog(
+  //         shape: RoundedRectangleBorder(
+  //           borderRadius: BorderRadius.circular(20),
+  //         ),
+  //         title: Row(
+  //           children: [
+  //             Icon(Icons.warning, color: Colors.orange),
+  //             SizedBox(width: 8),
+  //             Text(AppLocalizations.of(context)?.confirmDialog ?? "Confirm"),
+  //           ],
+  //         ),
+  //         content: Text(
+  //           AppLocalizations.of(context)?.confirmChangeLocation ?? "Are you sure you want to change the location?",
+  //           style: TextStyle(fontSize: 16),
+  //         ),
+  //         actions: [
+  //           TextButton(
+  //             onPressed: () {
+  //               setState(() {
+  //                 Navigator.pop(context); // Menutup dialog
+  //               });
+  //             },
+  //             child: Text(AppLocalizations.of(context)?.cancel ?? "Cancel"),
+  //           ),
+  //           ElevatedButton(
+  //             style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+  //             onPressed: () {
+  //               setState(() {});
+  //               // TODO: tambahkan aksi sesuai kebutuhan
+  //               widget.vm!.setLocationName();
+  //               Navigator.pop(context); // Menutup dialog
+  //             },
+  //             child: Text(AppLocalizations.of(context)?.yes ?? "Yes"),
+  //           ),
+  //         ],
+  //       );
+  //     },
+  //   );
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -370,7 +370,7 @@ class _CardTaskInfoState extends State<CardTaskInfo> {
                                           color: Colors.black),
                                       onPressed: () {
                                         if(widget.isDetailhistory! == false){
-                                          _showDialog();
+                                          // _showDialog();
                                         }
 
                                       },

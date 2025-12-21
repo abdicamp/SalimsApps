@@ -225,7 +225,7 @@ class _DetailTaskViewState extends State<DetailTaskView>
 
                                   if (valid1 && !isEmptyListCI) {
                                     if (vm.listParameter.isEmpty) {
-                                      vm.confirmPost();
+                                      vm.postDataTakingSample();
                                     } else {
                                       if (isEmptyListPar) {
                                         ScaffoldMessenger.of(context)
@@ -238,7 +238,7 @@ class _DetailTaskViewState extends State<DetailTaskView>
                                           ),
                                         );
                                       } else {
-                                        vm.confirmPost();
+                                        vm.postDataTakingSample();
                                       }
                                     }
                                   } else {
@@ -265,7 +265,6 @@ class _DetailTaskViewState extends State<DetailTaskView>
                                         ),
                                       );
                                     }
-
                                     // if(vm.imageString.isEmpty){
                                     //   ScaffoldMessenger.of(context!).showSnackBar(
                                     //     SnackBar(

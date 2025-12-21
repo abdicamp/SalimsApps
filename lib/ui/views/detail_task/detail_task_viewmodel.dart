@@ -19,6 +19,8 @@ import 'package:stacked/stacked.dart';
 import 'package:path/path.dart' as p;
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
+import 'package:image/image.dart' as img;
+import 'dart:typed_data';
 import '../../../core/models/parameter_models.dart';
 import '../../../core/models/task_list_models.dart';
 import '../../../core/services/local_Storage_Services.dart';
@@ -94,17 +96,125 @@ class DetailTaskViewmodel extends FutureViewModel {
   );
 
   Future<void> pickImage() async {
-    final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
+    if (context == null) return;
+
+    // Tampilkan dialog untuk memilih sumber gambar
+    final ImageSource? source = await showModalBottomSheet<ImageSource>(
+      context: context!,
+      builder: (BuildContext context) {
+        return SafeArea(
+          child: Wrap(
+            children: <Widget>[
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: Text(AppLocalizations.of(context)?.gallery ?? 'Gallery'),
+                onTap: () => Navigator.of(context).pop(ImageSource.gallery),
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_camera),
+                title: Text(AppLocalizations.of(context)?.camera ?? 'Camera'),
+                onTap: () => Navigator.of(context).pop(ImageSource.camera),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+
+    if (source == null) return;
+
+    final pickedFile = await ImagePicker().pickImage(source: source);
 
     if (pickedFile != null) {
+      File processedFile;
+      
+      // Jika gambar diambil dari camera, tambahkan teks geotag
+      if (source == ImageSource.camera && latlang != null && latlang!.isNotEmpty) {
+        processedFile = await _addGeotagToImage(File(pickedFile.path));
+      } else {
+        // Jika dari gallery, gunakan file asli
+        processedFile = File(pickedFile.path);
+      }
+
       // Pastikan file baru tidak sudah ada di list
-      final newFile = File(pickedFile.path);
-      bool alreadyExists = imageFiles.any((f) => f.path == newFile.path);
+      bool alreadyExists = imageFiles.any((f) => f.path == processedFile.path);
 
       if (!alreadyExists) {
-        imageFiles.add(newFile);
+        imageFiles.add(processedFile);
         notifyListeners();
       }
+    }
+  }
+
+  Future<File> _addGeotagToImage(File imageFile) async {
+    try {
+      // Baca file gambar
+      final Uint8List imageBytes = await imageFile.readAsBytes();
+      img.Image? image = img.decodeImage(imageBytes);
+
+      if (image == null) {
+        return imageFile; // Return original file if decode fails
+      }
+
+      // Buat teks geotag
+      final geotagText = latlang ?? 'No location';
+      
+      // Ukuran tinggi area teks (disesuaikan dengan ukuran gambar)
+      final textHeight = (image.height * 0.08).round().clamp(40, 80);
+      
+      // Buat gambar gabungan (gambar asli + area teks di bawah)
+      final combinedImage = img.Image(
+        width: image.width,
+        height: image.height + textHeight,
+      );
+      
+      // Copy gambar asli ke bagian atas
+      for (int y = 0; y < image.height; y++) {
+        for (int x = 0; x < image.width; x++) {
+          final pixel = image.getPixel(x, y);
+          combinedImage.setPixel(x, y, pixel);
+        }
+      }
+      
+      // Buat area teks dengan background semi-transparan hitam
+      for (int y = 0; y < textHeight; y++) {
+        for (int x = 0; x < image.width; x++) {
+          // Background hitam dengan alpha untuk semi-transparan
+          final bgColor = img.ColorRgba8(0, 0, 0, 200); // Alpha 200 dari 255
+          combinedImage.setPixel(x, image.height + y, bgColor);
+        }
+      }
+      
+      // Gambar teks geotag menggunakan drawString
+      // Posisi teks di pojok bawah kiri dengan padding
+      final textX = 15;
+      final textY = image.height + (textHeight ~/ 2) - 10;
+      
+      // Draw text menggunakan drawString dengan font bitmap
+      // API untuk package image versi 4.x menggunakan named parameters
+      img.drawString(
+        combinedImage,
+        geotagText,
+        font: img.arial24,
+        x: textX,
+        y: textY,
+        color: img.ColorRgb8(255, 255, 255), // Warna putih
+      );
+
+      // Simpan ke file baru
+      final directory = imageFile.parent;
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final newFileName = 'image_${timestamp}_geotag.jpg';
+      final newFile = File('${directory.path}/$newFileName');
+      
+      // Encode dan simpan
+      final encodedImage = img.encodeJpg(combinedImage, quality: 90);
+      await newFile.writeAsBytes(encodedImage);
+
+      return newFile;
+    } catch (e) {
+      // Jika terjadi error, return file asli
+      return imageFile;
     }
   }
 
@@ -329,7 +439,7 @@ class DetailTaskViewmodel extends FutureViewModel {
       } else {
         final isCek = await cekRangeLocation();
         if (isCek) {
-          await postDataTakingSample();
+          
         } else {
           ScaffoldMessenger.of(context!).showSnackBar(
             SnackBar(
