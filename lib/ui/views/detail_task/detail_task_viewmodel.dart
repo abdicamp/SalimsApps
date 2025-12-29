@@ -164,6 +164,7 @@ class DetailTaskViewmodel extends FutureViewModel {
 
       if (!alreadyExists) {
         imageFilesVerify.add(processedFile);
+        locationController?.text = latlang!;
         notifyListeners();
       }
     }
@@ -567,6 +568,8 @@ class DetailTaskViewmodel extends FutureViewModel {
         description: descriptionController!.text,
         tsnumber: "${listTaskList?.tsnumber ?? ''}",
         tranidx: "1203",
+        photoOldVerifikasi: imageOldStringVerifiy,
+        uploadFotoVerifikasi: imageBase64ListVerify,
         periode:
             "${DateFormat('yyyyMM').format(DateTime.parse('${listTaskList!.samplingdate}'))}",
         tsdate: DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now()),
@@ -589,10 +592,9 @@ class DetailTaskViewmodel extends FutureViewModel {
         takingSampleCI: listTakingSampleCI,
         photoOld: imageOldString,
         uploadFotoSample: imageBase64List,
-        photoOldVerifikasi: imageOldStringVerifiy,
-        uploadFotoVerifikasi: imageBase64ListVerify,
+        
       );
-
+      print("data json post : ${jsonEncode(dataJson)}");
       final postSample = await apiService.postTakingSample(dataJson);
 
       if (postSample.data != null) {

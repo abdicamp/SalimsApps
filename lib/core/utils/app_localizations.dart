@@ -132,6 +132,7 @@ class AppLocalizations {
   
   // Form Labels
   String get attachment => _localizedValues[locale.languageCode]?['attachment'] ?? 'Attachment';
+  String get attachmentVerify => _localizedValues[locale.languageCode]?['attachmentVerify'] ?? 'Attachment Verify';
   String get conUOM => _localizedValues[locale.languageCode]?['conUOM'] ?? 'Con UOM';
   String get volUOM => _localizedValues[locale.languageCode]?['volUOM'] ?? 'Vol UOM';
   String get isCalibration => _localizedValues[locale.languageCode]?['isCalibration'] ?? 'Is Calibration';
@@ -245,6 +246,7 @@ class AppLocalizations {
       'confirmDialog': 'Konfirmasi',
       'confirmChangeLocation': 'Apakah kamu yakin ingin mengubah lokasi nya ?',
       'attachment': 'Lampiran',
+      'attachmentVerify': 'Lampiran Verifikasi',
       'conUOM': 'Con UOM',
       'volUOM': 'Vol UOM',
       'isCalibration': 'Apakah Kalibrasi',
