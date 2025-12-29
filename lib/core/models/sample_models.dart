@@ -18,8 +18,11 @@ class SampleDetail {
   final String ptsnumber;
   final String usercreated;
   final String description;
+  final String buildingcode;
   final List<String>? uploadFotoSample; // ✅ Tambah ini
+  final List<String>? uploadFotoVerifikasi; // ✅ Tambah ini
   final List<String>? photoOld;
+  final List<String>? photoOldVerifikasi;
   final List<TakingSampleParameter> takingSampleParameters;
   final List<TakingSampleCI> takingSampleCI;
 
@@ -43,10 +46,13 @@ class SampleDetail {
     required this.ptsnumber,
     required this.usercreated,
     required this.description,
+    required this.buildingcode,
     required this.takingSampleParameters,
     required this.takingSampleCI,
     this.uploadFotoSample, // ✅ Tambah ini juga
+    this.uploadFotoVerifikasi, // ✅ Tambah ini juga
     this.photoOld, // ✅ Tambah ini juga
+    this.photoOldVerifikasi, // ✅ Tambah ini juga
   });
 
   factory SampleDetail.fromJson(Map<String, dynamic> json) {
@@ -69,6 +75,7 @@ class SampleDetail {
       samplecode: json['samplecode'] ?? '',
       ptsnumber: json['ptsnumber'] ?? '',
       usercreated: json['usercreated'] ?? '',
+      buildingcode: json['buildingcode'] ?? '',
       description: json['description'] ?? '',
       takingSampleParameters:
           (json['taking_sample_parameters'] as List<dynamic>?)
@@ -82,8 +89,14 @@ class SampleDetail {
       uploadFotoSample: json['upload_foto_sample'] != null
           ? List<String>.from(json['upload_foto_sample'])
           : [], // ✅ Parsing URL list
+      uploadFotoVerifikasi: json['upload_foto_verifikasi'] != null
+          ? List<String>.from(json['upload_foto_verifikasi'])
+          : [], // ✅ Parsing URL list
       photoOld: json['photo_old'] != null
           ? List<String>.from(json['photo_old'])
+          : [], // ✅ Parsing URL list
+      photoOldVerifikasi: json['photo_old_verifikasi'] != null
+          ? List<String>.from(json['photo_old_verifikasi'])
           : [], // ✅ Parsing URL list
     );
   }
@@ -108,12 +121,15 @@ class SampleDetail {
       'samplingby': samplingby,
       'ptsnumber': ptsnumber,
       'usercreated': usercreated,
+      'buildingcode': buildingcode,
       'description': description,
       'taking_sample_parameters':
           takingSampleParameters.map((e) => e.toJson()).toList(),
       'taking_sample_ci': takingSampleCI.map((e) => e.toJson()).toList(),
       "upload_foto_sample": uploadFotoSample, // ✅ pastikan ikut di toJson
+      "upload_foto_verifikasi": uploadFotoVerifikasi, // ✅ pastikan ikut di toJson
       "photo_old": photoOld, // ✅ pastikan ikut di toJson
+      "photo_old_verifikasi": photoOldVerifikasi, // ✅ pastikan ikut di toJson
     };
   }
 }

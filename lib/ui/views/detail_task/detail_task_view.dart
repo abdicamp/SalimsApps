@@ -50,11 +50,13 @@ class _DetailTaskViewState extends State<DetailTaskView>
   @override
   Widget build(BuildContext context) {
     return ViewModelBuilder.reactive(
-      viewModelBuilder: () =>
-          DetailTaskViewmodel(context: context, listTaskList: widget.listData , isDetailhistory: widget.isDetailhistory),
+      viewModelBuilder: () => DetailTaskViewmodel(
+          context: context,
+          listTaskList: widget.listData,
+          isDetailhistory: widget.isDetailhistory),
       builder: (context, vm, child) {
         // Debug logging
-        
+
         return GestureDetector(
           onTap: () {
             FocusScope.of(context).unfocus();
@@ -75,7 +77,7 @@ class _DetailTaskViewState extends State<DetailTaskView>
                               decoration: BoxDecoration(
                                 gradient: const LinearGradient(
                                   colors: [
-                                    Color(0xFF4CAF50),     // hijau
+                                    Color(0xFF4CAF50), // hijau
                                     Color(0xFF2196F3),
                                   ],
                                   begin: Alignment.topLeft,
@@ -84,7 +86,8 @@ class _DetailTaskViewState extends State<DetailTaskView>
                               ),
                               child: Center(
                                 child: Text(
-                                  AppLocalizations.of(context)?.detailTask ?? "Detail Task",
+                                  AppLocalizations.of(context)?.detailTask ??
+                                      "Detail Task",
                                   style: GoogleFonts.lato(
                                     color: Colors.white,
                                     fontSize: 22,
@@ -125,7 +128,8 @@ class _DetailTaskViewState extends State<DetailTaskView>
                             ),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: List.generate(getTabs(context).length, (index) {
+                              children: List.generate(getTabs(context).length,
+                                  (index) {
                                 bool isSelected = selectedIndex == index;
                                 return Expanded(
                                   child: GestureDetector(
@@ -176,10 +180,18 @@ class _DetailTaskViewState extends State<DetailTaskView>
                                 return IndexedStack(
                                   index: selectedIndex,
                                   children: [
-                                    CardTaskInfo(vm: vm, isDetailhistory: widget.isDetailhistory,),
-                                    CardTaskContainer(vm: vm, isDetailhistory: widget.isDetailhistory,),
-                                    CardTaskParameter(vm: vm, isDetailhistory: widget.isDetailhistory,),
-
+                                    CardTaskInfo(
+                                      vm: vm,
+                                      isDetailhistory: widget.isDetailhistory,
+                                    ),
+                                    CardTaskContainer(
+                                      vm: vm,
+                                      isDetailhistory: widget.isDetailhistory,
+                                    ),
+                                    CardTaskParameter(
+                                      vm: vm,
+                                      isDetailhistory: widget.isDetailhistory,
+                                    ),
                                   ],
                                 );
                               },
@@ -190,114 +202,23 @@ class _DetailTaskViewState extends State<DetailTaskView>
                     ),
                   ],
                 ),
-                bottomNavigationBar: widget.isDetailhistory == true ? const SizedBox.shrink() : SafeArea(
-                  child: Padding(
-                    padding: const EdgeInsets.all(
-                      16.0,
-                    ), // kasih jarak dari tepi
-                    child: SizedBox(
-                      height: 50,
-                      child: Row(
-                        children: [
-                          Expanded(
-                            flex: 2,
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor:
-                                    Colors.blue.shade800, // warna elegan
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(
-                                    12,
-                                  ), // tombol rounded
-                                ),
-                                elevation: 4, // efek bayangan halus
-                              ),
-                              onPressed: () {
-                                setState(() {
-                                  bool valid1 =
-                                      vm.formKey1.currentState!.validate();
-                                  // bool valid3 = vm.formKey3.currentState!.validate();
-                                  bool isEmptyListCI =
-                                      vm.listTakingSampleCI.isEmpty;
-
-                                  bool isEmptyListPar =
-                                      vm.listTakingSampleParameter.isEmpty;
-
-                                  if (valid1 && !isEmptyListCI) {
-                                    if (vm.listParameter.isEmpty) {
-                                      vm.postDataTakingSample();
-                                    } else {
-                                      if (isEmptyListPar) {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
-                                          SnackBar(
-                                            duration: Duration(seconds: 2),
-                                            content:
-                                                Text(AppLocalizations.of(context)?.formParameterEmpty ?? "Form Parameter is Empty"),
-                                            backgroundColor: Colors.red,
-                                          ),
-                                        );
-                                      } else {
-                                        vm.postDataTakingSample();
-                                      }
-                                    }
-                                  } else {
-                                    if (!valid1) {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        SnackBar(
-                                          duration: Duration(seconds: 2),
-                                          content:
-                                              Text(AppLocalizations.of(context)?.formTaskInfoEmpty ?? "Form Task Info is Empty"),
-                                          backgroundColor: Colors.red,
-                                        ),
-                                      );
-                                    }
-
-                                    if (isEmptyListCI) {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        SnackBar(
-                                          duration: Duration(seconds: 2),
-                                          content: Text(
-                                              AppLocalizations.of(context)?.formContainerInfoEmpty ?? "Form Container Info is Empty"),
-                                          backgroundColor: Colors.red,
-                                        ),
-                                      );
-                                    }
-                                    // if(vm.imageString.isEmpty){
-                                    //   ScaffoldMessenger.of(context!).showSnackBar(
-                                    //     SnackBar(
-                                    //       duration: Duration(seconds: 2),
-                                    //       content: Text("Gambar tidak boleh Kosong"),
-                                    //       backgroundColor: Colors.red,
-                                    //     ),
-                                    //   );
-                                    //
-                                    // }
-                                  }
-                                });
-                              },
-                              child: const Text(
-                                "Save",
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white, // teks kontras
-                                ),
-                              ),
-                            ),
-                          ),
-                          SizedBox(
-                            width: 10,
-                          ),
-                          vm.isConfirm!
-                              ? Expanded(
+                bottomNavigationBar: widget.isDetailhistory == true
+                    ? const SizedBox.shrink()
+                    : SafeArea(
+                        child: Padding(
+                          padding: const EdgeInsets.all(
+                            16.0,
+                          ), // kasih jarak dari tepi
+                          child: SizedBox(
+                            height: 50,
+                            child: Row(
+                              children: [
+                                Expanded(
                                   flex: 2,
                                   child: ElevatedButton(
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor:
-                                          Colors.green.shade800, // warna elegan
+                                          Colors.blue.shade800, // warna elegan
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(
                                           12,
@@ -307,11 +228,174 @@ class _DetailTaskViewState extends State<DetailTaskView>
                                     ),
                                     onPressed: () {
                                       setState(() {
-                                        vm.confirm();
+                                        bool valid1 = vm.formKey1.currentState!
+                                            .validate();
+                                        // bool valid3 = vm.formKey3.currentState!.validate();
+                                        bool isEmptyListCI =
+                                            vm.listTakingSampleCI.isEmpty;
+
+                                        bool isEmptyListPar = vm
+                                            .listTakingSampleParameter.isEmpty;
+
+                                        bool isNotEmptyListCI =
+                                            vm.equipmentlist.isNotEmpty;
+
+                                        bool isNotEmptyListPar =
+                                            vm.listParameter.isNotEmpty;
+
+                                        if (valid1 &&
+                                            isNotEmptyListCI &&
+                                            isNotEmptyListPar) {
+                                          if (vm.listTakingSampleCI
+                                                  .isNotEmpty &&
+                                              vm.listTakingSampleParameter
+                                                  .isNotEmpty) {
+                                            vm.postDataTakingSample();
+                                          } else {
+                                            if (vm.listTakingSampleCI.isEmpty) {
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(
+                                                SnackBar(
+                                                  duration:
+                                                      Duration(seconds: 2),
+                                                  content: Text(AppLocalizations
+                                                              .of(context)
+                                                          ?.formParameterEmpty ??
+                                                      "Form Container Info is Empty"),
+                                                  backgroundColor: Colors.red,
+                                                ),
+                                              );
+                                            }
+
+                                            if (vm.listTakingSampleParameter
+                                                .isEmpty) {
+                                              ScaffoldMessenger.of(context)
+                                                  .showSnackBar(
+                                                SnackBar(
+                                                  duration:
+                                                      Duration(seconds: 2),
+                                                  content: Text(AppLocalizations
+                                                              .of(context)
+                                                          ?.formParameterEmpty ??
+                                                      "Form Parameter is Empty"),
+                                                  backgroundColor: Colors.red,
+                                                ),
+                                              );
+                                            }
+                                          }
+                                        } else {
+                                          if (!valid1) {
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              SnackBar(
+                                                duration: Duration(seconds: 2),
+                                                content: Text(AppLocalizations
+                                                            .of(context)
+                                                        ?.formTaskInfoEmpty ??
+                                                    "Form Task Info is Empty"),
+                                                backgroundColor: Colors.red,
+                                              ),
+                                            );
+                                          }
+
+                                          // if (vm.imageFiles.isEmpty &&
+                                          //     vm.imageFilesVerify.isEmpty) {
+                                          //   ScaffoldMessenger.of(context)
+                                          //       .showSnackBar(
+                                          //     SnackBar(
+                                          //       duration: Duration(seconds: 2),
+                                          //       content: Text(AppLocalizations
+                                          //                   .of(context)
+                                          //               ?.formTaskInfoEmpty ??
+                                          //           "Gambar minimal harus"),
+                                          //       backgroundColor: Colors.red,
+                                          //     ),
+                                          //   );
+                                          // }
+
+                                          if (vm.equipmentlist.isNotEmpty &&
+                                              vm.listParameter.isNotEmpty) {
+                                            if (vm.listTakingSampleCI
+                                                    .isNotEmpty &&
+                                                vm.listTakingSampleParameter
+                                                    .isNotEmpty) {
+                                              vm.postDataTakingSample();
+                                            } else {
+                                              if (vm
+                                                  .listTakingSampleCI.isEmpty) {
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(
+                                                  SnackBar(
+                                                    duration:
+                                                        Duration(seconds: 2),
+                                                    content: Text(AppLocalizations
+                                                                .of(context)
+                                                            ?.formTaskInfoEmpty ??
+                                                        "Form Container Info is Empty"),
+                                                    backgroundColor: Colors.red,
+                                                  ),
+                                                );
+                                              }
+                                              if (vm.listTakingSampleParameter
+                                                  .isEmpty) {
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(
+                                                  SnackBar(
+                                                    duration:
+                                                        Duration(seconds: 2),
+                                                    content: Text(AppLocalizations
+                                                                .of(context)
+                                                            ?.formTaskInfoEmpty ??
+                                                        "Form Parameter is Empty"),
+                                                    backgroundColor: Colors.red,
+                                                  ),
+                                                );
+                                              }
+                                            }
+                                          } else {
+                                            if (vm.equipmentlist.isNotEmpty) {
+                                              if (vm
+                                                  .listTakingSampleCI.isEmpty) {
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(
+                                                  SnackBar(
+                                                    duration:
+                                                        Duration(seconds: 2),
+                                                    content: Text(AppLocalizations
+                                                                .of(context)
+                                                            ?.formTaskInfoEmpty ??
+                                                        "Form Container Info is Empty"),
+                                                    backgroundColor: Colors.red,
+                                                  ),
+                                                );
+                                              } else {
+                                                vm.postDataTakingSample();
+                                              }
+                                            }
+
+                                            if (vm.listParameter.isNotEmpty) {
+                                              if (vm.listTakingSampleParameter
+                                                  .isEmpty) {
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(
+                                                  SnackBar(
+                                                    duration:
+                                                        Duration(seconds: 2),
+                                                    content: Text(AppLocalizations
+                                                                .of(context)
+                                                            ?.formTaskInfoEmpty ??
+                                                        "Form Parameter is Empty"),
+                                                    backgroundColor: Colors.red,
+                                                  ),
+                                                );
+                                              }
+                                            }
+                                          }
+                                        }
                                       });
                                     },
                                     child: const Text(
-                                      "Confirm",
+                                      "Save",
                                       style: TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.bold,
@@ -319,13 +403,47 @@ class _DetailTaskViewState extends State<DetailTaskView>
                                       ),
                                     ),
                                   ),
-                                )
-                              : const SizedBox.shrink()
-                        ],
+                                ),
+                                SizedBox(
+                                  width: 10,
+                                ),
+                                vm.isConfirm!
+                                    ? Expanded(
+                                        flex: 2,
+                                        child: ElevatedButton(
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors
+                                                .green.shade800, // warna elegan
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(
+                                                12,
+                                              ), // tombol rounded
+                                            ),
+                                            elevation: 4, // efek bayangan halus
+                                          ),
+                                          onPressed: () {
+                                            setState(() {
+                                              vm.confirm();
+                                            });
+                                          },
+                                          child: const Text(
+                                            "Confirm",
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                              color:
+                                                  Colors.white, // teks kontras
+                                            ),
+                                          ),
+                                        ),
+                                      )
+                                    : const SizedBox.shrink()
+                              ],
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                ),
               ),
               vm.isBusy
                   ? const Stack(

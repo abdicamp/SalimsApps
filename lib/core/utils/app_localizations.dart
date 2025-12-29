@@ -155,7 +155,7 @@ class AppLocalizations {
   // Hint Text
   String get searchParameterHint => _localizedValues[locale.languageCode]?['searchParameterHint'] ?? 'Search Parameter';
   String get searchEquipmentHint => _localizedValues[locale.languageCode]?['searchEquipmentHint'] ?? 'Search Equipment';
-  
+
   // Image Picker
   String get gallery => _localizedValues[locale.languageCode]?['gallery'] ?? 'Gallery';
   String get camera => _localizedValues[locale.languageCode]?['camera'] ?? 'Camera';
