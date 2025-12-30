@@ -242,6 +242,8 @@ class _DetailTaskViewState extends State<DetailTaskView>
 
                                         bool isNotEmptyListPar =
                                             vm.listParameter.isNotEmpty;
+                                        print(
+                                            " valid1 : ${vm.formKey1.currentState!.validate()} ");
 
                                         if (valid1 &&
                                             isNotEmptyListCI &&
@@ -296,6 +298,89 @@ class _DetailTaskViewState extends State<DetailTaskView>
                                                 backgroundColor: Colors.red,
                                               ),
                                             );
+                                          } else {
+                                            if (vm.equipmentlist.isNotEmpty &&
+                                                vm.listParameter.isNotEmpty) {
+                                              if (vm.listTakingSampleCI
+                                                      .isNotEmpty &&
+                                                  vm.listTakingSampleParameter
+                                                      .isNotEmpty) {
+                                                vm.postDataTakingSample();
+                                              } else {
+                                                if (vm.listTakingSampleCI
+                                                    .isEmpty) {
+                                                  ScaffoldMessenger.of(context)
+                                                      .showSnackBar(
+                                                    SnackBar(
+                                                      duration:
+                                                          Duration(seconds: 2),
+                                                      content: Text(AppLocalizations
+                                                                  .of(context)
+                                                              ?.formTaskInfoEmpty ??
+                                                          "Form Container Info is Empty"),
+                                                      backgroundColor:
+                                                          Colors.red,
+                                                    ),
+                                                  );
+                                                }
+                                                if (vm.listTakingSampleParameter
+                                                    .isEmpty) {
+                                                  ScaffoldMessenger.of(context)
+                                                      .showSnackBar(
+                                                    SnackBar(
+                                                      duration:
+                                                          Duration(seconds: 2),
+                                                      content: Text(AppLocalizations
+                                                                  .of(context)
+                                                              ?.formTaskInfoEmpty ??
+                                                          "Form Parameter is Empty"),
+                                                      backgroundColor:
+                                                          Colors.red,
+                                                    ),
+                                                  );
+                                                }
+                                              }
+                                            } else {
+                                              if (vm.equipmentlist.isNotEmpty) {
+                                                if (vm.listTakingSampleCI
+                                                    .isEmpty) {
+                                                  ScaffoldMessenger.of(context)
+                                                      .showSnackBar(
+                                                    SnackBar(
+                                                      duration:
+                                                          Duration(seconds: 2),
+                                                      content: Text(AppLocalizations
+                                                                  .of(context)
+                                                              ?.formTaskInfoEmpty ??
+                                                          "Form Container Info is Empty"),
+                                                      backgroundColor:
+                                                          Colors.red,
+                                                    ),
+                                                  );
+                                                } else {
+                                                  vm.postDataTakingSample();
+                                                }
+                                              }
+
+                                              if (vm.listParameter.isNotEmpty) {
+                                                if (vm.listTakingSampleParameter
+                                                    .isEmpty) {
+                                                  ScaffoldMessenger.of(context)
+                                                      .showSnackBar(
+                                                    SnackBar(
+                                                      duration:
+                                                          Duration(seconds: 2),
+                                                      content: Text(AppLocalizations
+                                                                  .of(context)
+                                                              ?.formTaskInfoEmpty ??
+                                                          "Form Parameter is Empty"),
+                                                      backgroundColor:
+                                                          Colors.red,
+                                                    ),
+                                                  );
+                                                }
+                                              }
+                                            }
                                           }
 
                                           // if (vm.imageFiles.isEmpty &&
@@ -312,85 +397,6 @@ class _DetailTaskViewState extends State<DetailTaskView>
                                           //     ),
                                           //   );
                                           // }
-
-                                          if (vm.equipmentlist.isNotEmpty &&
-                                              vm.listParameter.isNotEmpty) {
-                                            if (vm.listTakingSampleCI
-                                                    .isNotEmpty &&
-                                                vm.listTakingSampleParameter
-                                                    .isNotEmpty) {
-                                              vm.postDataTakingSample();
-                                            } else {
-                                              if (vm
-                                                  .listTakingSampleCI.isEmpty) {
-                                                ScaffoldMessenger.of(context)
-                                                    .showSnackBar(
-                                                  SnackBar(
-                                                    duration:
-                                                        Duration(seconds: 2),
-                                                    content: Text(AppLocalizations
-                                                                .of(context)
-                                                            ?.formTaskInfoEmpty ??
-                                                        "Form Container Info is Empty"),
-                                                    backgroundColor: Colors.red,
-                                                  ),
-                                                );
-                                              }
-                                              if (vm.listTakingSampleParameter
-                                                  .isEmpty) {
-                                                ScaffoldMessenger.of(context)
-                                                    .showSnackBar(
-                                                  SnackBar(
-                                                    duration:
-                                                        Duration(seconds: 2),
-                                                    content: Text(AppLocalizations
-                                                                .of(context)
-                                                            ?.formTaskInfoEmpty ??
-                                                        "Form Parameter is Empty"),
-                                                    backgroundColor: Colors.red,
-                                                  ),
-                                                );
-                                              }
-                                            }
-                                          } else {
-                                            if (vm.equipmentlist.isNotEmpty) {
-                                              if (vm
-                                                  .listTakingSampleCI.isEmpty) {
-                                                ScaffoldMessenger.of(context)
-                                                    .showSnackBar(
-                                                  SnackBar(
-                                                    duration:
-                                                        Duration(seconds: 2),
-                                                    content: Text(AppLocalizations
-                                                                .of(context)
-                                                            ?.formTaskInfoEmpty ??
-                                                        "Form Container Info is Empty"),
-                                                    backgroundColor: Colors.red,
-                                                  ),
-                                                );
-                                              } else {
-                                                vm.postDataTakingSample();
-                                              }
-                                            }
-
-                                            if (vm.listParameter.isNotEmpty) {
-                                              if (vm.listTakingSampleParameter
-                                                  .isEmpty) {
-                                                ScaffoldMessenger.of(context)
-                                                    .showSnackBar(
-                                                  SnackBar(
-                                                    duration:
-                                                        Duration(seconds: 2),
-                                                    content: Text(AppLocalizations
-                                                                .of(context)
-                                                            ?.formTaskInfoEmpty ??
-                                                        "Form Parameter is Empty"),
-                                                    backgroundColor: Colors.red,
-                                                  ),
-                                                );
-                                              }
-                                            }
-                                          }
                                         }
                                       });
                                     },
