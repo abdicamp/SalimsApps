@@ -587,12 +587,11 @@ class DetailTaskViewmodel extends FutureViewModel {
         ptsnumber: "${listTaskList!.ptsnumber}",
         usercreated: "${getDataUser?.data?.username}",
         samplingby: "${getDataUser?.data?.username}",
-        buildingcode: "${getDataUser?.data?.buildingauthority}",
+        buildingcode: "${listTaskList?.buildingcode}",
         takingSampleParameters: listTakingSampleParameter,
         takingSampleCI: listTakingSampleCI,
         photoOld: imageOldString,
         uploadFotoSample: imageBase64List,
-        
       );
       print("data json post : ${jsonEncode(dataJson)}");
       final postSample = await apiService.postTakingSample(dataJson);

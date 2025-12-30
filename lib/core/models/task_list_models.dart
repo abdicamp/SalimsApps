@@ -44,6 +44,7 @@ class TestingOrder {
   String? geotag;
   final String tsdate;
   final String sampleno;
+  final String buildingcode;
   final String sampleCode;
   final String sampleName;
   final String samplecategory;
@@ -62,6 +63,7 @@ class TestingOrder {
     required this.ptsnumber,
     required this.tsnumber,
     required this.tsdate,
+    required this.buildingcode,
     required this.sampleno,
     required this.sampleCode,
     required this.sampleName,
@@ -83,6 +85,7 @@ class TestingOrder {
       ptsnumber: json['ptsnumber'] ?? "",
       tsnumber: json['tsnumber'] ?? "",
       tsdate: json['tsdate'] ?? "",
+      buildingcode: json['buildingcode'] ?? "",
       sampleno: json['sampleno'] ?? "",
       sampleCode: json['samplecode'] ?? "",
       sampleName: json['samplename'] ?? "",
@@ -104,6 +107,7 @@ class TestingOrder {
       "reqnumber": reqnumber,
       "ptsnumber": ptsnumber,
       "tsnumber": tsnumber,
+      "buildingcode": buildingcode,
       "tsdate": tsdate,
       "sampleno": sampleno,
       "samplecode": sampleCode,
