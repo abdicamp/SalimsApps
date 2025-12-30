@@ -592,10 +592,10 @@ class DetailTaskViewmodel extends FutureViewModel {
         takingSampleCI: listTakingSampleCI,
         photoOld: imageOldString,
         uploadFotoSample: imageBase64List,
-        
       );
       print("data json post : ${jsonEncode(dataJson)}");
       final postSample = await apiService.postTakingSample(dataJson);
+      // print("data json post : ${postSample.data}");
 
       if (postSample.data != null) {
         ScaffoldMessenger.of(context!).showSnackBar(

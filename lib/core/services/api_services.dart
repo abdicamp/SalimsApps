@@ -493,7 +493,7 @@ class ApiService {
   Future<ApiResponse<dynamic>> postTakingSample(SampleDetail? sample) async {
     try {
       final getData = await _storage.getUserData();
-   
+
       if (sample?.tsnumber == "" || sample?.tsnumber == null) {
         final response = await http.post(
             Uri.parse("$baseUrl/transaction/taking-sample/store"),
@@ -510,7 +510,7 @@ class ApiService {
         }
 
         final data = jsonDecode(response.body);
-
+        print("response body post: ${response.body}");
         if (response.statusCode == 201 || response.statusCode == 200) {
           return ApiResponse.success(data);
         } else {
