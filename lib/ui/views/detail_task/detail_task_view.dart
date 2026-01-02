@@ -47,6 +47,76 @@ class _DetailTaskViewState extends State<DetailTaskView>
     super.dispose();
   }
 
+  /// Build bottom navigation bar dengan tombol Save dan Confirm
+  Widget _buildBottomNavigationBar(DetailTaskViewmodel vm) {
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: SizedBox(
+          height: 50,
+          child: Row(
+            children: [
+              Expanded(
+                flex: 2,
+                child: _buildSaveButton(vm),
+              ),
+              const SizedBox(width: 10),
+              if (vm.isConfirm == true)
+                Expanded(
+                  flex: 2,
+                  child: _buildConfirmButton(vm),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Build Save button
+  Widget _buildSaveButton(DetailTaskViewmodel vm) {
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.blue.shade800,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        elevation: 4,
+      ),
+      onPressed: () => vm.handleSave(),
+      child: const Text(
+        "Save",
+        style: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
+        ),
+      ),
+    );
+  }
+
+  /// Build Confirm button
+  Widget _buildConfirmButton(DetailTaskViewmodel vm) {
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.green.shade800,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        elevation: 4,
+      ),
+      onPressed: () => vm.confirm(),
+      child: const Text(
+        "Confirm",
+        style: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return ViewModelBuilder.reactive(
@@ -271,316 +341,7 @@ class _DetailTaskViewState extends State<DetailTaskView>
                 ),
                 bottomNavigationBar: widget.isDetailhistory == true
                     ? const SizedBox.shrink()
-                    : SafeArea(
-                        child: Padding(
-                          padding: const EdgeInsets.all(
-                            16.0,
-                          ), // kasih jarak dari tepi
-                          child: SizedBox(
-                            height: 50,
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  flex: 2,
-                                  child: ElevatedButton(
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor:
-                                          Colors.blue.shade800, // warna elegan
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(
-                                          12,
-                                        ), // tombol rounded
-                                      ),
-                                      elevation: 4, // efek bayangan halus
-                                    ),
-                                    onPressed: () {
-                                      setState(() {
-                                        bool valid1 = vm.formKey1.currentState!
-                                            .validate();
-                                        // bool valid3 = vm.formKey3.currentState!.validate();
-                                        bool isEmptyListCI =
-                                            vm.listTakingSampleCI.isEmpty;
-
-                                        bool isEmptyListPar = vm
-                                            .listTakingSampleParameter.isEmpty;
-
-                                        bool isNotEmptyListCI =
-                                            vm.equipmentlist.isNotEmpty;
-
-                                        bool isNotEmptyListPar =
-                                            vm.listParameter.isNotEmpty;
-                                        print(
-                                            " valid1 : ${vm.formKey1.currentState!.validate()} ");
-
-                                        if (valid1 &&
-                                            isNotEmptyListCI &&
-                                            isNotEmptyListPar &&
-                                            vm.imageFiles.isNotEmpty &&
-                                            vm.imageFilesVerify.isNotEmpty) {
-                                          if (vm.listTakingSampleCI
-                                                  .isNotEmpty &&
-                                              vm.listTakingSampleParameter
-                                                  .isNotEmpty) {
-                                            vm.postDataTakingSample();
-                                          } else {
-                                            if (vm.listTakingSampleCI.isEmpty) {
-                                              ScaffoldMessenger.of(context)
-                                                  .showSnackBar(
-                                                SnackBar(
-                                                  duration:
-                                                      Duration(seconds: 2),
-                                                  content: Text(AppLocalizations
-                                                              .of(context)
-                                                          ?.formContainerInfoEmpty ??
-                                                      "Form Container Info is Empty"),
-                                                  backgroundColor: Colors.red,
-                                                ),
-                                              );
-                                            }
-
-                                            if (vm.listTakingSampleParameter
-                                                .isEmpty) {
-                                              ScaffoldMessenger.of(context)
-                                                  .showSnackBar(
-                                                SnackBar(
-                                                  duration:
-                                                      Duration(seconds: 2),
-                                                  content: Text(AppLocalizations
-                                                              .of(context)
-                                                          ?.formParameterEmpty ??
-                                                      "Form Parameter is Empty"),
-                                                  backgroundColor: Colors.red,
-                                                ),
-                                              );
-                                            }
-
-                                            if (vm.listTaskList?.tsnumber ==
-                                                    "" ||
-                                                vm.listTaskList?.tsnumber ==
-                                                    null) {
-                                              if (vm.imageFiles.isEmpty ||
-                                                  vm.imageFilesVerify.isEmpty) {
-                                                ScaffoldMessenger.of(context)
-                                                    .showSnackBar(
-                                                  SnackBar(
-                                                    duration:
-                                                        Duration(seconds: 2),
-                                                    content: Text(AppLocalizations
-                                                                .of(context)
-                                                            ?.imageCannotBeEmpty ??
-                                                        "Gambar tidak boleh kosong"),
-                                                    backgroundColor: Colors.red,
-                                                  ),
-                                                );
-                                              }
-                                            }
-
-                                            if (vm.listTaskList?.tsnumber !=
-                                                "") {
-                                              if (vm.imageString.isEmpty ||
-                                                  vm.imageStringVerifiy
-                                                      .isEmpty) {
-                                                ScaffoldMessenger.of(context)
-                                                    .showSnackBar(
-                                                  SnackBar(
-                                                    duration:
-                                                        Duration(seconds: 2),
-                                                    content: Text(AppLocalizations
-                                                                .of(context)
-                                                            ?.imageCannotBeEmpty ??
-                                                        "Gambar tidak boleh kosong"),
-                                                    backgroundColor: Colors.red,
-                                                  ),
-                                                );
-                                              }
-                                            }
-                                          }
-                                        } else {
-                                          if (!valid1) {
-                                            ScaffoldMessenger.of(context)
-                                                .showSnackBar(
-                                              SnackBar(
-                                                duration: Duration(seconds: 2),
-                                                content: Text(AppLocalizations
-                                                            .of(context)
-                                                        ?.formTaskInfoEmpty ??
-                                                    "Form Task Info is Empty"),
-                                                backgroundColor: Colors.red,
-                                              ),
-                                            );
-                                          } else {
-                                            if (vm.listTaskList?.tsnumber ==
-                                                "") {
-                                              if (vm.imageFiles.isEmpty ||
-                                                  vm.imageFilesVerify.isEmpty) {
-                                                ScaffoldMessenger.of(context)
-                                                    .showSnackBar(
-                                                  SnackBar(
-                                                    duration:
-                                                        Duration(seconds: 2),
-                                                    content: Text(AppLocalizations
-                                                                .of(context)
-                                                            ?.imageCannotBeEmpty ??
-                                                        "Gambar tidak boleh kosong"),
-                                                    backgroundColor: Colors.red,
-                                                  ),
-                                                );
-                                              }
-                                            }
-                                            if (vm.listTaskList?.tsnumber !=
-                                                "") {
-                                              if (vm.imageString.isEmpty ||
-                                                  vm.imageStringVerifiy
-                                                      .isEmpty) {
-                                                ScaffoldMessenger.of(context)
-                                                    .showSnackBar(
-                                                  SnackBar(
-                                                    duration:
-                                                        Duration(seconds: 2),
-                                                    content: Text(AppLocalizations
-                                                                .of(context)
-                                                            ?.imageCannotBeEmpty ??
-                                                        "Gambar tidak boleh kosong"),
-                                                    backgroundColor: Colors.red,
-                                                  ),
-                                                );
-                                              }
-                                            }
-                                            if (vm.equipmentlist.isNotEmpty &&
-                                                vm.listParameter.isNotEmpty) {
-                                              if (vm.listTakingSampleCI
-                                                      .isNotEmpty &&
-                                                  vm.listTakingSampleParameter
-                                                      .isNotEmpty) {
-                                                vm.postDataTakingSample();
-                                              } else {
-                                                if (vm.listTakingSampleCI
-                                                    .isEmpty) {
-                                                  ScaffoldMessenger.of(context)
-                                                      .showSnackBar(
-                                                    SnackBar(
-                                                      duration:
-                                                          Duration(seconds: 2),
-                                                      content: Text(AppLocalizations
-                                                                  .of(context)
-                                                              ?.formContainerInfoEmpty ??
-                                                          "Form Container Info is Empty"),
-                                                      backgroundColor:
-                                                          Colors.red,
-                                                    ),
-                                                  );
-                                                }
-                                                if (vm.listTakingSampleParameter
-                                                    .isEmpty) {
-                                                  ScaffoldMessenger.of(context)
-                                                      .showSnackBar(
-                                                    SnackBar(
-                                                      duration:
-                                                          Duration(seconds: 2),
-                                                      content: Text(AppLocalizations
-                                                                  .of(context)
-                                                              ?.formParameterEmpty ??
-                                                          "Form Parameter is Empty"),
-                                                      backgroundColor:
-                                                          Colors.red,
-                                                    ),
-                                                  );
-                                                }
-                                              }
-                                            } else {
-                                              if (vm.equipmentlist.isNotEmpty) {
-                                                if (vm.listTakingSampleCI
-                                                    .isEmpty) {
-                                                  ScaffoldMessenger.of(context)
-                                                      .showSnackBar(
-                                                    SnackBar(
-                                                      duration:
-                                                          Duration(seconds: 2),
-                                                      content: Text(AppLocalizations
-                                                                  .of(context)
-                                                              ?.formContainerInfoEmpty ??
-                                                          "Form Container Info is Empty"),
-                                                      backgroundColor:
-                                                          Colors.red,
-                                                    ),
-                                                  );
-                                                } else {
-                                                  vm.postDataTakingSample();
-                                                }
-                                              }
-                                              if (vm.listParameter.isNotEmpty) {
-                                                if (vm.listTakingSampleParameter
-                                                    .isEmpty) {
-                                                  ScaffoldMessenger.of(context)
-                                                      .showSnackBar(
-                                                    SnackBar(
-                                                      duration:
-                                                          Duration(seconds: 2),
-                                                      content: Text(AppLocalizations
-                                                                  .of(context)
-                                                              ?.formParameterEmpty ??
-                                                          "Form Parameter is Empty"),
-                                                      backgroundColor:
-                                                          Colors.red,
-                                                    ),
-                                                  );
-                                                }
-                                              }
-                                            }
-                                          }
-                                        }
-                                      });
-                                    },
-                                    child: const Text(
-                                      "Save",
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white, // teks kontras
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                SizedBox(
-                                  width: 10,
-                                ),
-                                vm.isConfirm!
-                                    ? Expanded(
-                                        flex: 2,
-                                        child: ElevatedButton(
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: Colors
-                                                .green.shade800, // warna elegan
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(
-                                                12,
-                                              ), // tombol rounded
-                                            ),
-                                            elevation: 4, // efek bayangan halus
-                                          ),
-                                          onPressed: () {
-                                            setState(() {
-                                              vm.confirm();
-                                            });
-                                          },
-                                          child: const Text(
-                                            "Confirm",
-                                            style: TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                              color:
-                                                  Colors.white, // teks kontras
-                                            ),
-                                          ),
-                                        ),
-                                      )
-                                    : const SizedBox.shrink()
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
+                    : _buildBottomNavigationBar(vm),
               ),
               vm.isBusy
                   ? const Stack(

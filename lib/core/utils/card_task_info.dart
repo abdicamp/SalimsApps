@@ -18,6 +18,19 @@ class CardTaskInfo extends StatefulWidget {
 }
 
 class _CardTaskInfoState extends State<CardTaskInfo> {
+  /// Get current location user
+  Future<void> _getCurrentLocation() async {
+    if (widget.vm == null) return;
+
+    try {
+      await widget.vm!.setLocationName();
+      // Validasi confirm setelah update lokasi
+      widget.vm!.validasiConfirm();
+    } catch (e) {
+      // Error sudah di-handle di ViewModel
+    }
+  }
+
   void _showFullScreenImage(String imageUrl,
       {int initialIndex = 0, bool isVerify = false}) {
     // Buat list semua gambar (URL dan File)
@@ -323,6 +336,8 @@ class _CardTaskInfoState extends State<CardTaskInfo> {
                                                                     .imageString
                                                                     .removeAt(
                                                                         index);
+                                                                widget.vm!
+                                                                    .validasiConfirm();
                                                               });
                                                             },
                                                             child:
@@ -399,6 +414,8 @@ class _CardTaskInfoState extends State<CardTaskInfo> {
                                                                   .imageFiles
                                                                   .removeAt(
                                                                       fileIndex);
+                                                              widget.vm!
+                                                                  .validasiConfirm();
                                                             });
                                                           },
                                                           child:
@@ -439,29 +456,29 @@ class _CardTaskInfoState extends State<CardTaskInfo> {
                                 ),
                                 const SizedBox(width: 8),
                                 // Tombol kotak untuk cek lokasi
-                                // Padding(
-                                //   padding: const EdgeInsets.only(top: 25),
-                                //   child: Container(
-                                //     height:
-                                //         50, // samakan tinggi dengan TextField
-                                //     width: 55,
-                                //     decoration: BoxDecoration(
-                                //       border: Border.all(
-                                //           color: Colors.grey, width: 1),
-                                //       borderRadius: BorderRadius.circular(10),
-                                //       color: Colors.white,
-                                //     ),
-                                //     child: IconButton(
-                                //       icon: const Icon(Icons.location_searching,
-                                //           color: Colors.black),
-                                //       onPressed: () {
-                                //         if (widget.isDetailhistory! == false) {
-                                //           // _showDialog();
-                                //         }
-                                //       },
-                                //     ),
-                                //   ),
-                                // ),
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 25),
+                                  child: Container(
+                                    height:
+                                        50, // samakan tinggi dengan TextField
+                                    width: 55,
+                                    decoration: BoxDecoration(
+                                      border: Border.all(
+                                          color: Colors.grey, width: 1),
+                                      borderRadius: BorderRadius.circular(10),
+                                      color: Colors.white,
+                                    ),
+                                    child: IconButton(
+                                      icon: const Icon(Icons.location_searching,
+                                          color: Colors.black),
+                                      onPressed: () {
+                                        if (widget.isDetailhistory! == false) {
+                                          _getCurrentLocation();
+                                        }
+                                      },
+                                    ),
+                                  ),
+                                ),
                               ],
                             ),
                             SizedBox(height: 15),
@@ -625,6 +642,8 @@ class _CardTaskInfoState extends State<CardTaskInfo> {
                                                                     .imageStringVerifiy
                                                                     .removeAt(
                                                                         index);
+                                                                widget.vm!
+                                                                    .validasiConfirm();
                                                               });
                                                             },
                                                             child:
@@ -700,6 +719,8 @@ class _CardTaskInfoState extends State<CardTaskInfo> {
                                                                   .imageFilesVerify
                                                                   .removeAt(
                                                                       fileIndex);
+                                                              widget.vm!
+                                                                  .validasiConfirm();
                                                             });
                                                           },
                                                           child:
@@ -738,6 +759,13 @@ class _CardTaskInfoState extends State<CardTaskInfo> {
                               controller: widget.vm!.weatherController!,
                               label: AppLocalizations.of(context)?.weather ??
                                   'Weather',
+                              onChanged: (value) {
+                                setState(() {
+                                  // Trigger rebuild untuk re-validate dan hilangkan error
+                                  widget.vm!.formKey1.currentState?.validate();
+                                  widget.vm!.validasiConfirm();
+                                });
+                              },
                             ),
                             SizedBox(height: 5),
                             CustomTextField(
@@ -754,6 +782,13 @@ class _CardTaskInfoState extends State<CardTaskInfo> {
                               label:
                                   AppLocalizations.of(context)?.windDirection ??
                                       'Wind Direction',
+                              onChanged: (value) {
+                                setState(() {
+                                  // Trigger rebuild untuk re-validate dan hilangkan error
+                                  widget.vm!.formKey1.currentState?.validate();
+                                  widget.vm!.validasiConfirm();
+                                });
+                              },
                             ),
                             SizedBox(height: 5),
                             CustomTextField(
@@ -769,6 +804,13 @@ class _CardTaskInfoState extends State<CardTaskInfo> {
                               controller: widget.vm!.temperaturController!,
                               label: AppLocalizations.of(context)?.temperatur ??
                                   'Temperatur',
+                              onChanged: (value) {
+                                setState(() {
+                                  // Trigger rebuild untuk re-validate dan hilangkan error
+                                  widget.vm!.formKey1.currentState?.validate();
+                                  widget.vm!.validasiConfirm();
+                                });
+                              },
                             ),
                             SizedBox(height: 5),
                             CustomTextField(

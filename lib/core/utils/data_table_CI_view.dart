@@ -74,18 +74,18 @@ class DataTableCi extends DataTableSource {
         DataCell(Text(eq.description)),
         DataCell(
           // Untuk history, tidak tampilkan tombol hapus
-          vm?.isDetailhistory == true 
-            ? SizedBox.shrink()
-            : Row(
-                children: [
-                  TextButton(
-                    onPressed: () {
-                      vm?.removeListCi(index);
-                      notifyListeners();
-                    },
-                    child: Text("Hapus")),
-                ],
-              ),
+          vm?.isDetailhistory == true
+              ? SizedBox.shrink()
+              : Row(
+                  children: [
+                    TextButton(
+                        onPressed: () {
+                          vm?.removeListCi(index, eq);
+                          notifyListeners();
+                        },
+                        child: Text("Hapus")),
+                  ],
+                ),
         ),
       ],
     );
