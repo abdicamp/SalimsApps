@@ -435,29 +435,29 @@ class _CardTaskInfoState extends State<CardTaskInfo> {
                                 ),
                                 const SizedBox(width: 8),
                                 // Tombol kotak untuk cek lokasi
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 25),
-                                  child: Container(
-                                    height:
-                                        50, // samakan tinggi dengan TextField
-                                    width: 55,
-                                    decoration: BoxDecoration(
-                                      border: Border.all(
-                                          color: Colors.grey, width: 1),
-                                      borderRadius: BorderRadius.circular(10),
-                                      color: Colors.white,
-                                    ),
-                                    child: IconButton(
-                                      icon: const Icon(Icons.location_searching,
-                                          color: Colors.black),
-                                      onPressed: () {
-                                        if (widget.isDetailhistory! == false) {
-                                          // _showDialog();
-                                        }
-                                      },
-                                    ),
-                                  ),
-                                ),
+                                // Padding(
+                                //   padding: const EdgeInsets.only(top: 25),
+                                //   child: Container(
+                                //     height:
+                                //         50, // samakan tinggi dengan TextField
+                                //     width: 55,
+                                //     decoration: BoxDecoration(
+                                //       border: Border.all(
+                                //           color: Colors.grey, width: 1),
+                                //       borderRadius: BorderRadius.circular(10),
+                                //       color: Colors.white,
+                                //     ),
+                                //     child: IconButton(
+                                //       icon: const Icon(Icons.location_searching,
+                                //           color: Colors.black),
+                                //       onPressed: () {
+                                //         if (widget.isDetailhistory! == false) {
+                                //           // _showDialog();
+                                //         }
+                                //       },
+                                //     ),
+                                //   ),
+                                // ),
                               ],
                             ),
                             SizedBox(height: 15),
