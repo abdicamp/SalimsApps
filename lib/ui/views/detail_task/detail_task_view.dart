@@ -174,6 +174,73 @@ class _DetailTaskViewState extends State<DetailTaskView>
                             ),
                           ),
                           SizedBox(height: 10),
+                          // Kotak peringatan jika data equipment atau parameter belum lengkap
+                          vm.listTaskList?.tsnumber != ""
+                              ? Builder(
+                                  builder: (context) {
+                                    // Cek kondisi untuk menampilkan peringatan
+                                    bool showWarning = false;
+                                    String warningMessage =
+                                        "Data Equipment atau parameter belum lengkap";
+
+                                    // Cek jika ada parameter wajib tapi belum semua diisi
+                                    if (vm.listParameter.isNotEmpty &&
+                                        (vm.allExistParameter == false ||
+                                            vm.allExistParameter == null)) {
+                                      showWarning = true;
+                                    }
+
+                                    // Cek jika equipment kosong
+                                    if (vm.listTakingSampleCI.isEmpty) {
+                                      showWarning = true;
+                                    }
+
+                                    // Jangan tampilkan peringatan jika history
+                                    if (widget.isDetailhistory == true) {
+                                      showWarning = false;
+                                    }
+
+                                    if (showWarning) {
+                                      return Container(
+                                        margin: EdgeInsets.symmetric(
+                                            horizontal: 16, vertical: 4),
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: 12, vertical: 8),
+                                        decoration: BoxDecoration(
+                                          color: Colors.red[50],
+                                          border: Border.all(
+                                              color: Colors.red, width: 1.0),
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(
+                                              Icons.warning_amber_rounded,
+                                              color: Colors.red[700],
+                                              size: 20,
+                                            ),
+                                            SizedBox(width: 8),
+                                            Flexible(
+                                              child: Text(
+                                                warningMessage,
+                                                style: TextStyle(
+                                                  color: Colors.red[700],
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    }
+                                    return SizedBox.shrink();
+                                  },
+                                )
+                              : Stack(),
+
                           Expanded(
                             child: Builder(
                               builder: (context) {
@@ -247,7 +314,9 @@ class _DetailTaskViewState extends State<DetailTaskView>
 
                                         if (valid1 &&
                                             isNotEmptyListCI &&
-                                            isNotEmptyListPar) {
+                                            isNotEmptyListPar &&
+                                            vm.imageFiles.isNotEmpty &&
+                                            vm.imageFilesVerify.isNotEmpty) {
                                           if (vm.listTakingSampleCI
                                                   .isNotEmpty &&
                                               vm.listTakingSampleParameter
@@ -262,7 +331,7 @@ class _DetailTaskViewState extends State<DetailTaskView>
                                                       Duration(seconds: 2),
                                                   content: Text(AppLocalizations
                                                               .of(context)
-                                                          ?.formParameterEmpty ??
+                                                          ?.formContainerInfoEmpty ??
                                                       "Form Container Info is Empty"),
                                                   backgroundColor: Colors.red,
                                                 ),
@@ -284,6 +353,47 @@ class _DetailTaskViewState extends State<DetailTaskView>
                                                 ),
                                               );
                                             }
+
+                                            if (vm.listTaskList?.tsnumber ==
+                                                    "" ||
+                                                vm.listTaskList?.tsnumber ==
+                                                    null) {
+                                              if (vm.imageFiles.isEmpty ||
+                                                  vm.imageFilesVerify.isEmpty) {
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(
+                                                  SnackBar(
+                                                    duration:
+                                                        Duration(seconds: 2),
+                                                    content: Text(AppLocalizations
+                                                                .of(context)
+                                                            ?.imageCannotBeEmpty ??
+                                                        "Gambar tidak boleh kosong"),
+                                                    backgroundColor: Colors.red,
+                                                  ),
+                                                );
+                                              }
+                                            }
+
+                                            if (vm.listTaskList?.tsnumber !=
+                                                "") {
+                                              if (vm.imageString.isEmpty ||
+                                                  vm.imageStringVerifiy
+                                                      .isEmpty) {
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(
+                                                  SnackBar(
+                                                    duration:
+                                                        Duration(seconds: 2),
+                                                    content: Text(AppLocalizations
+                                                                .of(context)
+                                                            ?.imageCannotBeEmpty ??
+                                                        "Gambar tidak boleh kosong"),
+                                                    backgroundColor: Colors.red,
+                                                  ),
+                                                );
+                                              }
+                                            }
                                           }
                                         } else {
                                           if (!valid1) {
@@ -299,6 +409,43 @@ class _DetailTaskViewState extends State<DetailTaskView>
                                               ),
                                             );
                                           } else {
+                                            if (vm.listTaskList?.tsnumber ==
+                                                "") {
+                                              if (vm.imageFiles.isEmpty ||
+                                                  vm.imageFilesVerify.isEmpty) {
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(
+                                                  SnackBar(
+                                                    duration:
+                                                        Duration(seconds: 2),
+                                                    content: Text(AppLocalizations
+                                                                .of(context)
+                                                            ?.imageCannotBeEmpty ??
+                                                        "Gambar tidak boleh kosong"),
+                                                    backgroundColor: Colors.red,
+                                                  ),
+                                                );
+                                              }
+                                            }
+                                            if (vm.listTaskList?.tsnumber !=
+                                                "") {
+                                              if (vm.imageString.isEmpty ||
+                                                  vm.imageStringVerifiy
+                                                      .isEmpty) {
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(
+                                                  SnackBar(
+                                                    duration:
+                                                        Duration(seconds: 2),
+                                                    content: Text(AppLocalizations
+                                                                .of(context)
+                                                            ?.imageCannotBeEmpty ??
+                                                        "Gambar tidak boleh kosong"),
+                                                    backgroundColor: Colors.red,
+                                                  ),
+                                                );
+                                              }
+                                            }
                                             if (vm.equipmentlist.isNotEmpty &&
                                                 vm.listParameter.isNotEmpty) {
                                               if (vm.listTakingSampleCI
@@ -316,7 +463,7 @@ class _DetailTaskViewState extends State<DetailTaskView>
                                                           Duration(seconds: 2),
                                                       content: Text(AppLocalizations
                                                                   .of(context)
-                                                              ?.formTaskInfoEmpty ??
+                                                              ?.formContainerInfoEmpty ??
                                                           "Form Container Info is Empty"),
                                                       backgroundColor:
                                                           Colors.red,
@@ -332,7 +479,7 @@ class _DetailTaskViewState extends State<DetailTaskView>
                                                           Duration(seconds: 2),
                                                       content: Text(AppLocalizations
                                                                   .of(context)
-                                                              ?.formTaskInfoEmpty ??
+                                                              ?.formParameterEmpty ??
                                                           "Form Parameter is Empty"),
                                                       backgroundColor:
                                                           Colors.red,
@@ -351,7 +498,7 @@ class _DetailTaskViewState extends State<DetailTaskView>
                                                           Duration(seconds: 2),
                                                       content: Text(AppLocalizations
                                                                   .of(context)
-                                                              ?.formTaskInfoEmpty ??
+                                                              ?.formContainerInfoEmpty ??
                                                           "Form Container Info is Empty"),
                                                       backgroundColor:
                                                           Colors.red,
@@ -361,7 +508,6 @@ class _DetailTaskViewState extends State<DetailTaskView>
                                                   vm.postDataTakingSample();
                                                 }
                                               }
-
                                               if (vm.listParameter.isNotEmpty) {
                                                 if (vm.listTakingSampleParameter
                                                     .isEmpty) {
@@ -372,7 +518,7 @@ class _DetailTaskViewState extends State<DetailTaskView>
                                                           Duration(seconds: 2),
                                                       content: Text(AppLocalizations
                                                                   .of(context)
-                                                              ?.formTaskInfoEmpty ??
+                                                              ?.formParameterEmpty ??
                                                           "Form Parameter is Empty"),
                                                       backgroundColor:
                                                           Colors.red,
@@ -382,21 +528,6 @@ class _DetailTaskViewState extends State<DetailTaskView>
                                               }
                                             }
                                           }
-
-                                          // if (vm.imageFiles.isEmpty &&
-                                          //     vm.imageFilesVerify.isEmpty) {
-                                          //   ScaffoldMessenger.of(context)
-                                          //       .showSnackBar(
-                                          //     SnackBar(
-                                          //       duration: Duration(seconds: 2),
-                                          //       content: Text(AppLocalizations
-                                          //                   .of(context)
-                                          //               ?.formTaskInfoEmpty ??
-                                          //           "Gambar minimal harus"),
-                                          //       backgroundColor: Colors.red,
-                                          //     ),
-                                          //   );
-                                          // }
                                         }
                                       });
                                     },

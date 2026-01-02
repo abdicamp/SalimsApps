@@ -288,6 +288,9 @@ class ApiService {
   Future<dynamic> getOneTaskList(String? tsNumber) async {
     try {
       final getData = await _storage.getUserData();
+      print("tsNumber: ${tsNumber}");
+      print(
+          "baseUrl: ${baseUrl}/transaction/taking-sample/one/${getData?.data?.branchcode}?tsnumber=${tsNumber}");
       final response = await http.get(
         Uri.parse(
             "${baseUrl}/transaction/taking-sample/one/${getData?.data?.branchcode}?tsnumber=${tsNumber}"),

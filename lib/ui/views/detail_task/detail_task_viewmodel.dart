@@ -143,6 +143,90 @@ class DetailTaskViewmodel extends FutureViewModel {
 
     if (source == null) return;
 
+    // Jika memilih camera dan latlang belum ada, wajib ambil lokasi terlebih dahulu
+    if (source == ImageSource.camera && (latlang == null || latlang!.isEmpty)) {
+      try {
+        setBusy(true);
+        LocationPermission permission = await Geolocator.checkPermission();
+
+        if (permission == LocationPermission.denied) {
+          permission = await Geolocator.requestPermission();
+        }
+
+        if (permission == LocationPermission.denied ||
+            permission == LocationPermission.deniedForever) {
+          setBusy(false);
+          if (context != null) {
+            ScaffoldMessenger.of(context!).showSnackBar(
+              SnackBar(
+                duration: Duration(seconds: 3),
+                content: Text(
+                  'Izin lokasi diperlukan untuk mengambil foto dengan geotag. Silakan aktifkan izin lokasi di pengaturan.',
+                ),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+          return;
+        }
+
+        // Ambil lokasi GPS
+        Position position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high,
+        );
+
+        currentLocation = LatLng(position.latitude, position.longitude);
+        latlang = '${currentLocation!.latitude},${currentLocation!.longitude}';
+        latitude = '${currentLocation!.latitude}';
+        longitude = '${currentLocation!.longitude}';
+
+        // Ambil alamat dari koordinat (reverse geocoding)
+        try {
+          List<Placemark> placemarks = await placemarkFromCoordinates(
+            currentLocation!.latitude,
+            currentLocation!.longitude,
+          );
+          if (placemarks.isNotEmpty) {
+            Placemark placemark = placemarks[0];
+            String safe(String? val) => val ?? '';
+
+            address =
+                "${safe(placemark.street)}, ${safe(placemark.name)}, ${safe(placemark.subLocality)}, ${safe(placemark.postalCode)}, ${safe(placemark.locality)}, ${safe(placemark.subAdministrativeArea)}, ${safe(placemark.administrativeArea)}, ${safe(placemark.country)}";
+            namaJalan = safe(placemark.street);
+          } else {
+            // Jika tidak ada placemark, set default address
+            address = "Location: ${latlang}";
+            namaJalan = "Location";
+          }
+        } catch (e) {
+          // Handle geocoding error
+          address = "Location: ${latlang}";
+          namaJalan = "Location";
+        }
+
+        // Update location controller
+        if (locationController != null) {
+          locationController!.text = latlang!;
+        }
+
+        setBusy(false);
+      } catch (e) {
+        setBusy(false);
+        if (context != null) {
+          ScaffoldMessenger.of(context!).showSnackBar(
+            SnackBar(
+              duration: Duration(seconds: 3),
+              content: Text(
+                'Gagal mengambil lokasi GPS. Pastikan GPS aktif dan coba lagi.',
+              ),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        return; // Batalkan proses jika gagal mengambil lokasi
+      }
+    }
+
     final pickedFile = await ImagePicker().pickImage(source: source);
 
     if (pickedFile != null) {
@@ -164,7 +248,9 @@ class DetailTaskViewmodel extends FutureViewModel {
 
       if (!alreadyExists) {
         imageFilesVerify.add(processedFile);
-        locationController?.text = latlang!;
+        if (latlang != null && latlang!.isNotEmpty) {
+          locationController?.text = latlang!;
+        }
         notifyListeners();
       }
     }
@@ -172,72 +258,131 @@ class DetailTaskViewmodel extends FutureViewModel {
 
   Future<File> _addGeotagToImage(File imageFile) async {
     try {
-      // Baca file gambar
       final Uint8List imageBytes = await imageFile.readAsBytes();
       img.Image? image = img.decodeImage(imageBytes);
 
-      if (image == null) {
-        return imageFile; // Return original file if decode fails
-      }
+      if (image == null) return imageFile;
 
-      // Buat teks geotag
+      // ==========================
+      // 🔧 PENGATURAN UTAMA TEKS
+      // ==========================
+      final double textScale = 2.0; // 🔥 UBAH INI (1.5 | 2.0 | 2.5 | 3.0)
+
+      // ==========================
+      // DATA TEKS
+      // ==========================
+      final now = DateTime.now();
+      final dateTimeText = DateFormat('dd MMM yyyy HH.mm.ss').format(now);
       final geotagText = latlang ?? 'No location';
+      final addressText = namaJalan ?? address ?? 'No address';
 
-      // Ukuran tinggi area teks (disesuaikan dengan ukuran gambar)
-      final textHeight = (image.height * 0.08).round().clamp(40, 80);
+      // ==========================
+      // OVERLAY & POSISI
+      // ==========================
+      final overlayHeight = (image.height * 0.6).round().clamp(300, 700);
+      final lineSpacing = (120 * textScale).round();
 
-      // Buat gambar gabungan (gambar asli + area teks di bawah)
-      final combinedImage = img.Image(
-        width: image.width,
-        height: image.height + textHeight,
-      );
+      final combinedImage = img.Image(width: image.width, height: image.height);
 
-      // Copy gambar asli ke bagian atas
+      // Copy gambar asli
       for (int y = 0; y < image.height; y++) {
         for (int x = 0; x < image.width; x++) {
-          final pixel = image.getPixel(x, y);
-          combinedImage.setPixel(x, y, pixel);
+          combinedImage.setPixel(x, y, image.getPixel(x, y));
         }
       }
 
-      // Buat area teks dengan background semi-transparan hitam
-      for (int y = 0; y < textHeight; y++) {
+      // Background overlay hitam transparan
+      final overlayStartY = image.height - overlayHeight;
+      for (int y = overlayStartY; y < image.height; y++) {
         for (int x = 0; x < image.width; x++) {
-          // Background hitam dengan alpha untuk semi-transparan
-          final bgColor = img.ColorRgba8(0, 0, 0, 200); // Alpha 200 dari 255
-          combinedImage.setPixel(x, image.height + y, bgColor);
+          final p = combinedImage.getPixel(x, y);
+          combinedImage.setPixel(
+            x,
+            y,
+            img.ColorRgb8(
+              (p.r * 0.3).round(),
+              (p.g * 0.3).round(),
+              (p.b * 0.3).round(),
+            ),
+          );
         }
       }
 
-      // Gambar teks geotag menggunakan drawString
-      // Posisi teks di pojok bawah kiri dengan padding
-      final textX = 15;
-      final textY = image.height + (textHeight ~/ 2) - 10;
+      // ==========================
+      // POSISI TEKS
+      // ==========================
+      final textX = (80 * textScale).round();
+      final dateTimeY = overlayStartY + (overlayHeight ~/ 4);
+      final geotagY = dateTimeY + lineSpacing;
+      final addressY = geotagY + lineSpacing;
 
-      // Draw text menggunakan drawString dengan font bitmap
-      // API untuk package image versi 4.x menggunakan named parameters
-      img.drawString(
-        combinedImage,
-        geotagText,
-        font: img.arial24,
-        x: textX,
-        y: textY,
-        color: img.ColorRgb8(255, 255, 255), // Warna putih
+      // ==========================
+      // OUTLINE (AUTO SCALE)
+      // ==========================
+      List<List<int>> outlineOffsets(double scale) {
+        final s = (12 * scale).round();
+        return [
+          [-s, -s],
+          [-s, 0],
+          [-s, s],
+          [0, -s],
+          [0, s],
+          [s, -s],
+          [s, 0],
+          [s, s],
+        ];
+      }
+
+      final offsets = outlineOffsets(textScale);
+
+      // ==========================
+      // FUNGSI GAMBAR TEKS
+      // ==========================
+      void drawText(String text, int x, int y) {
+        // Outline hitam
+        for (var o in offsets) {
+          img.drawString(
+            combinedImage,
+            text,
+            font: img.arial48,
+            x: x + o[0],
+            y: y + o[1],
+            color: img.ColorRgb8(0, 0, 0),
+          );
+        }
+
+        // Teks putih (single render - tidak double untuk menghindari bayangan)
+        img.drawString(
+          combinedImage,
+          text,
+          font: img.arial48,
+          x: x,
+          y: y,
+          color: img.ColorRgb8(255, 255, 255),
+        );
+      }
+
+      // ==========================
+      // GAMBAR SEMUA TEKS
+      // ==========================
+      drawText(dateTimeText, textX, dateTimeY);
+      drawText(geotagText, textX, geotagY);
+      drawText(addressText, textX, addressY);
+
+      // ==========================
+      // SIMPAN FILE
+      // ==========================
+      final dir = imageFile.parent;
+      final fileName =
+          'image_${DateTime.now().millisecondsSinceEpoch}_geotag.jpg';
+      final newFile = File('${dir.path}/$fileName');
+
+      await newFile.writeAsBytes(
+        img.encodeJpg(combinedImage, quality: 90),
       );
-
-      // Simpan ke file baru
-      final directory = imageFile.parent;
-      final timestamp = DateTime.now().millisecondsSinceEpoch;
-      final newFileName = 'image_${timestamp}_geotag.jpg';
-      final newFile = File('${directory.path}/$newFileName');
-
-      // Encode dan simpan
-      final encodedImage = img.encodeJpg(combinedImage, quality: 90);
-      await newFile.writeAsBytes(encodedImage);
 
       return newFile;
     } catch (e) {
-      // Jika terjadi error, return file asli
       return imageFile;
     }
   }
@@ -301,6 +446,7 @@ class DetailTaskViewmodel extends FutureViewModel {
           final allExist =
               parameterCodes.every((code) => groupedKeys.contains(code));
           allExistParameter = allExist;
+
           if (listTakingSampleCI.isNotEmpty) {
             isConfirm = true;
           }
@@ -533,6 +679,7 @@ class DetailTaskViewmodel extends FutureViewModel {
   }
 
   postDataTakingSample() async {
+    setBusy(true);
     try {
       final getDataUser = await localService.getUserData();
       // 🔹 Ubah image ke base64
@@ -564,12 +711,15 @@ class DetailTaskViewmodel extends FutureViewModel {
         }
       }
 
+      print("imageOldStringVerifiy: ${imageOldStringVerifiy.length}");
+      print("imageBase64ListVerify: ${imageBase64ListVerify.length}");
+      print("imageOldString: ${imageOldString.length}");
+      print("imageBase64List: ${imageBase64List.length}");
+
       final dataJson = SampleDetail(
         description: descriptionController!.text,
         tsnumber: "${listTaskList?.tsnumber ?? ''}",
         tranidx: "1203",
-        photoOldVerifikasi: imageOldStringVerifiy,
-        uploadFotoVerifikasi: imageBase64ListVerify,
         periode:
             "${DateFormat('yyyyMM').format(DateTime.parse('${listTaskList!.samplingdate}'))}",
         tsdate: DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now()),
@@ -592,8 +742,14 @@ class DetailTaskViewmodel extends FutureViewModel {
         takingSampleCI: listTakingSampleCI,
         photoOld: imageOldString,
         uploadFotoSample: imageBase64List,
+        photoOldVerifikasi: imageOldStringVerifiy,
+        uploadFotoVerifikasi: imageBase64ListVerify,
       );
       print("data json post : ${jsonEncode(dataJson)}");
+      print("imageBase64List: ${imageBase64List}");
+      print("imageBase64ListVerify: ${imageBase64ListVerify}");
+      print("imageOldString: ${imageOldString}");
+      print("imageOldStringVerifiy: ${imageOldStringVerifiy}");
       final postSample = await apiService.postTakingSample(dataJson);
       // print("data json post : ${postSample.data}");
 
@@ -636,6 +792,7 @@ class DetailTaskViewmodel extends FutureViewModel {
         ),
       );
       notifyListeners();
+      setBusy(false);
     }
   }
 
@@ -700,12 +857,18 @@ class DetailTaskViewmodel extends FutureViewModel {
       imageOldStringVerifiy.clear();
 
       if (response['documents'] != null && response['documents'] is List) {
+        print("response['documents']: ${response['documents']}");
         for (var url in response['documents']) {
-          if (url != null && url['pathname'] != null) {
+          if (url != null && url['pathname'] != null && url['pathname'] != "") {
             imageString.add(url['pathname'].toString());
+            print("imageString: ${imageString.length}");
             imageOldString.add(url['pathname'].toString());
-            imageStringVerifiy.add(url['pathname'].toString());
-            imageOldStringVerifiy.add(url['pathname'].toString());
+          }
+          if (url['pathname_verifikasi'] != "" &&
+              url['pathname_verifikasi'] != null) {
+            imageStringVerifiy.add(url['pathname_verifikasi'].toString());
+            print("imageStringVerifiy: ${imageStringVerifiy.length}");
+            imageOldStringVerifiy.add(url['pathname_verifikasi'].toString());
           }
         }
       }

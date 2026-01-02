@@ -18,73 +18,63 @@ class CardTaskInfo extends StatefulWidget {
 }
 
 class _CardTaskInfoState extends State<CardTaskInfo> {
-  void _showFullScreenImage(String imageUrl) {
+  void _showFullScreenImage(String imageUrl,
+      {int initialIndex = 0, bool isVerify = false}) {
+    // Buat list semua gambar (URL dan File)
+    List<dynamic> allImages = [];
+
+    if (isVerify) {
+      // Untuk gambar verifikasi
+      allImages.addAll(widget.vm!.imageStringVerifiy);
+      allImages.addAll(widget.vm!.imageFilesVerify);
+    } else {
+      // Untuk gambar biasa
+      allImages.addAll(widget.vm!.imageString);
+      allImages.addAll(widget.vm!.imageFiles);
+    }
+
+    if (allImages.isEmpty) return;
+
+    // Cari index dari imageUrl
+    int index = allImages.indexWhere((img) => img == imageUrl);
+    if (index == -1) index = initialIndex;
+
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => Scaffold(
-          backgroundColor: Colors.black,
-          appBar: AppBar(
-            backgroundColor: Colors.black,
-            iconTheme: const IconThemeData(color: Colors.white),
-            leading: IconButton(
-              icon: const Icon(Icons.close, color: Colors.white),
-              onPressed: () => Navigator.of(context).pop(),
-            ),
-          ),
-          body: Center(
-            child: InteractiveViewer(
-              minScale: 0.5,
-              maxScale: 4.0,
-              child: Image.network(
-                imageUrl,
-                fit: BoxFit.contain,
-                errorBuilder: (context, error, stackTrace) => const Center(
-                  child:
-                      Icon(Icons.broken_image, color: Colors.grey, size: 100),
-                ),
-                loadingBuilder: (context, child, loadingProgress) {
-                  if (loadingProgress == null) return child;
-                  return Center(
-                    child: CircularProgressIndicator(
-                      value: loadingProgress.expectedTotalBytes != null
-                          ? loadingProgress.cumulativeBytesLoaded /
-                              loadingProgress.expectedTotalBytes!
-                          : null,
-                      color: Colors.white,
-                    ),
-                  );
-                },
-              ),
-            ),
-          ),
+        builder: (context) => _ImageSliderView(
+          images: allImages,
+          initialIndex: index,
         ),
       ),
     );
   }
 
-  void _showFullScreenImageFile(dynamic imageFile) {
+  void _showFullScreenImageFile(dynamic imageFile,
+      {int initialIndex = 0, bool isVerify = false}) {
+    // Buat list semua gambar (URL dan File)
+    List<dynamic> allImages = [];
+
+    if (isVerify) {
+      // Untuk gambar verifikasi
+      allImages.addAll(widget.vm!.imageStringVerifiy);
+      allImages.addAll(widget.vm!.imageFilesVerify);
+    } else {
+      // Untuk gambar biasa
+      allImages.addAll(widget.vm!.imageString);
+      allImages.addAll(widget.vm!.imageFiles);
+    }
+
+    if (allImages.isEmpty) return;
+
+    // Cari index dari imageFile
+    int index = allImages.indexWhere((img) => img == imageFile);
+    if (index == -1) index = initialIndex;
+
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => Scaffold(
-          backgroundColor: Colors.black,
-          appBar: AppBar(
-            backgroundColor: Colors.black,
-            iconTheme: const IconThemeData(color: Colors.white),
-            leading: IconButton(
-              icon: const Icon(Icons.close, color: Colors.white),
-              onPressed: () => Navigator.of(context).pop(),
-            ),
-          ),
-          body: Center(
-            child: InteractiveViewer(
-              minScale: 0.5,
-              maxScale: 4.0,
-              child: Image.file(
-                imageFile,
-                fit: BoxFit.contain,
-              ),
-            ),
-          ),
+        builder: (context) => _ImageSliderView(
+          images: allImages,
+          initialIndex: index,
         ),
       ),
     );
@@ -291,9 +281,13 @@ class _CardTaskInfoState extends State<CardTaskInfo> {
                                                               GestureDetector(
                                                             onTap: () {
                                                               _showFullScreenImage(
-                                                                  widget.vm!
-                                                                          .imageString[
-                                                                      index]);
+                                                                widget.vm!
+                                                                        .imageString[
+                                                                    index],
+                                                                initialIndex:
+                                                                    index,
+                                                                isVerify: false,
+                                                              );
                                                             },
                                                             child:
                                                                 Image.network(
@@ -366,10 +360,20 @@ class _CardTaskInfoState extends State<CardTaskInfo> {
                                                                     10)),
                                                         child: GestureDetector(
                                                           onTap: () {
+                                                            final urlCount =
+                                                                widget
+                                                                    .vm!
+                                                                    .imageString
+                                                                    .length;
                                                             _showFullScreenImageFile(
-                                                                widget.vm!
-                                                                        .imageFiles[
-                                                                    fileIndex]);
+                                                              widget.vm!
+                                                                      .imageFiles[
+                                                                  fileIndex],
+                                                              initialIndex:
+                                                                  urlCount +
+                                                                      fileIndex,
+                                                              isVerify: false,
+                                                            );
                                                           },
                                                           child: Image.file(
                                                             widget.vm!
@@ -485,11 +489,10 @@ class _CardTaskInfoState extends State<CardTaskInfo> {
                                               children: [
                                                 Assets.icons.image.svg(),
                                                 SizedBox(height: 5),
-
-                                                Text(
-                                                    AppLocalizations.of(context)
-                                                            ?.attachmentVerify ??
-                                                        'Attachment Verify'),
+                                                Text(AppLocalizations.of(
+                                                            context)
+                                                        ?.attachmentVerify ??
+                                                    'Attachment Verify'),
                                               ],
                                             ),
                                           ),
@@ -499,14 +502,17 @@ class _CardTaskInfoState extends State<CardTaskInfo> {
                                   : Builder(
                                       builder: (context) {
                                         // Untuk history, tidak tampilkan tombol add image
-                                        final itemCount = widget
-                                                    .isDetailhistory ==
-                                                true
-                                            ? widget.vm!.imageStringVerifiy.length +
-                                                widget.vm!.imageFilesVerify.length
-                                            : widget.vm!.imageStringVerifiy.length +
-                                                widget.vm!.imageFilesVerify.length +
-                                                1;
+                                        final itemCount =
+                                            widget.isDetailhistory == true
+                                                ? widget.vm!.imageStringVerifiy
+                                                        .length +
+                                                    widget.vm!.imageFilesVerify
+                                                        .length
+                                                : widget.vm!.imageStringVerifiy
+                                                        .length +
+                                                    widget.vm!.imageFilesVerify
+                                                        .length +
+                                                    1;
 
                                         return DottedBorder(
                                           borderType: BorderType.RRect,
@@ -529,8 +535,8 @@ class _CardTaskInfoState extends State<CardTaskInfo> {
                                               ),
                                               itemCount: itemCount,
                                               itemBuilder: (context, index) {
-                                                final urlCount = widget
-                                                    .vm!.imageStringVerifiy.length;
+                                                final urlCount = widget.vm!
+                                                    .imageStringVerifiy.length;
 
                                                 // Tombol add image hanya untuk non-history
                                                 if (widget.isDetailhistory ==
@@ -577,9 +583,13 @@ class _CardTaskInfoState extends State<CardTaskInfo> {
                                                               GestureDetector(
                                                             onTap: () {
                                                               _showFullScreenImage(
-                                                                  widget.vm!
-                                                                          .imageStringVerifiy[
-                                                                      index]);
+                                                                widget.vm!
+                                                                        .imageStringVerifiy[
+                                                                    index],
+                                                                initialIndex:
+                                                                    index,
+                                                                isVerify: true,
+                                                              );
                                                             },
                                                             child:
                                                                 Image.network(
@@ -652,10 +662,19 @@ class _CardTaskInfoState extends State<CardTaskInfo> {
                                                                     10)),
                                                         child: GestureDetector(
                                                           onTap: () {
+                                                            final urlCount = widget
+                                                                .vm!
+                                                                .imageStringVerifiy
+                                                                .length;
                                                             _showFullScreenImageFile(
-                                                                widget.vm!
-                                                                        .imageFilesVerify[
-                                                                    fileIndex]);
+                                                              widget.vm!
+                                                                      .imageFilesVerify[
+                                                                  fileIndex],
+                                                              initialIndex:
+                                                                  urlCount +
+                                                                      fileIndex,
+                                                              isVerify: true,
+                                                            );
                                                           },
                                                           child: Image.file(
                                                             widget.vm!
@@ -778,5 +797,148 @@ class _CardTaskInfoState extends State<CardTaskInfo> {
         ),
       ),
     );
+  }
+}
+
+// Class untuk Image Slider dengan zoom
+class _ImageSliderView extends StatefulWidget {
+  final List<dynamic> images;
+  final int initialIndex;
+
+  const _ImageSliderView({
+    required this.images,
+    required this.initialIndex,
+  });
+
+  @override
+  State<_ImageSliderView> createState() => _ImageSliderViewState();
+}
+
+class _ImageSliderViewState extends State<_ImageSliderView> {
+  late PageController _pageController;
+  late int _currentIndex;
+  final Map<int, TransformationController> _transformationControllers = {};
+  bool _isZoomed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentIndex = widget.initialIndex;
+    _pageController = PageController(initialPage: widget.initialIndex);
+
+    // Initialize transformation controllers untuk semua gambar
+    for (int i = 0; i < widget.images.length; i++) {
+      _transformationControllers[i] = TransformationController();
+    }
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    for (var controller in _transformationControllers.values) {
+      controller.dispose();
+    }
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        iconTheme: const IconThemeData(color: Colors.white),
+        leading: IconButton(
+          icon: const Icon(Icons.close, color: Colors.white),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        title: Text(
+          '${_currentIndex + 1} / ${widget.images.length}',
+          style: const TextStyle(color: Colors.white),
+        ),
+        centerTitle: true,
+      ),
+      body: PageView.builder(
+        controller: _pageController,
+        itemCount: widget.images.length,
+        physics: _isZoomed
+            ? const NeverScrollableScrollPhysics()
+            : const PageScrollPhysics(),
+        onPageChanged: (index) {
+          setState(() {
+            _currentIndex = index;
+            // Reset zoom saat pindah halaman
+            _isZoomed = false;
+            if (_transformationControllers[index] != null) {
+              _transformationControllers[index]!.value = Matrix4.identity();
+            }
+          });
+        },
+        itemBuilder: (context, index) {
+          final image = widget.images[index];
+          final controller =
+              _transformationControllers[index] ?? TransformationController();
+
+          return Center(
+            child: InteractiveViewer(
+              transformationController: controller,
+              minScale: 0.5,
+              maxScale: 4.0,
+              onInteractionStart: (details) {
+                // Cek jika user mulai zoom
+                if (details.pointerCount > 1) {
+                  setState(() {
+                    _isZoomed = true;
+                  });
+                }
+              },
+              onInteractionEnd: (details) {
+                // Cek jika zoom sudah selesai (scale kembali ke 1.0)
+                final scale = controller.value.getMaxScaleOnAxis();
+                setState(() {
+                  _isZoomed =
+                      scale > 1.1; // Threshold kecil untuk menghindari flicker
+                });
+              },
+              child: _buildImage(image),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildImage(dynamic image) {
+    if (image is String) {
+      // Image dari URL
+      return Image.network(
+        image,
+        fit: BoxFit.contain,
+        errorBuilder: (context, error, stackTrace) => const Center(
+          child: Icon(Icons.broken_image, color: Colors.grey, size: 100),
+        ),
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return Center(
+            child: CircularProgressIndicator(
+              value: loadingProgress.expectedTotalBytes != null
+                  ? loadingProgress.cumulativeBytesLoaded /
+                      loadingProgress.expectedTotalBytes!
+                  : null,
+              color: Colors.white,
+            ),
+          );
+        },
+      );
+    } else {
+      // Image dari File
+      return Image.file(
+        image,
+        fit: BoxFit.contain,
+        errorBuilder: (context, error, stackTrace) => const Center(
+          child: Icon(Icons.broken_image, color: Colors.grey, size: 100),
+        ),
+      );
+    }
   }
 }

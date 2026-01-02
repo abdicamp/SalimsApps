@@ -38,7 +38,8 @@ class _LoginViewState extends State<LoginView> {
                           Image.asset("assets/images/logo.png", width: 170),
                           SizedBox(height: 10),
                           Text(
-                            AppLocalizations.of(context)?.welcomeBack ?? 'Welcome Back!',
+                            AppLocalizations.of(context)?.welcomeBack ??
+                                'Welcome Back!',
                             style: TextStyle(
                               fontSize: 28,
                               fontWeight: FontWeight.bold,
@@ -47,7 +48,8 @@ class _LoginViewState extends State<LoginView> {
                           ),
                           SizedBox(height: 10),
                           Text(
-                            AppLocalizations.of(context)?.loginToYourAccount ?? 'Login to your account',
+                            AppLocalizations.of(context)?.loginToYourAccount ??
+                                'Login to your account',
                             style: TextStyle(
                               fontSize: 16,
                               color: Colors.grey[600],
@@ -59,7 +61,8 @@ class _LoginViewState extends State<LoginView> {
                           _buildTextField(
                             context: context,
                             controller: vm.usernameController,
-                            hint: AppLocalizations.of(context)?.username ?? "Username",
+                            hint: AppLocalizations.of(context)?.username ??
+                                "Username",
                             icon: Icons.people,
                           ),
                           SizedBox(height: 20),
@@ -68,7 +71,8 @@ class _LoginViewState extends State<LoginView> {
                           _buildTextField(
                             context: context,
                             controller: vm.passwordController,
-                            hint: AppLocalizations.of(context)?.password ?? "Password",
+                            hint: AppLocalizations.of(context)?.password ??
+                                "Password",
                             icon: Icons.lock_outline,
                             suffixIcon: isShowPassword
                                 ? Icons.visibility_off
@@ -78,13 +82,13 @@ class _LoginViewState extends State<LoginView> {
                           SizedBox(height: 10),
 
                           // Lupa password
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: TextButton(
-                              onPressed: () {},
-                              child: Text(AppLocalizations.of(context)?.forgotPassword ?? "Forgot Password?"),
-                            ),
-                          ),
+                          // Align(
+                          //   alignment: Alignment.centerRight,
+                          //   child: TextButton(
+                          //     onPressed: () {},
+                          //     child: Text(AppLocalizations.of(context)?.forgotPassword ?? "Forgot Password?"),
+                          //   ),
+                          // ),
 
                           SizedBox(height: 30),
 
@@ -95,7 +99,7 @@ class _LoginViewState extends State<LoginView> {
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
                                 colors: [
-                                  Color(0xFF4CAF50),     // hijau
+                                  Color(0xFF4CAF50), // hijau
                                   Color(0xFF2196F3),
                                 ],
                               ),
@@ -108,7 +112,8 @@ class _LoginViewState extends State<LoginView> {
                                 }
                               },
                               child: Text(
-                                AppLocalizations.of(context)?.loginButton ?? 'LOGIN',
+                                AppLocalizations.of(context)?.loginButton ??
+                                    'LOGIN',
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 16,
@@ -166,21 +171,24 @@ class _LoginViewState extends State<LoginView> {
       child: TextFormField(
         validator: (value) {
           if (value == null || value.isEmpty) {
-            return AppLocalizations.of(context)?.pleaseEnterValue ?? 'Please enter value';
+            return AppLocalizations.of(context)?.pleaseEnterValue ??
+                'Please enter value';
           }
           return null;
         },
         controller: controller,
         obscureText: obscureText,
         decoration: InputDecoration(
-          suffixIcon: suffixIcon != null ? IconButton(
-            icon: Icon(suffixIcon),
-            onPressed: () {
-              setState(() {
-                isShowPassword = !isShowPassword;
-              });
-            },
-          ) : null,
+          suffixIcon: suffixIcon != null
+              ? IconButton(
+                  icon: Icon(suffixIcon),
+                  onPressed: () {
+                    setState(() {
+                      isShowPassword = !isShowPassword;
+                    });
+                  },
+                )
+              : null,
           prefixIcon: Icon(icon),
           hintText: hint,
           border: InputBorder.none,

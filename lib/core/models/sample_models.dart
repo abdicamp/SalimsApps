@@ -95,8 +95,8 @@ class SampleDetail {
       photoOld: json['photo_old'] != null
           ? List<String>.from(json['photo_old'])
           : [], // ✅ Parsing URL list
-      photoOldVerifikasi: json['photo_old_verifikasi'] != null
-          ? List<String>.from(json['photo_old_verifikasi'])
+      photoOldVerifikasi: json['photo_verifikasi_old'] != null
+          ? List<String>.from(json['photo_verifikasi_old'])
           : [], // ✅ Parsing URL list
     );
   }
@@ -127,9 +127,10 @@ class SampleDetail {
           takingSampleParameters.map((e) => e.toJson()).toList(),
       'taking_sample_ci': takingSampleCI.map((e) => e.toJson()).toList(),
       "upload_foto_sample": uploadFotoSample, // ✅ pastikan ikut di toJson
-      "upload_foto_verifikasi": uploadFotoVerifikasi, // ✅ pastikan ikut di toJson
+      "upload_foto_verifikasi":
+          uploadFotoVerifikasi, // ✅ pastikan ikut di toJson
       "photo_old": photoOld, // ✅ pastikan ikut di toJson
-      "photo_old_verifikasi": photoOldVerifikasi, // ✅ pastikan ikut di toJson
+      "photo_verifikasi_old": photoOldVerifikasi, // ✅ pastikan ikut di toJson
     };
   }
 }
@@ -142,7 +143,6 @@ class TakingSampleParameter {
   final bool iscalibration;
   final String insituresult;
   final String description;
-
 
   TakingSampleParameter({
     this.key,

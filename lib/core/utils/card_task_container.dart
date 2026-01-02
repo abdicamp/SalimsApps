@@ -133,6 +133,12 @@ class _CardTaskContainerState extends State<CardTaskContainer> {
                                       Expanded(
                                         flex: 2,
                                         child: CustomTextField(
+                                          keyboardType: TextInputType.number,
+                                          inputFormater: [
+                                            FilteringTextInputFormatter.allow(
+                                              RegExp(r'[0-9]'),
+                                            ), // hanya angka 0-9
+                                          ],
                                           readOnly: widget.isDetailhistory!,
                                           validator: (value) {
                                             if (value == null ||
