@@ -40,6 +40,7 @@ class CustomSearchableDropDown extends StatefulWidget {
   final ValueChanged onChanged;
 
   CustomSearchableDropDown({
+    super.key,
     required this.items,
     required this.label,
     required this.onChanged,
@@ -74,11 +75,11 @@ class CustomSearchableDropDown extends StatefulWidget {
   });
 
   @override
-  _CustomSearchableDropDownState createState() =>
-      _CustomSearchableDropDownState();
+  CustomSearchableDropDownState createState() =>
+      CustomSearchableDropDownState();
 }
 
-class _CustomSearchableDropDownState extends State<CustomSearchableDropDown>
+class CustomSearchableDropDownState extends State<CustomSearchableDropDown>
     with WidgetsBindingObserver, TickerProviderStateMixin {
   String onSelectLabel = '';
   final searchC = TextEditingController();
@@ -89,6 +90,14 @@ class _CustomSearchableDropDownState extends State<CustomSearchableDropDown>
   List selectedValues = [];
 
   late AnimationController _menuController;
+
+  void clearValue() {
+    setState(() {
+      onSelectLabel = '';
+      selectedValues.clear();
+    });
+    widget.onChanged(null);
+  }
 
   @override
   void initState() {

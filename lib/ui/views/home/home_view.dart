@@ -114,11 +114,13 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
                                               InkWell(
                                                 onTap: () async {
                                                   // Mark notifications as read when tapped
-                                                  await vm.markNotificationsAsRead();
+                                                  await vm
+                                                      .markNotificationsAsRead();
                                                   Navigator.push(
                                                     context,
                                                     MaterialPageRoute(
-                                                      builder: (context) => NotificationHistoryView(),
+                                                      builder: (context) =>
+                                                          NotificationHistoryView(),
                                                     ),
                                                   );
                                                 },
@@ -139,10 +141,13 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
                                                     ),
                                                   ),
                                                   child: badges.Badge(
-                                                    showBadge: vm.newNotificationCount > 0,
+                                                    showBadge:
+                                                        vm.newNotificationCount >
+                                                            0,
                                                     badgeContent: Text(
-                                                      vm.newNotificationCount > 99 
-                                                          ? '99+' 
+                                                      vm.newNotificationCount >
+                                                              99
+                                                          ? '99+'
                                                           : '${vm.newNotificationCount}',
                                                       style: const TextStyle(
                                                         color: Colors.white,
@@ -564,7 +569,7 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
                           ],
                         ),
                         SizedBox(height: 20),
-                        
+
                         // Filter Date Section
                         TextField(
                           readOnly: true,
@@ -573,7 +578,8 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
                             vm.pickDateRange();
                           },
                           decoration: InputDecoration(
-                            hintText: AppLocalizations.of(context)?.date ?? "Date",
+                            hintText:
+                                AppLocalizations.of(context)?.date ?? "Date",
                             hintStyle: TextStyle(
                               color: Colors.grey.shade500,
                               fontSize: 14,
@@ -583,18 +589,20 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
                               color: Colors.grey.shade600,
                               size: 20,
                             ),
-                            suffixIcon: vm.dateFilterController?.text.isNotEmpty ?? false
-                                ? IconButton(
-                                    onPressed: () {
-                                      vm.resetDateFilter();
-                                    },
-                                    icon: Icon(
-                                      Icons.clear,
-                                      color: Colors.grey.shade600,
-                                      size: 20,
-                                    ),
-                                  )
-                                : null,
+                            suffixIcon:
+                                vm.dateFilterController?.text.isNotEmpty ??
+                                        false
+                                    ? IconButton(
+                                        onPressed: () {
+                                          vm.resetDateFilter();
+                                        },
+                                        icon: Icon(
+                                          Icons.clear,
+                                          color: Colors.grey.shade600,
+                                          size: 20,
+                                        ),
+                                      )
+                                    : null,
                             filled: true,
                             fillColor: Colors.grey.shade100,
                             contentPadding: const EdgeInsets.symmetric(
@@ -619,9 +627,9 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
                             fontSize: 14,
                           ),
                         ),
-                        
+
                         const SizedBox(height: 12),
-                        
+
                         Stack(
                           children: [
                             Card(
@@ -951,7 +959,7 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
                                                 ),
                                               ),
                                               Text(
-                                                "${vm.totalPerforma}",
+                                                "${vm.totalPerforma?.toStringAsFixed(2) ?? '0.00'}",
                                                 style: GoogleFonts.poppins(
                                                   fontSize: 16,
                                                   fontWeight: FontWeight.w600,

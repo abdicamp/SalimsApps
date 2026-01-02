@@ -93,6 +93,7 @@ class _CardTaskParameterState extends State<CardTaskParameter> {
                                       child: Padding(
                                         padding: const EdgeInsets.all(8.0),
                                         child: CustomSearchableDropDown(
+                                          key: widget.vm?.dropdownKeyParameter,
                                           isReadOnly: false,
                                           items: widget.vm!.listParameter,
                                           label: AppLocalizations.of(context)

@@ -92,6 +92,7 @@ class _CardTaskContainerState extends State<CardTaskContainer> {
                                       child: Padding(
                                         padding: const EdgeInsets.all(8.0),
                                         child: CustomSearchableDropDown(
+                                          key: widget.vm?.dropdownKeyEquipment,
                                           isReadOnly: widget.isDetailhistory!,
                                           items: widget.vm!.equipmentlist ?? [],
                                           label: AppLocalizations.of(context)
@@ -101,6 +102,7 @@ class _CardTaskContainerState extends State<CardTaskContainer> {
                                           // searchBarHeight: SDP.sdp(40),
                                           hint: 'Search Equipment',
                                           // initialIndex: index,
+
                                           dropdownHintText:
                                               AppLocalizations.of(context)
                                                       ?.searchEquipmentHint ??
@@ -173,58 +175,52 @@ class _CardTaskContainerState extends State<CardTaskContainer> {
                                             ),
                                             SizedBox(height: 12),
                                             Container(
-                                              height: 53,
                                               decoration: BoxDecoration(
-                                                borderRadius: BorderRadius.all(
-                                                  Radius.circular(15),
-                                                ),
+                                                color: Colors.white,
                                                 border: Border.all(
-                                                    color: Colors.grey),
+                                                  color: Colors.black,
+                                                  width: 0.5,
+                                                ),
+                                                borderRadius:
+                                                    BorderRadius.circular(15),
                                               ),
                                               child: Padding(
                                                 padding:
                                                     const EdgeInsets.all(8.0),
-                                                child: DropdownButton<String>(
-                                                  value: widget
-                                                      .vm!.conSelect?.code,
-                                                  isExpanded: true,
-                                                  underline: SizedBox(),
-                                                  hint: Text(
+                                                child: CustomSearchableDropDown(
+                                                  key: widget
+                                                      .vm?.dropdownKeyConUOM,
+                                                  isReadOnly:
+                                                      widget.isDetailhistory!,
+                                                  items:
+                                                      widget.vm!.unitList ?? [],
+                                                  label: AppLocalizations.of(
+                                                              context)
+                                                          ?.conUOM ??
+                                                      'Con UOM',
+                                                  padding: EdgeInsets.zero,
+                                                  dropdownHintText:
                                                       AppLocalizations.of(
                                                                   context)
                                                               ?.conUOM ??
-                                                          "Con UOM"),
-                                                  padding: EdgeInsets.all(4),
-                                                  style: TextStyle(
-                                                    fontSize: 12,
-                                                    color: Colors.black,
-                                                  ),
-                                                  items:
-                                                      widget.vm?.unitList?.map((
-                                                    item,
-                                                  ) {
-                                                    return DropdownMenuItem<
-                                                        String>(
-                                                      value: item
-                                                          .code, // kode yg disimpan
-                                                      child: Text(
-                                                        "${item.name}",
-                                                      ), // yg ditampilkan
-                                                    );
-                                                  }).toList(),
-                                                  onChanged:
-                                                      (String? newValue) {
-                                                    setState(() {});
-                                                    final selectedItem = widget
-                                                        .vm!.unitList!
-                                                        .firstWhere(
-                                                      (element) =>
-                                                          element.code ==
-                                                          newValue,
-                                                    );
-                                                    widget.vm!.conSelect =
-                                                        selectedItem;
+                                                          'Search Unit',
+                                                  dropdownItemStyle:
+                                                      GoogleFonts.getFont(
+                                                          "Lato"),
+                                                  onChanged: (value) {
+                                                    if (value != null) {
+                                                      setState(() {
+                                                        widget.vm?.conSelect =
+                                                            value;
+                                                      });
+                                                    }
                                                   },
+                                                  dropDownMenuItems: widget
+                                                          .vm!.unitList
+                                                          ?.map((e) {
+                                                        return '${e.name}';
+                                                      }).toList() ??
+                                                      [],
                                                 ),
                                               ),
                                             ),
@@ -280,58 +276,52 @@ class _CardTaskContainerState extends State<CardTaskContainer> {
                                             ),
                                             SizedBox(height: 12),
                                             Container(
-                                              height: 53,
                                               decoration: BoxDecoration(
-                                                borderRadius: BorderRadius.all(
-                                                  Radius.circular(15),
-                                                ),
+                                                color: Colors.white,
                                                 border: Border.all(
-                                                    color: Colors.grey),
+                                                  color: Colors.black,
+                                                  width: 0.5,
+                                                ),
+                                                borderRadius:
+                                                    BorderRadius.circular(15),
                                               ),
                                               child: Padding(
                                                 padding:
                                                     const EdgeInsets.all(8.0),
-                                                child: DropdownButton<String>(
-                                                  value: widget
-                                                      .vm!.volSelect?.code,
-                                                  isExpanded: true,
-                                                  underline: SizedBox(),
-                                                  hint: Text(
+                                                child: CustomSearchableDropDown(
+                                                  key: widget
+                                                      .vm?.dropdownKeyVolUOM,
+                                                  isReadOnly:
+                                                      widget.isDetailhistory!,
+                                                  items:
+                                                      widget.vm!.unitList ?? [],
+                                                  label: AppLocalizations.of(
+                                                              context)
+                                                          ?.volUOM ??
+                                                      'Vol UOM',
+                                                  padding: EdgeInsets.zero,
+                                                  dropdownHintText:
                                                       AppLocalizations.of(
                                                                   context)
                                                               ?.volUOM ??
-                                                          "Vol UOM"),
-                                                  padding: EdgeInsets.all(4),
-                                                  style: TextStyle(
-                                                    fontSize: 12,
-                                                    color: Colors.black,
-                                                  ),
-                                                  items:
-                                                      widget.vm?.unitList?.map((
-                                                    item,
-                                                  ) {
-                                                    return DropdownMenuItem<
-                                                        String>(
-                                                      value: item
-                                                          .code, // kode yg disimpan
-                                                      child: Text(
-                                                        "${item.name}",
-                                                      ), // yg ditampilkan
-                                                    );
-                                                  }).toList(),
-                                                  onChanged:
-                                                      (String? newValue) {
-                                                    setState(() {});
-                                                    final selectedItem = widget
-                                                        .vm!.unitList!
-                                                        .firstWhere(
-                                                      (element) =>
-                                                          element.code ==
-                                                          newValue,
-                                                    );
-                                                    widget.vm!.volSelect =
-                                                        selectedItem;
+                                                          'Search Unit',
+                                                  dropdownItemStyle:
+                                                      GoogleFonts.getFont(
+                                                          "Lato"),
+                                                  onChanged: (value) {
+                                                    if (value != null) {
+                                                      setState(() {
+                                                        widget.vm?.volSelect =
+                                                            value;
+                                                      });
+                                                    }
                                                   },
+                                                  dropDownMenuItems: widget
+                                                          .vm!.unitList
+                                                          ?.map((e) {
+                                                        return '${e.name}';
+                                                      }).toList() ??
+                                                      [],
                                                 ),
                                               ),
                                             ),

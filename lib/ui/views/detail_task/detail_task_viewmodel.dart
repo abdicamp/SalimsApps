@@ -24,6 +24,7 @@ import '../../../core/models/parameter_models.dart';
 import '../../../core/models/task_list_models.dart';
 import '../../../core/services/local_Storage_Services.dart';
 import '../../../core/utils/radius_calculate.dart';
+import '../../../core/utils/search_dropdown.dart';
 
 /// ViewModel untuk Detail Task
 /// Menangani semua logika bisnis untuk detail task termasuk:
@@ -54,6 +55,11 @@ class DetailTaskViewmodel extends FutureViewModel {
   final formKey1 = GlobalKey<FormState>();
   final formKey2 = GlobalKey<FormState>();
   final formKey3 = GlobalKey<FormState>();
+
+  GlobalKey<CustomSearchableDropDownState> dropdownKeyEquipment = GlobalKey();
+  GlobalKey<CustomSearchableDropDownState> dropdownKeyParameter = GlobalKey();
+  GlobalKey<CustomSearchableDropDownState> dropdownKeyConUOM = GlobalKey();
+  GlobalKey<CustomSearchableDropDownState> dropdownKeyVolUOM = GlobalKey();
 
   DetailTaskViewmodel({
     this.context,
@@ -779,6 +785,7 @@ class DetailTaskViewmodel extends FutureViewModel {
     institutController?.text = "";
     descriptionParController?.text = "";
     isCalibration = false;
+    dropdownKeyParameter.currentState?.clearValue();
   }
 
   /// Hapus parameter dari list
@@ -840,6 +847,9 @@ class DetailTaskViewmodel extends FutureViewModel {
 
   /// Reset form CI
   void _resetCIForm() {
+    dropdownKeyEquipment.currentState?.clearValue();
+    dropdownKeyConUOM.currentState?.clearValue();
+    dropdownKeyVolUOM.currentState?.clearValue();
     equipmentSelect = null;
     conSelect = null;
     volSelect = null;
@@ -1588,6 +1598,7 @@ class DetailTaskViewmodel extends FutureViewModel {
   Future<void> confirm() async {
     setBusy(true);
     try {
+      await handleSave();
       final dataJson = {
         'tsnumber': '${listTaskList?.tsnumber}',
         'tsdate': '${listTaskList?.tsdate}',
