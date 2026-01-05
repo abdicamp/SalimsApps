@@ -1,21 +1,21 @@
 {
   "project_info": {
-    "project_number": "617480887543",
-    "project_id": "salimsapps",
-    "storage_bucket": "salimsapps.firebasestorage.app"
+    "project_number": "839030318440",
+    "project_id": "lims-pdam-11fc7",
+    "storage_bucket": "lims-pdam-11fc7.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:617480887543:android:bb3ec0f91175167dfb07f2",
+        "mobilesdk_app_id": "1:839030318440:android:ca2bfb9d238f8d39b9a2dd",
         "android_client_info": {
-          "package_name": "com.example.salims_apps_new"
+          "package_name": "id.go.pdam.salims.apps"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyAbzF2ePkGkiK_gElPk2x6re-rskgpsBB4"
+          "current_key": "AIzaSyBPWlOhshNfc4Jpm2HI3Lm0wckUrx8fAtk"
         }
       ],
       "services": {

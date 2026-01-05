@@ -1,4 +1,4 @@
-package com.example.salims_apps_new
+package id.go.pdam.salims.apps
 
 import android.content.Context
 import android.os.Build

@@ -9,7 +9,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.salims_apps_new"
+    namespace = "id.go.pdam.salims.apps"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -26,9 +26,18 @@ android {
         jvmTarget = JavaVersion.VERSION_11.toString()
     }
 
+    signingConfigs {
+        create("release") {
+            storeFile = file("release-keystore.jks")
+            storePassword = "core2duo"
+            keyAlias = "pdamrelease"
+            keyPassword = "core2duo"
+        }
+    }
+
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.salims_apps_new"
+        applicationId = "id.go.pdam.salims.apps"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
@@ -38,10 +47,15 @@ android {
     }
 
     buildTypes {
-        release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+        getByName("release") {
+            // ... other release build type configurations
+            signingConfig = signingConfigs.getByName("release")
+            // minifyEnabled = false
+            // shrinkResources = false
+        }
+        getByName("debug") {
+            // Debug builds use the default debug signing config automatically
+            // signingConfig = signingConfigs.getByName("debug") // Optional
         }
     }
 }
