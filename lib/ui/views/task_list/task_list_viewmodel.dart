@@ -19,6 +19,8 @@ class TaskListViewmodel extends FutureViewModel {
   List<TestingOrder> listTask = [];
   List<dynamic> listTaskParameterAndEquipment = [];
   List<TestingOrder> listTaskSearch = [];
+  String? dateFrom;
+  String? dateTo;
 
   void pickDateRange() async {
     DateTimeRange? newRange = await showDateRangePicker(
@@ -32,6 +34,8 @@ class TaskListViewmodel extends FutureViewModel {
       selectedRange = newRange;
       tanggalCtrl!.text =
           '${_formatDate(selectedRange!.start)} - ${_formatDate(selectedRange!.end)}';
+      dateFrom = _formatDate(selectedRange!.start);
+      dateTo = _formatDate(selectedRange!.end);
       getListTask();
       notifyListeners();
     }
@@ -66,7 +70,16 @@ class TaskListViewmodel extends FutureViewModel {
     setBusy(true);
     try {
       // final response = await _apiServices.getTaskList(tanggalCtrl?.text ?? '${DateFormat('yyyy-MM-dd').format(DateTime.now())} - ${DateFormat('yyyy-MM-dd').format(DateTime.now())}');
-      final response = await _apiServices.getTaskList(tanggalCtrl?.text ?? '');
+       if (selectedRange != null) {
+      dateFrom = _formatDate(selectedRange!.start);
+      dateTo = _formatDate(selectedRange!.end);
+    } else {  
+      final now = DateTime.now();
+      dateFrom = _formatDate(DateTime(now.year, now.month, 1)); // 1 tanggal awal bulan
+      dateTo = _formatDate(now); // hari ini
+    }
+      
+      final response = await _apiServices.getTaskList(dateFrom!, dateTo!);
       listTask = response!.data!.data;
       listTaskSearch = response.data!.data;
       if (listTask.isNotEmpty) {

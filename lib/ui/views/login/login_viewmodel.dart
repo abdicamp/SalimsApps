@@ -72,7 +72,11 @@ class LoginViewModel extends FutureViewModel {
             logger.w("APNS token belum tersedia, retry ke-$retryCount/$maxRetries");
             await Future.delayed(const Duration(milliseconds: 1000));
           } else {
-            logger.i("APNS token berhasil didapat: $apnsToken");
+            logger.i("APNS token berhasil didapat");
+            print("═══════════════════════════════════════════════════════════");
+            print("APNS TOKEN (LENGKAP):");
+            print(apnsToken);
+            print("═══════════════════════════════════════════════════════════");
             break;
           }
         }
@@ -92,7 +96,11 @@ class LoginViewModel extends FutureViewModel {
         try {
           token = await FirebaseMessaging.instance.getToken();
           if (token != null) {
-            logger.i("FCM token berhasil didapat: $token");
+            logger.i("FCM token berhasil didapat");
+            print("═══════════════════════════════════════════════════════════");
+            print("FCM TOKEN (LENGKAP):");
+            print(token);
+            print("═══════════════════════════════════════════════════════════");
             return token;
           } else {
             logger.w("FCM token null, retry ke-${tokenRetryCount + 1}/$maxTokenRetries");
@@ -190,7 +198,11 @@ class LoginViewModel extends FutureViewModel {
         passwordController.text,
         token,
       );
-      logger.i("token: $token");
+      logger.i("Login dengan FCM token");
+      print("═══════════════════════════════════════════════════════════");
+      print("FCM TOKEN UNTUK LOGIN (LENGKAP):");
+      print(token);
+      print("═══════════════════════════════════════════════════════════");
       apiResponse = result;
 
       if (result.data != null) {

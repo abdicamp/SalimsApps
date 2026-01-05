@@ -181,13 +181,13 @@ class ApiService {
     }
   }
 
-  Future<ApiResponse<TaskListModels>?> getTaskList(String? filterDate) async {
+  Future<ApiResponse<TaskListModels>?> getTaskList(String? dateFrom, String? dateTo) async {
     try {
       final getData = await _storage.getUserData();
-
+      print("${baseUrl}/transaction/taking-sample/testing-order?labourcode=${getData?.data?.labourcode}&dateFrom=${dateFrom}&dateTo=${dateTo}&branchcode=${getData?.data?.branchcode}");
       final response = await http.get(
         Uri.parse(
-            "${baseUrl}/transaction/taking-sample/testing-order?branchcode=${getData?.data?.branchcode}&labourcode=${getData?.data?.labourcode}&rangedate=${filterDate}"),
+            "${baseUrl}/transaction/taking-sample/testing-order?labourcode=${getData?.data?.labourcode}&dateFrom=${dateFrom}&dateTo=${dateTo}&branchcode=${getData?.data?.branchcode}"),
         headers: {
           "Content-Type": "application/json",
           "Authorization": "Bearer ${getData?.accessToken}",

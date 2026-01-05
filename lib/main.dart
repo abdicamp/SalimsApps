@@ -256,8 +256,16 @@ class _MyAppState extends State<MyApp> {
         final apnsToken = await FirebaseMessaging.instance.getAPNSToken();
 
         if (apnsToken == null) {
+          print("═══════════════════════════════════════════════════════════");
+          print("APNS TOKEN: NULL (mungkin di simulator atau belum dikonfigurasi)");
+          print("═══════════════════════════════════════════════════════════");
           return;
         }
+        
+        print("═══════════════════════════════════════════════════════════");
+        print("APNS TOKEN (LENGKAP) - MAIN.DART:");
+        print(apnsToken);
+        print("═══════════════════════════════════════════════════════════");
       }
 
       // Get FCM token dengan retry untuk Android
@@ -269,8 +277,10 @@ class _MyAppState extends State<MyApp> {
         try {
           token = await FirebaseMessaging.instance.getToken();
           if (token != null) {
-            // Token bisa digunakan untuk dikirim ke server jika diperlukan
-            // Contoh: await sendTokenToServer(token);
+            print("═══════════════════════════════════════════════════════════");
+            print("FCM TOKEN (LENGKAP) - MAIN.DART:");
+            print(token);
+            print("═══════════════════════════════════════════════════════════");
             break;
           }
         } catch (e) {

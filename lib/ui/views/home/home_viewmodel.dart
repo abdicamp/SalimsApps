@@ -229,7 +229,7 @@ class HomeViewmodel extends FutureViewModel {
     final fromDateStr = dateFormat.format(fromDate);
     final toDateStr = dateFormat.format(toDate);
     final responseTaskList =
-        await apiService.getTaskList('${dateFilterController!.text ?? ''}');
+        await apiService.getTaskList(fromDateStr, toDateStr);
     final responseTaskListHistory =
         await apiService.getTaskListHistory('${fromDateStr} - ${toDateStr}');
     

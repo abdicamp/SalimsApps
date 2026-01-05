@@ -18,6 +18,7 @@ class HistoryViewmodel extends FutureViewModel {
   TextEditingController? tanggalCtrl = new TextEditingController();
   List<TestingOrder> listTaskHistory = [];
   List<TestingOrder> listTaskHistorySearch = [];
+  TextEditingController? searchCtrl = new TextEditingController();
   HistoryViewmodel({this.context});
 
 
@@ -27,12 +28,13 @@ class HistoryViewmodel extends FutureViewModel {
       firstDate: DateTime(2000),
       lastDate: DateTime(2100),
       initialDateRange: selectedRange,
-    );
+    );  print("newRange: $newRange");
 
     if (newRange != null) {
       selectedRange = newRange;
       tanggalCtrl!.text =
           '${_formatDate(selectedRange!.start)}-${_formatDate(selectedRange!.end)}';
+      print(tanggalCtrl?.text);
       getDataTaskHistory();
       notifyListeners();
     }
@@ -64,9 +66,10 @@ class HistoryViewmodel extends FutureViewModel {
   }
 
   getDataTaskHistory() async {
+    print(tanggalCtrl?.text);
     setBusy(true);
     try {
-      tanggalCtrl?.text = '${DateFormat('yyyy-MM-dd').format(DateTime.now())}-${DateFormat('yyyy-MM-dd').format(DateTime.now())}';
+      // tanggalCtrl?.text = '${DateFormat('yyyy-MM-dd').format(DateTime.now())}-${DateFormat('yyyy-MM-dd').format(DateTime.now())}';
       final response = await apiService.getTaskListHistory(tanggalCtrl?.text ?? '${DateFormat('yyyy-MM-dd').format(DateTime.now())}-${DateFormat('yyyy-MM-dd').format(DateTime.now())}');
       listTaskHistory = List.from(response!.data!.data ?? []);
       listTaskHistorySearch = List.from(response!.data!.data ?? []);

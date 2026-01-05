@@ -28,7 +28,9 @@ class _HistoryViewState extends State<HistoryView> {
               : context.read<GlobalLoadingState>().hide();
         });
         return GestureDetector(
-            onTap: () {},
+            onTap: () {
+              FocusScope.of(context).unfocus();
+            },
             child: Scaffold(
               backgroundColor: Colors.white,
               body: Column(
@@ -78,6 +80,12 @@ class _HistoryViewState extends State<HistoryView> {
                               onTap: () {
                                 vm.pickDateRange();
                               },
+                              onChanged: (value) {
+                                setState(() {
+                                  print("value: $value");
+                                  vm.tanggalCtrl?.text = value;
+                                });
+                              },
                               decoration: InputDecoration(
                                 hintText: AppLocalizations.of(context)?.date ?? "Date",
                                 hintStyle: TextStyle(
@@ -123,6 +131,7 @@ class _HistoryViewState extends State<HistoryView> {
                                   vm.onSearchTextChangedMyRequest(value);
                                 });
                               },
+                              controller: vm.searchCtrl,
                               decoration: InputDecoration(
                                 hintText: AppLocalizations.of(context)?.searchTaskHistory ?? "Search task history...",
                                 hintStyle: TextStyle(
@@ -133,6 +142,16 @@ class _HistoryViewState extends State<HistoryView> {
                                   Icons.search,
                                   color: Colors.grey.shade600,
                                 ),
+                                suffixIcon: IconButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        vm.searchCtrl?.text = '';
+                                        vm.onSearchTextChangedMyRequest('');
+                                        // vm.notifyListeners();
+                                      });
+                                    },
+                                    icon: Icon(Icons.clear)),
+
                                 filled: true,
                                 fillColor: Colors.grey.shade100,
                                 contentPadding: const EdgeInsets.symmetric(

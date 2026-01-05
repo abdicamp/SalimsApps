@@ -61,7 +61,9 @@ class _DetailTaskViewState extends State<DetailTaskView>
                 child: _buildSaveButton(vm),
               ),
               const SizedBox(width: 10),
-              if (vm.isConfirm == true)
+              if (vm.isConfirm == true &&
+                  vm.listTaskList?.tsnumber != null &&
+                  vm.listTaskList!.tsnumber != "")
                 Expanded(
                   flex: 2,
                   child: _buildConfirmButton(vm),

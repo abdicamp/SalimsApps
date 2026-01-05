@@ -154,19 +154,34 @@ class DetailTaskViewmodel extends FutureViewModel {
 
   /// Pick image dari gallery untuk sample biasa
   Future<void> pickImage() async {
-    final pickedFile = await ImagePicker().pickImage(
-      source: ImageSource.gallery,
-    );
+    try {
+      setBusy(true);
+      final pickedFile = await ImagePicker().pickImage(
+        source: ImageSource.gallery,
+      );
 
-    if (pickedFile != null) {
-      final newFile = File(pickedFile.path);
-      final alreadyExists = imageFiles.any((f) => f.path == newFile.path);
+      if (pickedFile != null) {
+        final newFile = File(pickedFile.path);
+        final alreadyExists = imageFiles.any((f) => f.path == newFile.path);
 
-      if (!alreadyExists) {
-        imageFiles.add(newFile);
-        validasiConfirm();
-        notifyListeners();
+        if (!alreadyExists) {
+          imageFiles.add(newFile);
+          validasiConfirm();
+          notifyListeners();
+        }
       }
+    } catch (e) {
+      logger.e('Error picking image', error: e);
+      if (context != null) {
+        ScaffoldMessenger.of(context!).showSnackBar(
+          SnackBar(
+            content: Text('Gagal mengambil gambar: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      setBusy(false);
     }
   }
 
@@ -174,29 +189,64 @@ class DetailTaskViewmodel extends FutureViewModel {
   Future<void> pickImageVerify() async {
     if (context == null) return;
 
-    final source = await _showImageSourceDialog();
-    if (source == null) return;
+    try {
+      final source = await _showImageSourceDialog();
+      if (source == null) return;
 
-    // Ambil lokasi jika dari camera dan belum ada
-    if (source == ImageSource.camera && (latlang == null || latlang!.isEmpty)) {
-      final success = await _requestLocationForCamera();
-      if (!success) return;
-    }
-
-    final pickedFile = await ImagePicker().pickImage(source: source);
-    if (pickedFile == null) return;
-
-    final processedFile = await _processImageFile(
-      File(pickedFile.path),
-      source,
-    );
-
-    if (!imageFilesVerify.any((f) => f.path == processedFile.path)) {
-      imageFilesVerify.add(processedFile);
-      if (latlang != null && latlang!.isNotEmpty) {
-        locationController?.text = latlang!;
+      // Ambil lokasi jika dari camera dan belum ada
+      if (source == ImageSource.camera && (latlang == null || latlang!.isEmpty)) {
+        final success = await _requestLocationForCamera();
+        if (!success) {
+          setBusy(false);
+          return;
+        }
+        // Pastikan geocoding selesai dan alamat sudah di-set
+        logger.i('Lokasi dan alamat sudah diambil sebelum mengambil foto');
+        logger.i('Alamat: $address');
+        logger.i('Nama jalan: $namaJalan');
+      } else if (source == ImageSource.camera && (address == null || address!.isEmpty || namaJalan == null || namaJalan!.isEmpty)) {
+        // Jika lokasi sudah ada tapi alamat belum, coba ambil alamat lagi
+        logger.i('Lokasi sudah ada tapi alamat belum, mencoba geocoding lagi...');
+        if (currentLocation != null) {
+          await _fetchAddressFromLocation();
+        }
       }
-      validasiConfirm();
+
+      setBusy(true);
+      notifyListeners();
+
+      final pickedFile = await ImagePicker().pickImage(source: source);
+      if (pickedFile == null) {
+        setBusy(false);
+        return;
+      }
+
+      // Proses gambar dengan geotag (ini yang lama)
+      final processedFile = await _processImageFile(
+        File(pickedFile.path),
+        source,
+      );
+
+      if (!imageFilesVerify.any((f) => f.path == processedFile.path)) {
+        imageFilesVerify.add(processedFile);
+        if (latlang != null && latlang!.isNotEmpty) {
+          locationController?.text = latlang!;
+        }
+        validasiConfirm();
+        notifyListeners();
+      }
+    } catch (e) {
+      logger.e('Error picking verify image', error: e);
+      if (context != null) {
+        ScaffoldMessenger.of(context!).showSnackBar(
+          SnackBar(
+            content: Text('Gagal memproses gambar: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      setBusy(false);
       notifyListeners();
     }
   }
@@ -258,6 +308,23 @@ class DetailTaskViewmodel extends FutureViewModel {
       await _fetchAddressFromLocation();
       _updateLocationController();
 
+      // Pastikan alamat sudah di-set setelah geocoding
+      logger.i('Setelah geocoding:');
+      logger.i('  - address: $address');
+      logger.i('  - namaJalan: $namaJalan');
+      logger.i('  - latlang: $latlang');
+
+      // Jika geocoding gagal, coba sekali lagi dengan delay
+      if ((address == null || address!.isEmpty || address == 'Location unavailable' || address!.startsWith('Location:')) &&
+          (namaJalan == null || namaJalan!.isEmpty || namaJalan == 'Location' || namaJalan == 'Location unavailable')) {
+        logger.w('Geocoding pertama gagal, mencoba sekali lagi...');
+        await Future.delayed(const Duration(seconds: 1));
+        await _fetchAddressFromLocation();
+        logger.i('Setelah retry geocoding:');
+        logger.i('  - address: $address');
+        logger.i('  - namaJalan: $namaJalan');
+      }
+
       setBusy(false);
       return true;
     } catch (e) {
@@ -291,35 +358,164 @@ class DetailTaskViewmodel extends FutureViewModel {
     longitude = '${currentLocation!.longitude}';
   }
 
-  /// Fetch address dari koordinat (reverse geocoding)
+  /// Fetch address dari koordinat (reverse geocoding) dengan retry
   Future<void> _fetchAddressFromLocation() async {
-    try {
-      final placemarks = await placemarkFromCoordinates(
-        currentLocation!.latitude,
-        currentLocation!.longitude,
-      );
+    int retryCount = 0;
+    const maxRetries = 3;
 
-      if (placemarks.isNotEmpty) {
-        final placemark = placemarks[0];
-        final safe = (String? val) => val ?? '';
+    while (retryCount < maxRetries) {
+      try {
+        logger.i('Memulai reverse geocoding (attempt ${retryCount + 1}/$maxRetries)...');
+        logger.i('Koordinat: ${currentLocation!.latitude}, ${currentLocation!.longitude}');
 
-        address = "${safe(placemark.street)}, ${safe(placemark.name)}, "
-            "${safe(placemark.subLocality)}, ${safe(placemark.postalCode)}, "
-            "${safe(placemark.locality)}, ${safe(placemark.subAdministrativeArea)}, "
-            "${safe(placemark.administrativeArea)}, ${safe(placemark.country)}";
-        namaJalan = safe(placemark.street);
-      } else {
-        _setDefaultAddress();
+        final placemarks = await placemarkFromCoordinates(
+          currentLocation!.latitude,
+          currentLocation!.longitude,
+        ).timeout(
+          const Duration(seconds: 15),
+          onTimeout: () {
+            logger.w('Geocoding timeout setelah 15 detik');
+            return <Placemark>[];
+          },
+        );
+
+        if (placemarks.isNotEmpty) {
+          final placemark = placemarks[0];
+          final safe = (String? val) => val ?? '';
+
+          // Buat alamat lengkap
+          final street = safe(placemark.street);
+          final name = safe(placemark.name);
+          final subLocality = safe(placemark.subLocality);
+          final locality = safe(placemark.locality);
+          final administrativeArea = safe(placemark.administrativeArea);
+          final country = safe(placemark.country);
+
+          // Buat alamat yang lebih informatif
+          List<String> addressParts = [];
+          if (street.isNotEmpty) addressParts.add(street);
+          if (name.isNotEmpty && name != street) addressParts.add(name);
+          if (subLocality.isNotEmpty) addressParts.add(subLocality);
+          if (locality.isNotEmpty) addressParts.add(locality);
+          if (administrativeArea.isNotEmpty) addressParts.add(administrativeArea);
+          if (country.isNotEmpty && country != 'Indonesia') addressParts.add(country);
+          
+          if (addressParts.isNotEmpty) {
+            address = addressParts.join(', ');
+            namaJalan = street.isNotEmpty
+                ? street
+                : (name.isNotEmpty
+                    ? name
+                    : (locality.isNotEmpty ? locality : 'Location'));
+
+            logger.i('✅ Alamat berhasil didapat: $address');
+            logger.i('✅ Nama jalan: $namaJalan');
+            return; // Berhasil, keluar dari loop
+          } else {
+            logger.w('Placemark ditemukan tapi tidak ada data alamat');
+          }
+        } else {
+          logger.w('Tidak ada placemark ditemukan');
+        }
+      } catch (e, stackTrace) {
+        logger.e('Error fetching address (attempt ${retryCount + 1}/$maxRetries)',
+            error: e, stackTrace: stackTrace);
       }
+
+      retryCount++;
+      if (retryCount < maxRetries) {
+        logger.i('Retry geocoding dalam 2 detik...');
+        await Future.delayed(const Duration(seconds: 2));
+      }
+    }
+
+    // Jika semua retry gagal, coba menggunakan OpenStreetMap Nominatim API
+    logger.w('Geocoding package gagal setelah $maxRetries attempts, mencoba OpenStreetMap API...');
+    try {
+      await _fetchAddressFromOpenStreetMap();
     } catch (e) {
+      logger.e('OpenStreetMap API juga gagal', error: e);
+      _setDefaultAddress();
+    }
+  }
+
+  /// Fetch address menggunakan OpenStreetMap Nominatim API (fallback)
+  Future<void> _fetchAddressFromOpenStreetMap() async {
+    try {
+      logger.i('Mencoba geocoding menggunakan OpenStreetMap Nominatim API...');
+      final lat = currentLocation!.latitude;
+      final lng = currentLocation!.longitude;
+
+      final url = Uri.parse(
+        'https://nominatim.openstreetmap.org/reverse?format=json&lat=$lat&lon=$lng&addressdetails=1',
+      );
+      
+      final response = await http.get(
+        url,
+        headers: {
+          'User-Agent': 'SalimsApps/1.0', // Required by Nominatim
+        },
+      ).timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final addressData = data['address'] as Map<String, dynamic>?;
+
+        if (addressData != null) {
+          final safe = (dynamic val) => val?.toString() ?? '';
+
+          // Ambil bagian alamat yang relevan
+          final road = safe(addressData['road']);
+          final houseNumber = safe(addressData['house_number']);
+          final suburb = safe(addressData['suburb']);
+          final city = safe(addressData['city'] ?? addressData['town'] ?? addressData['village']);
+          final state = safe(addressData['state']);
+          final country = safe(addressData['country']);
+          
+          // Buat alamat lengkap
+          List<String> addressParts = [];
+          if (houseNumber.isNotEmpty && road.isNotEmpty) {
+            addressParts.add('$houseNumber $road');
+          } else if (road.isNotEmpty) {
+            addressParts.add(road);
+          }
+          if (suburb.isNotEmpty) addressParts.add(suburb);
+          if (city.isNotEmpty) addressParts.add(city);
+          if (state.isNotEmpty) addressParts.add(state);
+          if (country.isNotEmpty && country != 'Indonesia') addressParts.add(country);
+          
+          if (addressParts.isNotEmpty) {
+            address = addressParts.join(', ');
+            namaJalan = road.isNotEmpty
+                ? road
+                : (city.isNotEmpty ? city : 'Location');
+
+            logger.i('✅ Alamat berhasil didapat dari OpenStreetMap: $address');
+            logger.i('✅ Nama jalan: $namaJalan');
+            return;
+          }
+        }
+      }
+
+      logger.w('OpenStreetMap API tidak mengembalikan alamat yang valid');
+      _setDefaultAddress();
+    } catch (e, stackTrace) {
+      logger.e('Error fetching address from OpenStreetMap', error: e, stackTrace: stackTrace);
       _setDefaultAddress();
     }
   }
 
   /// Set default address jika geocoding gagal
   void _setDefaultAddress() {
-    address = "Location: ${latlang}";
-    namaJalan = "Location";
+    logger.w('Geocoding gagal, menggunakan default address');
+    if (latlang != null && latlang!.isNotEmpty) {
+      // Jangan set namaJalan ke koordinat, biarkan null atau kosong
+      address = "Location: ${latlang}";
+      namaJalan = null; // Jangan set ke koordinat agar tidak muncul sebagai alamat
+    } else {
+      address = "Location unavailable";
+      namaJalan = null;
+    }
   }
 
   /// Update location controller dengan latlang
@@ -443,6 +639,7 @@ class DetailTaskViewmodel extends FutureViewModel {
     if (source == ImageSource.camera &&
         latlang != null &&
         latlang!.isNotEmpty) {
+      // Proses geotagging (ini yang memakan waktu)
       return await _addGeotagToImage(imageFile);
     }
     return imageFile;
@@ -484,23 +681,35 @@ class DetailTaskViewmodel extends FutureViewModel {
   /// Tambahkan geotag overlay ke gambar
   Future<File> _addGeotagToImage(File imageFile) async {
     try {
+      logger.i('Memulai proses geotagging gambar...');
       final imageBytes = await imageFile.readAsBytes();
       final image = img.decodeImage(imageBytes);
       if (image == null) return imageFile;
 
-      // Konfigurasi
-      const double textScale = 2.0;
+      logger.i('Gambar berhasil di-decode, ukuran: ${image.width}x${image.height}');
+
+      // Konfigurasi default
+      const double textScale = 5.5; // Scale untuk ukuran font teks
+      const double layoutScale = 2.0; // Scale untuk spacing, padding, margin
       final textData = _prepareTextData();
-      final overlayConfig = _calculateOverlayConfig(image, textScale);
+      final overlayConfig = _calculateOverlayConfig(image, textScale, layoutScale);
 
-      // Buat combined image
-      final combinedImage = _createCombinedImage(image, overlayConfig);
+      logger.i('Memproses overlay gambar...');
+      // Buat combined image (proses ini yang lama)
+      final combinedImage = await Future(() => _createCombinedImage(image, overlayConfig));
 
+      logger.i('Menambahkan text overlay...');
+      logger.i('Text data yang akan ditampilkan:');
+      logger.i('  - Address: ${textData['address']}');
+      logger.i('  - Geotag: ${textData['geotag']}');
       // Gambar teks overlay
-      _drawTextOverlay(combinedImage, textData, overlayConfig, textScale);
+      _drawTextOverlay(combinedImage, textData, overlayConfig, textScale, layoutScale);
 
+      logger.i('Menyimpan gambar yang sudah diproses...');
       // Simpan file
-      return await _saveProcessedImage(combinedImage, imageFile);
+      final savedFile = await _saveProcessedImage(combinedImage, imageFile);
+      logger.i('Gambar berhasil diproses dan disimpan');
+      return savedFile;
     } catch (e) {
       logger.e('Error adding geotag to image', error: e);
       return imageFile;
@@ -510,10 +719,56 @@ class DetailTaskViewmodel extends FutureViewModel {
   /// Prepare text data untuk overlay
   Map<String, String> _prepareTextData() {
     final now = DateTime.now();
+    
+    // Helper untuk cek apakah string adalah koordinat (format: "lat,lng")
+    bool isCoordinate(String? str) {
+      if (str == null || str.isEmpty) return false;
+      final parts = str.split(',');
+      if (parts.length != 2) return false;
+      final lat = double.tryParse(parts[0].trim());
+      final lng = double.tryParse(parts[1].trim());
+      // Cek apakah nilai masuk akal untuk koordinat (lat: -90 to 90, lng: -180 to 180)
+      return lat != null && lng != null && 
+             lat >= -90 && lat <= 90 && 
+             lng >= -180 && lng <= 180;
+    }
+    
+    // Pastikan alamat selalu ada nilai - JANGAN gunakan koordinat sebagai alamat
+    String addressText = 'No address';
+    
+    logger.i('Mempersiapkan text data untuk overlay...');
+    logger.i('address: $address');
+    logger.i('namaJalan: $namaJalan');
+    logger.i('latlang: $latlang');
+    
+    // Prioritas 1: Alamat lengkap (bukan koordinat, bukan "Location:")
+    if (address != null && 
+        address!.isNotEmpty && 
+        address! != 'Location unavailable' && 
+        !address!.startsWith('Location:') &&
+        !isCoordinate(address)) {
+      addressText = address!;
+      logger.i('✅ Menggunakan alamat lengkap: $addressText');
+    } 
+    // Prioritas 2: Nama jalan (bukan koordinat, bukan "Location")
+    else if (namaJalan != null && 
+             namaJalan!.isNotEmpty && 
+             namaJalan! != 'Location' && 
+             namaJalan! != 'Location unavailable' &&
+             !isCoordinate(namaJalan)) {
+      addressText = namaJalan!;
+      logger.i('✅ Menggunakan nama jalan: $addressText');
+    } 
+    // JANGAN gunakan koordinat sebagai alamat - biarkan "No address"
+    else {
+      logger.w('⚠️ Geocoding gagal, tidak ada alamat yang valid. Menggunakan "No address"');
+      addressText = 'No address';
+    }
+    
     return {
       'dateTime': DateFormat('dd MMM yyyy HH.mm.ss').format(now),
       'geotag': latlang ?? 'No location',
-      'address': namaJalan ?? address ?? 'No address',
+      'address': addressText,
     };
   }
 
@@ -521,11 +776,12 @@ class DetailTaskViewmodel extends FutureViewModel {
   Map<String, dynamic> _calculateOverlayConfig(
     img.Image image,
     double textScale,
+    double layoutScale,
   ) {
     final overlayHeight = (image.height * 0.6).round().clamp(300, 700);
-    final lineSpacing = (120 * textScale).round();
+    final lineSpacing = (35 * layoutScale).round();
     final overlayStartY = image.height - overlayHeight;
-    final textX = (80 * textScale).round();
+    final textX = (10 * layoutScale).round();
 
     return {
       'overlayHeight': overlayHeight,
@@ -535,82 +791,94 @@ class DetailTaskViewmodel extends FutureViewModel {
     };
   }
 
-  /// Create combined image dengan overlay background
+  /// Create combined image tanpa overlay background gelap
   img.Image _createCombinedImage(
     img.Image image,
     Map<String, dynamic> config,
   ) {
+    // Copy gambar asli tanpa overlay gelap
     final combinedImage = img.Image(
       width: image.width,
       height: image.height,
     );
 
-    // Copy gambar asli
+    // Copy semua pixel dari gambar asli
     for (int y = 0; y < image.height; y++) {
       for (int x = 0; x < image.width; x++) {
         combinedImage.setPixel(x, y, image.getPixel(x, y));
       }
     }
 
-    // Apply overlay background
-    final overlayStartY = config['overlayStartY'] as int;
-
-    for (int y = overlayStartY; y < image.height; y++) {
-      for (int x = 0; x < image.width; x++) {
-        final pixel = combinedImage.getPixel(x, y);
-        combinedImage.setPixel(
-          x,
-          y,
-          img.ColorRgb8(
-            (pixel.r * 0.3).round(),
-            (pixel.g * 0.3).round(),
-            (pixel.b * 0.3).round(),
-          ),
-        );
-      }
-    }
-
     return combinedImage;
   }
 
-  /// Draw text overlay pada image
+  /// Draw text overlay pada image dengan satu background box hitam di pojok kiri bawah
   void _drawTextOverlay(
     img.Image combinedImage,
     Map<String, String> textData,
     Map<String, dynamic> config,
     double textScale,
+    double layoutScale,
   ) {
-    final overlayStartY = config['overlayStartY'] as int;
-    final overlayHeight = config['overlayHeight'] as int;
+    final imageHeight = combinedImage.height;
+    final imageWidth = combinedImage.width;
     final lineSpacing = config['lineSpacing'] as int;
-    final textX = config['textX'] as int;
 
-    final dateTimeY = overlayStartY + (overlayHeight ~/ 4);
-    final geotagY = dateTimeY + lineSpacing;
-    final addressY = geotagY + lineSpacing;
+    // Positioning di pojok kiri bawah dengan margin minimal
+    final textX = (10 * layoutScale).round();
+    final bottomMargin = (5 * layoutScale).round();
+    final addressY = imageHeight - bottomMargin;
+    final geotagY = addressY - lineSpacing;
 
-    final offsets = _calculateOutlineOffsets(textScale);
+    // Hitung ukuran box untuk semua teks
+    final font = img.arial48;
+    final textHeight = (48 * textScale).round();
+    final padding = (12 * layoutScale).round();
 
+    // Hitung lebar teks untuk setiap baris
+    final geotagWidth = _calculateTextWidth(textData['geotag']!, font, textScale);
+    final addressWidth = _calculateTextWidth(textData['address']!, font, textScale);
+
+    // Ambil lebar terpanjang
+    final maxTextWidth = geotagWidth > addressWidth ? geotagWidth : addressWidth;
+
+    // Ukuran box disesuaikan dengan teks + padding
+    final boxWidth = maxTextWidth + (padding * 2);
+    final boxHeight = lineSpacing + textHeight + padding;
+    final boxX = textX - padding;
+    final boxY = geotagY - textHeight - (padding ~/ 2);
+
+    // Draw background box hitam transparan (50% opacity)
+    for (int by = boxY; by < boxY + boxHeight && by < imageHeight; by++) {
+      if (by < 0) continue;
+      for (int bx = boxX; bx < boxX + boxWidth && bx < imageWidth; bx++) {
+        if (bx < 0) continue;
+        final originalPixel = combinedImage.getPixel(bx, by);
+        combinedImage.setPixel(
+          bx,
+          by,
+          img.ColorRgb8(
+            ((originalPixel.r * 0.5) + (0 * 0.5)).round(),
+            ((originalPixel.g * 0.5) + (0 * 0.5)).round(),
+            ((originalPixel.b * 0.5) + (0 * 0.5)).round(),
+          ),
+        );
+      }
+    }
+
+    // Draw teks (address di baris pertama, geotag di baris kedua)
+    final textOffsetY = (30 * layoutScale).round();
     _drawText(
       combinedImage,
-      textData['dateTime']!,
+      textData['address']!,
       textX,
-      dateTimeY,
-      offsets,
+      geotagY - textOffsetY,
     );
     _drawText(
       combinedImage,
       textData['geotag']!,
       textX,
-      geotagY,
-      offsets,
-    );
-    _drawText(
-      combinedImage,
-      textData['address']!,
-      textX,
-      addressY,
-      offsets,
+      addressY - textOffsetY,
     );
   }
 
@@ -629,31 +897,25 @@ class DetailTaskViewmodel extends FutureViewModel {
     ];
   }
 
-  /// Draw text dengan outline
+  /// Calculate text width berdasarkan font dan scale
+  int _calculateTextWidth(String text, img.BitmapFont font, double textScale) {
+    // Arial48 memiliki karakter width sekitar 26 pixel per karakter
+    final avgCharWidth = 26.0;
+    return (text.length * avgCharWidth * textScale).round();
+  }
+
+  /// Draw text tanpa outline
   void _drawText(
     img.Image image,
     String text,
     int x,
     int y,
-    List<List<int>> offsets,
   ) {
-    // Draw outline hitam
-    for (var offset in offsets) {
-      img.drawString(
-        image,
-        text,
-        font: img.arial48,
-        x: x + offset[0],
-        y: y + offset[1],
-        color: img.ColorRgb8(0, 0, 0),
-      );
-    }
-
-    // Draw teks putih
+    final font = img.arial48;
     img.drawString(
       image,
       text,
-      font: img.arial48,
+      font: font,
       x: x,
       y: y,
       color: img.ColorRgb8(255, 255, 255),
@@ -889,12 +1151,52 @@ class DetailTaskViewmodel extends FutureViewModel {
 
   /// Convert image file ke base64
   Future<String> convertImageToBase64(File imageFile) async {
-    final bytes = await imageFile.readAsBytes();
-    final base64String = base64Encode(bytes);
-    final ext = imageFile.path.split('.').last.toLowerCase();
+    try {
+      final bytes = await imageFile.readAsBytes();
+      
+      // Decode image untuk kompresi
+      final originalImage = img.decodeImage(bytes);
+      if (originalImage == null) {
+        // Jika decode gagal, gunakan original
+        final base64String = base64Encode(bytes);
+        final ext = imageFile.path.split('.').last.toLowerCase();
+        final mimeType = _getMimeType(ext);
+        return 'data:$mimeType;base64,$base64String';
+      }
 
-    final mimeType = _getMimeType(ext);
-    return 'data:$mimeType;base64,$base64String';
+      // Resize jika terlalu besar (max 1920x1920)
+      img.Image processedImage = originalImage;
+      if (originalImage.width > 1920 || originalImage.height > 1920) {
+        processedImage = img.copyResize(
+          originalImage,
+          width: originalImage.width > originalImage.height ? 1920 : null,
+          height: originalImage.height > originalImage.width ? 1920 : null,
+          interpolation: img.Interpolation.linear,
+        );
+      }
+
+      // Encode dengan kualitas 85% untuk mengurangi ukuran
+      final ext = imageFile.path.split('.').last.toLowerCase();
+      final mimeType = _getMimeType(ext);
+      List<int> encodedBytes;
+
+      if (mimeType == 'image/png') {
+        encodedBytes = img.encodePng(processedImage);
+      } else {
+        encodedBytes = img.encodeJpg(processedImage, quality: 85);
+      }
+
+      final base64String = base64Encode(encodedBytes);
+      return 'data:$mimeType;base64,$base64String';
+    } catch (e) {
+      logger.e('Error converting image to base64', error: e);
+      // Fallback ke original jika error
+      final bytes = await imageFile.readAsBytes();
+      final base64String = base64Encode(bytes);
+      final ext = imageFile.path.split('.').last.toLowerCase();
+      final mimeType = _getMimeType(ext);
+      return 'data:$mimeType;base64,$base64String';
+    }
   }
 
   /// Convert image URL ke base64
@@ -903,7 +1205,30 @@ class DetailTaskViewmodel extends FutureViewModel {
       final response = await http.get(Uri.parse(imageUrl));
 
       if (response.statusCode == 200) {
-        final base64Image = base64Encode(response.bodyBytes);
+        final bytes = response.bodyBytes;
+        
+        // Decode image untuk kompresi
+        final originalImage = img.decodeImage(bytes);
+        if (originalImage == null) {
+          // Jika decode gagal, gunakan original
+          final base64Image = base64Encode(bytes);
+          return "data:image/jpeg;base64,$base64Image";
+        }
+
+        // Resize jika terlalu besar (max 1920x1920)
+        img.Image processedImage = originalImage;
+        if (originalImage.width > 1920 || originalImage.height > 1920) {
+          processedImage = img.copyResize(
+            originalImage,
+            width: originalImage.width > originalImage.height ? 1920 : null,
+            height: originalImage.height > originalImage.width ? 1920 : null,
+            interpolation: img.Interpolation.linear,
+          );
+        }
+
+        // Encode dengan kualitas 85% untuk mengurangi ukuran
+        final encodedBytes = img.encodeJpg(processedImage, quality: 85);
+        final base64Image = base64Encode(encodedBytes);
         return "data:image/jpeg;base64,$base64Image";
       } else {
         throw Exception('Gagal mengambil gambar: ${response.statusCode}');
@@ -1174,11 +1499,23 @@ class DetailTaskViewmodel extends FutureViewModel {
 
     // Validasi gambar
     if (isNewTask) {
+      // Task baru: harus ada gambar baru
       if (imageFiles.isEmpty || imageFilesVerify.isEmpty) {
         return false;
       }
     } else {
-      if (imageString.isEmpty || imageStringVerifiy.isEmpty) {
+      // Task existing: harus ada minimal gambar (baru atau bawaan)
+      // Cek gambar sample biasa: imageFiles, imageString, atau imageOldString
+      final hasSampleImage = imageFiles.isNotEmpty ||
+          imageString.isNotEmpty ||
+          imageOldString.isNotEmpty;
+      
+      // Cek gambar verifikasi: imageFilesVerify, imageStringVerifiy, atau imageOldStringVerifiy
+      final hasVerifyImage = imageFilesVerify.isNotEmpty ||
+          imageStringVerifiy.isNotEmpty ||
+          imageOldStringVerifiy.isNotEmpty;
+      
+      if (!hasSampleImage || !hasVerifyImage) {
         return false;
       }
     }
@@ -1301,11 +1638,18 @@ class DetailTaskViewmodel extends FutureViewModel {
               "Gambar tidak boleh kosong";
         }
       } else {
-        if (imageString.isEmpty || imageStringVerifiy.isEmpty) {
-          if (imageFiles.isEmpty || imageFilesVerify.isEmpty) {
-            return AppLocalizations.of(context!)?.imageCannotBeEmpty ??
-                "Gambar tidak boleh kosong";
-          }
+        // Task existing: harus ada minimal gambar (baru atau bawaan)
+        final hasSampleImage = imageFiles.isNotEmpty ||
+            imageString.isNotEmpty ||
+            imageOldString.isNotEmpty;
+        
+        final hasVerifyImage = imageFilesVerify.isNotEmpty ||
+            imageStringVerifiy.isNotEmpty ||
+            imageOldStringVerifiy.isNotEmpty;
+        
+        if (!hasSampleImage || !hasVerifyImage) {
+          return AppLocalizations.of(context!)?.imageCannotBeEmpty ??
+              "Gambar tidak boleh kosong";
         }
       }
     }
@@ -1464,48 +1808,48 @@ class DetailTaskViewmodel extends FutureViewModel {
 
   /// Prepare image base64 list untuk sample biasa
   Future<List<String>> _prepareImageBase64List() async {
-    final List<String> imageBase64List = [];
+    final List<Future<String>> futures = [];
 
-    // Convert file images
+    // Convert file images secara parallel
     for (var file in imageFiles) {
-      final base64Str = await convertImageToBase64(file);
-      imageBase64List.add(base64Str);
+      futures.add(convertImageToBase64(file));
     }
 
-    // Convert URL images
+    // Convert URL images secara parallel
     if (imageString.isNotEmpty) {
       for (var url in imageString) {
-        final base64Str = await convertImageUrlToBase64(url);
-        if (base64Str.isNotEmpty) {
-          imageBase64List.add(base64Str);
-        }
+        futures.add(convertImageUrlToBase64(url).then((str) => str.isEmpty ? '' : str));
       }
     }
 
-    return imageBase64List;
+    // Wait semua proses selesai secara parallel
+    final results = await Future.wait(futures);
+    
+    // Filter out empty strings
+    return results.where((str) => str.isNotEmpty).toList();
   }
 
   /// Prepare image base64 list untuk verifikasi
   Future<List<String>> _prepareImageBase64ListVerify() async {
-    final List<String> imageBase64ListVerify = [];
+    final List<Future<String>> futures = [];
 
-    // Convert file images
+    // Convert file images secara parallel
     for (var file in imageFilesVerify) {
-      final base64Str = await convertImageToBase64(file);
-      imageBase64ListVerify.add(base64Str);
+      futures.add(convertImageToBase64(file));
     }
 
-    // Convert URL images
+    // Convert URL images secara parallel
     if (imageStringVerifiy.isNotEmpty) {
       for (var url in imageStringVerifiy) {
-        final base64Str = await convertImageUrlToBase64(url);
-        if (base64Str.isNotEmpty) {
-          imageBase64ListVerify.add(base64Str);
-        }
+        futures.add(convertImageUrlToBase64(url).then((str) => str.isEmpty ? '' : str));
       }
     }
 
-    return imageBase64ListVerify;
+    // Wait semua proses selesai secara parallel
+    final results = await Future.wait(futures);
+    
+    // Filter out empty strings
+    return results.where((str) => str.isNotEmpty).toList();
   }
 
   /// Build SampleDetail data untuk POST
