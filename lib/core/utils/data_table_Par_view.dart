@@ -40,6 +40,7 @@ class DataTableParView extends StatelessWidget {
         headingRowColor: MaterialStateProperty.all(Colors.white),
         columns: const [
           DataColumn(label: Text('Parameter')),
+          DataColumn(label: Text('Parameter Equipment')),
           DataColumn(label: Text('Institur Result')),
           DataColumn(label: Text('Description')),
           DataColumn(label: Text('Is Calibration')),
@@ -68,6 +69,7 @@ class DataTablePar extends DataTableSource {
       color: MaterialStateProperty.all(Colors.grey[100]),
       cells: [
         DataCell(Text('${eq.parname}')),
+        DataCell(Text('${eq.equipmentname}')),
         DataCell(Text('${eq.insituresult}')),
         DataCell(Text('${eq.description}')),
         DataCell(Text('${eq.iscalibration}')),

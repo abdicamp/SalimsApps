@@ -140,6 +140,8 @@ class TakingSampleParameter {
   dynamic detailno;
   final String parcode;
   final String parname;
+  final String equipmentcode;
+  final String equipmentname;
   final bool iscalibration;
   final String insituresult;
   final String description;
@@ -149,6 +151,8 @@ class TakingSampleParameter {
     this.detailno,
     required this.parcode,
     required this.parname,
+    required this.equipmentcode,
+    required this.equipmentname,
     required this.iscalibration,
     required this.insituresult,
     required this.description,
@@ -160,6 +164,8 @@ class TakingSampleParameter {
       detailno: json['detailno'] ?? '',
       parcode: json['parcode'] ?? '',
       parname: json['parname'] ?? '',
+      equipmentcode: json['equipmentcode'] ?? '',
+      equipmentname: json['equipmentname'] ?? '',
       iscalibration: json['iscalibration'] ?? false,
       insituresult: json['insituresult'] ?? '',
       description: json['description'] ?? '',
@@ -172,6 +178,8 @@ class TakingSampleParameter {
       'detailno': detailno,
       'parcode': parcode,
       'parname': parname,
+      'equipmentcode': equipmentcode,
+      'equipmentname': equipmentname,
       'iscalibration': iscalibration,
       'insituresult': insituresult,
       'description': description,

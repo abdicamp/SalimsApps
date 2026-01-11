@@ -47,29 +47,14 @@ class _DetailTaskViewState extends State<DetailTaskView>
     super.dispose();
   }
 
-  /// Build bottom navigation bar dengan tombol Save dan Confirm
+  /// Build bottom navigation bar dengan tombol Save
   Widget _buildBottomNavigationBar(DetailTaskViewmodel vm) {
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: SizedBox(
           height: 50,
-          child: Row(
-            children: [
-              Expanded(
-                flex: 2,
-                child: _buildSaveButton(vm),
-              ),
-              const SizedBox(width: 10),
-              if (vm.isConfirm == true &&
-                  vm.listTaskList?.tsnumber != null &&
-                  vm.listTaskList!.tsnumber != "")
-                Expanded(
-                  flex: 2,
-                  child: _buildConfirmButton(vm),
-                ),
-            ],
-          ),
+          child: _buildSaveButton(vm),
         ),
       ),
     );
@@ -97,27 +82,6 @@ class _DetailTaskViewState extends State<DetailTaskView>
     );
   }
 
-  /// Build Confirm button
-  Widget _buildConfirmButton(DetailTaskViewmodel vm) {
-    return ElevatedButton(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.green.shade800,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        elevation: 4,
-      ),
-      onPressed: () => vm.confirm(),
-      child: const Text(
-        "Confirm",
-        style: TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.bold,
-          color: Colors.white,
-        ),
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {

@@ -147,7 +147,8 @@ class AppLocalizations {
   String get volumeUOM => _localizedValues[locale.languageCode]?['volumeUOM'] ?? 'Volume UOM';
   String get instituResult => _localizedValues[locale.languageCode]?['instituResult'] ?? 'Institu Result';
   String get description => _localizedValues[locale.languageCode]?['description'] ?? 'Description';
-  String get geotag => _localizedValues[locale.languageCode]?['geotag'] ?? 'Geotag';
+  String get geotag => _localizedValues[locale.languageCode]?['geotag'] ?? 'Lokasi Saat ini';
+  String get geotagSampling => _localizedValues[locale.languageCode]?['geotagSampling'] ?? 'Lokasi Sampling';
   String get address => _localizedValues[locale.languageCode]?['address'] ?? 'Address';
   String get weather => _localizedValues[locale.languageCode]?['weather'] ?? 'Weather';
   String get windDirection => _localizedValues[locale.languageCode]?['windDirection'] ?? 'Wind Direction';
@@ -245,8 +246,8 @@ class AppLocalizations {
       'users': 'pengguna',
       'confirmDialog': 'Konfirmasi',
       'confirmChangeLocation': 'Apakah kamu yakin ingin mengubah lokasi nya ?',
-      'attachment': 'Lampiran',
-      'attachmentVerify': 'Lampiran Verifikasi',
+      'attachment': 'Dokumentasi Sampling',
+      'attachmentVerify': 'GPS Verifikasi',
       'conUOM': 'Con UOM',
       'volUOM': 'Vol UOM',
       'isCalibration': 'Apakah Kalibrasi',
@@ -259,7 +260,8 @@ class AppLocalizations {
       'volumeUOM': 'Volume UOM',
       'instituResult': 'Hasil Institu',
       'description': 'Deskripsi',
-      'geotag': 'Geotag',
+      'geotag': 'Lokasi Saat ini',
+      'geotagSampling': 'Lokasi Sampling',
       'address': 'Alamat',
       'weather': 'Cuaca',
       'windDirection': 'Arah Angin',
@@ -365,7 +367,8 @@ class AppLocalizations {
       'volumeUOM': 'Volume UOM',
       'instituResult': 'Institu Result',
       'description': 'Description',
-      'geotag': 'Geotag',
+      'geotag': 'Current Location',
+      'geotagSampling': 'Sampling Location',
       'address': 'Address',
       'weather': 'Weather',
       'windDirection': 'Wind Direction',

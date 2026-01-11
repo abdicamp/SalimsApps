@@ -34,74 +34,74 @@ class _TaskListViewState extends State<TaskListView> {
           },
           child: Scaffold(
             backgroundColor: Colors.white,
-            body: RefreshIndicator(
-              onRefresh: () async {
-               await vm.getListTask();
-              },
-              child: Column(
-                children: [
-                  Expanded(
-                    flex: 2,
-                    child: Stack(
-                      children: [
-                        ClipPath(
-                          clipper: BottomRoundedClipper(),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                colors: [
-                                  AppColors.skyBlue,
-                                  AppColors.limeLight,
-                                ],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ),
+            body: Column(
+              children: [
+                Expanded(
+                  flex: 2,
+                  child: Stack(
+                    children: [
+                      ClipPath(
+                        clipper: BottomRoundedClipper(),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [
+                                AppColors.skyBlue,
+                                AppColors.limeLight,
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
                             ),
-
-                            child: Center(
-                              child: Text(
-                                AppLocalizations.of(context)?.listTask ?? "List Task",
-                                style: GoogleFonts.lato(
-                                  color: Colors.white,
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                          ),
+                          child: Center(
+                            child: Text(
+                              AppLocalizations.of(context)?.listTask ?? "List Task",
+                              style: GoogleFonts.lato(
+                                color: Colors.white,
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
                           ),
                         ),
-                        Positioned(
-                          right: 16,
-                          top: 0,
-                          bottom: 0,
-                          child: GestureDetector(
-                            onTap: () async {
-                              await vm.getListTask();
-                            },
-                            child: Center(
-                              child: Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.2),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: Icon(
-                                  Icons.refresh,
-                                  color: Colors.white,
-                                  size: 24,
-                                ),
+                      ),
+                      Positioned(
+                        right: 16,
+                        top: 0,
+                        bottom: 0,
+                        child: GestureDetector(
+                          onTap: () async {
+                            await vm.getListTask();
+                          },
+                          child: Center(
+                            child: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.2),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                Icons.refresh,
+                                color: Colors.white,
+                                size: 24,
                               ),
                             ),
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                  Expanded(
-                    flex: 10,
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: SingleChildScrollView(
+                ),
+                Expanded(
+                  flex: 10,
+                  child: RefreshIndicator(
+                    onRefresh: () async {
+                      await vm.getListTask();
+                    },
+                    child: SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
                         child: Column(
                           children: [
                             TextField(
@@ -110,7 +110,6 @@ class _TaskListViewState extends State<TaskListView> {
                               onTap: () {
                                 vm.pickDateRange();
                               },
-
                               decoration: InputDecoration(
                                 hintText: AppLocalizations.of(context)?.date ?? "Date",
                                 hintStyle: TextStyle(
@@ -134,13 +133,13 @@ class _TaskListViewState extends State<TaskListView> {
                                   ),
                                 ),
                                 suffixIcon: IconButton(
-                                    onPressed: () {
-                                      setState(() {
-                                        vm.getDate();
-
-                                      });
-                                    },
-                                    icon: Icon(Icons.clear)),
+                                  onPressed: () {
+                                    setState(() {
+                                      vm.getDate();
+                                    });
+                                  },
+                                  icon: Icon(Icons.clear),
+                                ),
                                 focusedBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(20),
                                   borderSide: BorderSide(
@@ -189,7 +188,6 @@ class _TaskListViewState extends State<TaskListView> {
                               ),
                             ),
                             SizedBox(height: 15),
-                            
                             ListView.builder(
                               shrinkWrap: true,
                               physics: const NeverScrollableScrollPhysics(),
@@ -201,14 +199,14 @@ class _TaskListViewState extends State<TaskListView> {
                                   listData: vm.listTask[index],
                                 );
                               },
-                            )
+                            ),
                           ],
                         ),
                       ),
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         );

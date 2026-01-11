@@ -24,8 +24,6 @@ class _CardTaskInfoState extends State<CardTaskInfo> {
 
     try {
       await widget.vm!.setLocationName();
-      // Validasi confirm setelah update lokasi
-      widget.vm!.validasiConfirm();
     } catch (e) {
       // Error sudah di-handle di ViewModel
     }
@@ -382,8 +380,6 @@ class _CardTaskInfoState extends State<CardTaskInfo> {
                                                                     .imageString
                                                                     .removeAt(
                                                                         index);
-                                                                widget.vm!
-                                                                    .validasiConfirm();
                                                               });
                                                             },
                                                             child:
@@ -480,8 +476,6 @@ class _CardTaskInfoState extends State<CardTaskInfo> {
                                                                   .imageFiles
                                                                   .removeAt(
                                                                       fileIndex);
-                                                              widget.vm!
-                                                                  .validasiConfirm();
                                                             });
                                                           },
                                                           child:
@@ -507,48 +501,7 @@ class _CardTaskInfoState extends State<CardTaskInfo> {
                                     ),
                             ),
                             SizedBox(height: 15),
-                            Row(
-                              children: [
-                                // TextField Geotag
-                                Expanded(
-                                  flex: 5,
-                                  child: CustomTextField(
-                                    readOnly: true,
-                                    controller: widget.vm!.locationController!,
-                                    label:
-                                        AppLocalizations.of(context)?.geotag ??
-                                            'Geotag',
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                // Tombol kotak untuk cek lokasi
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 25),
-                                  child: Container(
-                                    height:
-                                        50, // samakan tinggi dengan TextField
-                                    width: 55,
-                                    decoration: BoxDecoration(
-                                      border: Border.all(
-                                          color: Colors.grey, width: 1),
-                                      borderRadius: BorderRadius.circular(10),
-                                      color: Colors.white,
-                                    ),
-                                    child: IconButton(
-                                      icon: const Icon(Icons.location_searching,
-                                          color: Colors.black),
-                                      onPressed: () {
-                                        if (widget.isDetailhistory! == false) {
-                                          _getCurrentLocation();
-                                        }
-                                      },
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: 15),
-                            Container(
+                             Container(
                               width: MediaQuery.of(context).size.width,
                               child: (widget.vm!.imageFilesVerify.isEmpty &&
                                       widget.vm!.imageStringVerifiy.isEmpty)
@@ -754,8 +707,6 @@ class _CardTaskInfoState extends State<CardTaskInfo> {
                                                                     .imageStringVerifiy
                                                                     .removeAt(
                                                                         index);
-                                                                widget.vm!
-                                                                    .validasiConfirm();
                                                               });
                                                             },
                                                             child:
@@ -851,8 +802,6 @@ class _CardTaskInfoState extends State<CardTaskInfo> {
                                                                   .imageFilesVerify
                                                                   .removeAt(
                                                                       fileIndex);
-                                                              widget.vm!
-                                                                  .validasiConfirm();
                                                             });
                                                           },
                                                           child:
@@ -877,6 +826,42 @@ class _CardTaskInfoState extends State<CardTaskInfo> {
                                       },
                                     ),
                             ),
+                            SizedBox(height: 15),
+                            Row(
+                              children: [
+                                // TextField Geotag
+                                Expanded(
+                                  flex: 5,
+                                  child: CustomTextField(
+                                    readOnly: true,
+                                    controller: widget.vm!.locationSamplingController!,
+                                    label:
+                                        AppLocalizations.of(context)?.geotagSampling ??
+                                            'Lokasi Sampling',
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                             
+                              ],
+                            ),
+                            SizedBox(height: 15),
+                            Row(
+                              children: [
+                                // TextField Geotag
+                                Expanded(
+                                  flex: 5,
+                                  child: CustomTextField(
+                                    readOnly: true,
+                                    controller: widget.vm!.locationCurrentController!,
+                                    label:
+                                        AppLocalizations.of(context)?.geotag ??
+                                            'Geotag',
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                             
+                              ],
+                            ),
                             SizedBox(height: 5),
                             CustomTextField(
                               readOnly: widget.isDetailhistory!,
@@ -895,7 +880,6 @@ class _CardTaskInfoState extends State<CardTaskInfo> {
                                 setState(() {
                                   // Trigger rebuild untuk re-validate dan hilangkan error
                                   widget.vm!.formKey1.currentState?.validate();
-                                  widget.vm!.validasiConfirm();
                                 });
                               },
                             ),
@@ -918,7 +902,6 @@ class _CardTaskInfoState extends State<CardTaskInfo> {
                                 setState(() {
                                   // Trigger rebuild untuk re-validate dan hilangkan error
                                   widget.vm!.formKey1.currentState?.validate();
-                                  widget.vm!.validasiConfirm();
                                 });
                               },
                             ),
@@ -940,7 +923,6 @@ class _CardTaskInfoState extends State<CardTaskInfo> {
                                 setState(() {
                                   // Trigger rebuild untuk re-validate dan hilangkan error
                                   widget.vm!.formKey1.currentState?.validate();
-                                  widget.vm!.validasiConfirm();
                                 });
                               },
                             ),

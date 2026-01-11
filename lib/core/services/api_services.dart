@@ -18,7 +18,8 @@ import '../models/testing_order_history_models.dart';
 import '../models/notification_models.dart';
 
 class ApiService {
-  final String baseUrl = "https://lims.pdam-sby.go.id/v1";
+  // final String baseUrl = "https://lims.pdam-sby.go.id/v1";
+  final String baseUrl = "https://api-salims.chemitechlogilab.com/v1";
   final LocalStorageService _storage = LocalStorageService();
   var logger = Logger(
     printer: PrettyPrinter(
@@ -145,10 +146,13 @@ class ApiService {
           "token_fcm": "${token}"
         }),
       );
+      print("token fcmm : ${token}");
+      print("json data login : ${response.body}");
 
       // Parse response body terlepas dari HTTP status code
       try {
         final data = jsonDecode(response.body);
+
         final loginResponse = LoginResponse.fromJson(data);
 
         // Cek status dari JSON response body
@@ -181,10 +185,12 @@ class ApiService {
     }
   }
 
-  Future<ApiResponse<TaskListModels>?> getTaskList(String? dateFrom, String? dateTo) async {
+  Future<ApiResponse<TaskListModels>?> getTaskList(
+      String? dateFrom, String? dateTo) async {
     try {
       final getData = await _storage.getUserData();
-      print("${baseUrl}/transaction/taking-sample/testing-order?labourcode=${getData?.data?.labourcode}&dateFrom=${dateFrom}&dateTo=${dateTo}&branchcode=${getData?.data?.branchcode}");
+      print(
+          "${baseUrl}/transaction/taking-sample/testing-order?labourcode=${getData?.data?.labourcode}&dateFrom=${dateFrom}&dateTo=${dateTo}&branchcode=${getData?.data?.branchcode}");
       final response = await http.get(
         Uri.parse(
             "${baseUrl}/transaction/taking-sample/testing-order?labourcode=${getData?.data?.labourcode}&dateFrom=${dateFrom}&dateTo=${dateTo}&branchcode=${getData?.data?.branchcode}"),
@@ -199,6 +205,7 @@ class ApiService {
       if (isTokenExpired) {
         return ApiResponse.error("Session expired. Please login again.");
       }
+      print("response: ${response.body}");
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         // Cek status dari JSON response body
@@ -686,4 +693,52 @@ class ApiService {
       return ApiResponse.error("Unexpected Error: $e");
     }
   }
+
+  Future<ApiResponse<dynamic>> logout() async {
+    try {
+      final getData = await _storage.getUserData();
+
+      if (getData == null || getData.data == null) {
+        return ApiResponse.error("User data not found");
+      }
+
+      final username = getData.data?.username;
+
+      if (username == null || username.isEmpty) {
+        return ApiResponse.error("Username not found");
+      }
+
+      final request = http.MultipartRequest(
+        'POST',
+        Uri.parse("$baseUrl/auth/logout"),
+      );
+
+      request.headers['Authorization'] = 'Bearer ${getData.accessToken}';
+      request.fields['username'] = username;
+
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+
+      if (response.statusCode == 200) {
+        try {
+          final data = jsonDecode(response.body);
+          return ApiResponse.success(data);
+        } catch (e) {
+          return ApiResponse.success({"message": "Logout successful"});
+        }
+      } else {
+        try {
+          final data = jsonDecode(response.body);
+          final errorMessage = data['message'] ?? data['msg'] ?? "Logout failed";
+          return ApiResponse.error(errorMessage);
+        } catch (e) {
+          return ApiResponse.error("Logout failed: ${response.statusCode}");
+        }
+      }
+    } catch (e) {
+      logger.e("Error logout: $e");
+      return ApiResponse.error("Unexpected Error: $e");
+    }
+  }
+
 }

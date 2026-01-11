@@ -50,7 +50,7 @@ class TaskItem extends StatelessWidget {
                         children: [
                           InkWell(
                             onTap: () {
-                              if (listData!.tsnumber == "") {
+                              if (listData!.tsnumber == null || listData!.tsnumber == "") {
                                 Navigator.of(context).push(
                                   MaterialPageRoute(
                                     builder: (context) => DetailTaskView(
@@ -167,8 +167,8 @@ class TaskItem extends StatelessWidget {
                                     ],
                                   ),
                                 ),
-                                listData!.tsnumber != ""
-                                    ? Stack()
+                                listData!.tsnumber != null && listData!.tsnumber != ""
+                                    ? const SizedBox.shrink()
                                     : const Icon(
                                         Icons.arrow_forward_ios,
                                         size: 16,
@@ -182,7 +182,7 @@ class TaskItem extends StatelessWidget {
                           if (listParameterAndEquipment != null)
                             _buildParameterAndEquipmentExpansion(),
                           const SizedBox(height: 10),
-                          listData!.tsnumber != ""
+                          listData!.tsnumber != null && listData!.tsnumber != ""
                               ? Align(
                                   alignment: Alignment
                                       .centerRight, // tombol di pojok kanan
@@ -244,7 +244,7 @@ class TaskItem extends StatelessWidget {
                   ),
 
                   // Kotak "On Saved" di kanan atas
-                  listData?.tsnumber != ""
+                  listData?.tsnumber != null && listData?.tsnumber != ""
                       ? Positioned(
                           right: 16,
                           top: 8,
@@ -274,7 +274,7 @@ class TaskItem extends StatelessWidget {
                             ),
                           ),
                         )
-                      : Stack()
+                      : const SizedBox.shrink()
                 ],
               )),
         ],

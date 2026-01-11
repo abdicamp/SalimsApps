@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
@@ -59,17 +57,67 @@ class HomeViewmodel extends FutureViewModel {
   logout() async {
     try {
       setBusy(true);
-      await Future.delayed(Duration(seconds: 3));
-      await _storage.clear();
-      Navigator.of(context!).pushReplacement(
-        MaterialPageRoute(builder: (context) => SplashScreenView()),
-      );
-      setBusy(false);
+      final response = await apiService.logout();
+      print("response logout : ${response.data}");
 
+      if (response.error != null) {
+        ScaffoldMessenger.of(context!).showSnackBar(
+          SnackBar(
+            duration: Duration(seconds: 2),
+            content: Text(response.error ?? "Logout failed"),
+            backgroundColor: Colors.red,
+          ),
+        );
+        setBusy(false);
+        notifyListeners();
+        return;
+      }
+
+      if (response.data != null && response.data is Map) {
+        final data = response.data as Map<String, dynamic>;
+        final status = data['status'] as bool?;
+        final message = data['message']?.toString() ?? "Logout successfully";
+
+        if (status == true) {
+          ScaffoldMessenger.of(context!).showSnackBar(
+            SnackBar(
+              duration: Duration(seconds: 2),
+              content: Text(message),
+              backgroundColor: Colors.green,
+            ),
+          );
+          await Future.delayed(Duration(milliseconds: 500));
+          await _storage.clear();
+          Navigator.of(context!).pushReplacement(
+            MaterialPageRoute(builder: (context) => SplashScreenView()),
+          );
+        } else {
+          ScaffoldMessenger.of(context!).showSnackBar(
+            SnackBar(
+              duration: Duration(seconds: 2),
+              content: Text(message),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } else {
+        await _storage.clear();
+        Navigator.of(context!).pushReplacement(
+          MaterialPageRoute(builder: (context) => SplashScreenView()),
+        );
+      }
+
+      setBusy(false);
       notifyListeners();
     } catch (e) {
       setBusy(false);
-
+      ScaffoldMessenger.of(context!).showSnackBar(
+        SnackBar(
+          duration: Duration(seconds: 2),
+          content: Text("Error: $e"),
+          backgroundColor: Colors.red,
+        ),
+      );
       notifyListeners();
     }
   }
@@ -112,26 +160,25 @@ class HomeViewmodel extends FutureViewModel {
         if (notifications.isNotEmpty) {
           // Get the latest notification ID
           final latestNotificationId = notifications.first.id ?? 0;
-          
+
           // Get last checked notification ID from storage
           final lastCheckedId = await _storage.getLastCheckedNotificationId();
-          
+
           // Count notifications that are newer than last checked
           if (lastCheckedId == null) {
             // First time, count all notifications
             newNotificationCount = notifications.length;
             // Save the latest notification ID as last checked
             if (latestNotificationId > 0) {
-              await _storage.saveLastCheckedNotificationId(latestNotificationId);
+              await _storage
+                  .saveLastCheckedNotificationId(latestNotificationId);
             }
           } else {
             // Count notifications with ID greater than last checked
-            newNotificationCount = notifications
-                .where((notification) {
-                  final notificationId = notification.id ?? 0;
-                  return notificationId > lastCheckedId;
-                })
-                .length;
+            newNotificationCount = notifications.where((notification) {
+              final notificationId = notification.id ?? 0;
+              return notificationId > lastCheckedId;
+            }).length;
           }
         } else {
           newNotificationCount = 0;
@@ -178,12 +225,12 @@ class HomeViewmodel extends FutureViewModel {
 
   void pickDateRange() async {
     final now = DateTime.now();
-    final initialRange = selectedRange ?? 
+    final initialRange = selectedRange ??
         DateTimeRange(
           start: DateTime(now.year, now.month, 1),
           end: now,
         );
-    
+
     DateTimeRange? newRange = await showDateRangePicker(
       context: context!,
       firstDate: DateTime(2000),
@@ -215,7 +262,7 @@ class HomeViewmodel extends FutureViewModel {
   getDataTask() async {
     DateTime fromDate;
     DateTime toDate;
-    
+
     if (selectedRange != null) {
       fromDate = selectedRange!.start;
       toDate = selectedRange!.end;
@@ -224,7 +271,7 @@ class HomeViewmodel extends FutureViewModel {
       fromDate = DateTime(now.year, now.month, 1); // 1 tanggal awal bulan
       toDate = now; // hari ini
     }
-    
+
     final dateFormat = DateFormat('yyyy-MM-dd');
     final fromDateStr = dateFormat.format(fromDate);
     final toDateStr = dateFormat.format(toDate);
@@ -232,7 +279,7 @@ class HomeViewmodel extends FutureViewModel {
         await apiService.getTaskList(fromDateStr, toDateStr);
     final responseTaskListHistory =
         await apiService.getTaskListHistory('${fromDateStr} - ${toDateStr}');
-    
+
     if (responseTaskList?.data?.data != null) {
       totalListTask = responseTaskList!.data!.data.length;
       listTask = List.from(responseTaskList.data!.data);
@@ -240,7 +287,7 @@ class HomeViewmodel extends FutureViewModel {
       totalListTask = 0;
       listTask = [];
     }
-    
+
     // Handle responseTaskListHistory - bisa status false dengan data kosong
     if (responseTaskListHistory?.data != null) {
       totalListTaskHistory = responseTaskListHistory!.data!.data.length;
@@ -286,19 +333,19 @@ class HomeViewmodel extends FutureViewModel {
 
       double minDistance = double.infinity;
       TestingOrder? nearestPlace;
-      
+
       // Jika listTask kosong, return null
       if (listTask.isEmpty) {
         radius = 0;
         return null;
       }
-      
+
       for (var place in listTask) {
         String? latlong = place.geotag;
         if (latlong == null || latlong.isEmpty) {
           continue; // Skip jika geotag null atau empty
         }
-        
+
         var latLngSplit = latlong.split(',');
         if (latLngSplit.length < 2) {
           continue; // Skip jika format tidak valid
@@ -306,11 +353,11 @@ class HomeViewmodel extends FutureViewModel {
 
         lat = double.tryParse(latLngSplit[0]) ?? 0.0;
         lng = double.tryParse(latLngSplit[1]) ?? 0.0;
-        
+
         if (lat == 0.0 && lng == 0.0) {
           continue; // Skip jika parsing gagal
         }
-        
+
         double distance = Geolocator.distanceBetween(
           current.latitude,
           current.longitude,
@@ -323,13 +370,13 @@ class HomeViewmodel extends FutureViewModel {
           nearestPlace = place;
         }
       }
-      
+
       // Cek apakah minDistance masih infinity (tidak ada tempat yang valid ditemukan)
       if (minDistance.isInfinite || minDistance.isNaN) {
         radius = 0;
         return null;
       }
-      
+
       radius = minDistance.round();
       return nearestPlace;
     } catch (e) {

@@ -83,7 +83,9 @@ class TaskItemHistory extends StatelessWidget {
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       Text(
-                                        listData!.tsdate.split("-")[1],
+                                        listData!.tsdate != null && listData!.tsdate!.isNotEmpty
+                                            ? listData!.tsdate!.split("-")[1]
+                                            : "-",
                                         style: GoogleFonts.poppins(
                                           fontSize: 20,
                                           fontWeight: FontWeight.bold,
@@ -91,9 +93,9 @@ class TaskItemHistory extends StatelessWidget {
                                         ),
                                       ),
                                       Text(
-                                        _getMonthName(int.parse(listData!
-                                            .tsdate
-                                            .split("-")[1])),
+                                        listData!.tsdate != null && listData!.tsdate!.isNotEmpty
+                                            ? _getMonthName(int.parse(listData!.tsdate!.split("-")[1]))
+                                            : "-",
                                         style: GoogleFonts.poppins(
                                           fontSize: 12,
                                           fontWeight: FontWeight.w600,

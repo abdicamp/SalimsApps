@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
+import 'package:logger/logger.dart';
 import 'package:salims_apps_new/core/models/parameter_models.dart';
 import 'package:salims_apps_new/core/services/api_services.dart';
 import 'package:salims_apps_new/core/models/task_list_models.dart';
@@ -16,6 +17,16 @@ class TaskListViewmodel extends FutureViewModel {
   TaskListViewmodel({this.context});
   final ApiService _apiServices = ApiService();
   final LocalStorageService localStorageService = LocalStorageService();
+  final logger = Logger(
+    printer: PrettyPrinter(
+      methodCount: 2,
+      errorMethodCount: 5,
+      lineLength: 80,
+      colors: true,
+      printEmojis: true,
+      printTime: true,
+    ),
+  );
   List<TestingOrder> listTask = [];
   List<dynamic> listTaskParameterAndEquipment = [];
   List<TestingOrder> listTaskSearch = [];
@@ -80,22 +91,32 @@ class TaskListViewmodel extends FutureViewModel {
     }
       
       final response = await _apiServices.getTaskList(dateFrom!, dateTo!);
-      listTask = response!.data!.data;
-      listTaskSearch = response.data!.data;
-      if (listTask.isNotEmpty) {
-        listTaskParameterAndEquipment.clear();
-        for (var item in listTask) {
-          final responseParameterAndEquipment =
-              await _apiServices.getParameterAndEquipment(
-                  '${item.ptsnumber}', '${item.sampleno}');
-          final dataPars = responseParameterAndEquipment?.data?['data'];
-         listTaskParameterAndEquipment.add(dataPars);
+      print("response: ${response?.data?.data}");
+      if (response != null && response.data != null) {
+        listTask = response.data!.data ?? [];
+        listTaskSearch = response.data!.data ?? [];
+        if (listTask.isNotEmpty) {
+          listTaskParameterAndEquipment.clear();
+          for (var item in listTask) {
+            final responseParameterAndEquipment =
+                await _apiServices.getParameterAndEquipment(
+                    '${item.ptsnumber}', '${item.sampleno}');
+            final dataPars = responseParameterAndEquipment?.data?['data'];
+            listTaskParameterAndEquipment.add(dataPars);
+          }
         }
+      } else {
+        listTask = [];
+        listTaskSearch = [];
       }
 
       notifyListeners();
       setBusy(false);
-    } catch (e) {}
+    } catch (e) {
+
+      logger.e('Error getting list task', error: e);
+      print("Error getting list task: $e");
+    }
     setBusy(false);
     notifyListeners();
   }

@@ -37,6 +37,42 @@ class ParameterModels {
   }
 }
 
+class ParameterEquipmentDetail {
+  final String equipmentcode;
+  final String equipmentname;
+  final String? equipmentversion;
+  final String? duedatecalibration;
+  final String? equipmenttype;
+
+  ParameterEquipmentDetail({
+    required this.equipmentcode,
+    required this.equipmentname,
+    this.equipmentversion,
+    this.duedatecalibration,
+    this.equipmenttype,
+  });
+
+  factory ParameterEquipmentDetail.fromJson(Map<String, dynamic> json) {
+    return ParameterEquipmentDetail(
+      equipmentcode: json['equipmentcode'] ?? "",
+      equipmentname: json['equipmentname'] ?? "",
+      equipmentversion: json['equipmentversion']?.toString(),
+      duedatecalibration: json['duedatecalibration']?.toString(),
+      equipmenttype: json['equipmenttype']?.toString(),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      "equipmentcode": equipmentcode,
+      "equipmentname": equipmentname,
+      "equipmentversion": equipmentversion,
+      "duedatecalibration": duedatecalibration,
+      "equipmenttype": equipmenttype,
+    };
+  }
+}
+
 class TestingOrderParameter {
   final String reqnumber;
   final String sampleno;
@@ -44,6 +80,7 @@ class TestingOrderParameter {
   final String parname;
   final String methodid;
   final bool insitu;
+  final List<ParameterEquipmentDetail>? detail;
 
   TestingOrderParameter({
     required this.reqnumber,
@@ -52,6 +89,7 @@ class TestingOrderParameter {
     required this.parname,
     required this.methodid,
     required this.insitu,
+    this.detail,
   });
 
   factory TestingOrderParameter.fromJson(Map<String, dynamic> json) {
@@ -62,6 +100,11 @@ class TestingOrderParameter {
       parname: json['parname'] ?? "",
       methodid: json['methodid'] ?? "",
       insitu: json['insitu'] ?? false,
+      detail: json['detail'] != null
+          ? (json['detail'] as List<dynamic>)
+              .map((e) => ParameterEquipmentDetail.fromJson(e))
+              .toList()
+          : null,
     );
   }
 
@@ -73,6 +116,7 @@ class TestingOrderParameter {
       "parname": parname,
       "methodid": methodid,
       "insitu": insitu,
+      "detail": detail?.map((e) => e.toJson()).toList(),
     };
   }
 }

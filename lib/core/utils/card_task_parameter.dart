@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:salims_apps_new/core/utils/custom_text_field.dart';
-import 'package:salims_apps_new/core/utils/data_table_CI_view.dart';
 import 'package:salims_apps_new/core/utils/data_table_Par_view.dart';
 import 'package:salims_apps_new/core/utils/search_dropdown.dart';
 import 'package:salims_apps_new/core/utils/app_localizations.dart';
@@ -116,20 +115,90 @@ class _CardTaskParameterState extends State<CardTaskParameter> {
                                               setState(() {
                                                 widget.vm?.parameterSelect =
                                                     value;
+                                                // Update list equipment ketika parameter dipilih
+                                                widget.vm
+                                                    ?.updateParameterEquipment();
                                               });
                                             }
                                           },
-                                          dropDownMenuItems: widget
-                                                  .vm!.listParameter!
-                                                  .map((e) {
-                                                return '${e.parname}';
-                                              }).toList() ??
-                                              [],
+                                          dropDownMenuItems:
+                                              widget.vm!.listParameter.map((e) {
+                                            return '${e.parname}';
+                                          }).toList(),
                                         ),
                                       ),
                                     ),
                                   ),
                                   SizedBox(height: 5),
+                                  // Dropdown Equipment Parameter (muncul jika parameter dipilih dan ada detail)
+                                  if (widget.vm?.parameterSelect != null &&
+                                      widget.vm!.listParameterEquipment
+                                          .isNotEmpty)
+                                    Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Padding(padding: const EdgeInsets.all(4),
+                                          child: Text(
+                                            "Parameter Equipment",
+                                          style: const TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ),
+                                        Padding(
+                                          padding: const EdgeInsets.all(4),
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              color: Colors.white,
+                                              border: Border.all(
+                                                color: Colors.black,
+                                                width: 0.5,
+                                              ),
+                                              borderRadius:
+                                                  BorderRadius.circular(15),
+                                            ),
+                                            child: Padding(
+                                              padding:
+                                                  const EdgeInsets.all(8.0),
+                                              child: CustomSearchableDropDown(
+                                                key: widget.vm
+                                                    ?.dropdownKeyParameterEquipment,
+                                                isReadOnly: false,
+                                                items: widget
+                                                    .vm!.listParameterEquipment,
+                                                label: 'Equipment Parameter',
+                                                padding: EdgeInsets.zero,
+                                                hint:
+                                                    'Search Equipment Parameter',
+                                                dropdownHintText:
+                                                    'Search Equipment Parameter',
+                                                dropdownItemStyle:
+                                                    GoogleFonts.getFont("Lato"),
+                                                onChanged: (value) {
+                                                  if (value != null) {
+                                                    setState(() {
+                                                      widget.vm
+                                                              ?.parameterEquipmentSelect =
+                                                          value;
+                                                    });
+                                                  }
+                                                },
+                                                dropDownMenuItems: widget
+                                                    .vm!.listParameterEquipment
+                                                    .map((e) {
+                                                  return '${e.equipmentname} (${e.equipmentcode})';
+                                                }).toList(),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  if (widget.vm?.parameterSelect != null &&
+                                      widget.vm!.listParameterEquipment
+                                          .isNotEmpty)
+                                    SizedBox(height: 5),
                                   CustomTextField(
                                     validator: (value) {
                                       if (value == null || value.isEmpty) {
