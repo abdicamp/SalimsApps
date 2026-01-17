@@ -1,9 +1,11 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:logger/logger.dart';
+import 'package:salims_apps_new/core/models/formula_exec_models.dart';
 import 'package:stacked/stacked.dart';
 import 'package:salims_apps_new/core/models/equipment_response_models.dart';
 import 'package:salims_apps_new/core/models/sample_location_models.dart';
@@ -55,6 +57,8 @@ class DetailTaskViewmodel extends FutureViewModel {
       printTime: true,
     ),
   );
+  Set<int> expandedIndices = {};
+  Map<String, bool> expandedFormulaIndices = {}; // Key: "paramIndex_formulaIndex"
 
   // ============================================================================
   // CONSTRUCTOR & FORM KEYS
@@ -122,6 +126,9 @@ class DetailTaskViewmodel extends FutureViewModel {
   List<String> imageStringVerifiy = [];
   List<String> imageOldStringVerifiy = [];
 
+  List<FormulaExec> formulaExecList = [];
+  Map<String, List<FormulaExec>> deletedFormulaListByParameter = {};
+
   // ============================================================================
   // CONTAINER INFO (CI) - DATA & CONTROLLERS
   // ============================================================================
@@ -150,12 +157,11 @@ class DetailTaskViewmodel extends FutureViewModel {
   // Equipment Parameter dari detail parameter yang dipilih
   List<ParameterEquipmentDetail> listParameterEquipment = [];
   ParameterEquipmentDetail? parameterEquipmentSelect;
-
-  TextEditingController? institutController = TextEditingController();
   TextEditingController? descriptionParController = TextEditingController();
-  bool? isCalibration = false;
 
   GlobalKey<CustomSearchableDropDownState> dropdownKeyParameterEquipment =
+      GlobalKey();
+  GlobalKey<CustomSearchableDropDownState> dropdownKeyDeletedFormula =
       GlobalKey();
 
   // ============================================================================
@@ -212,7 +218,7 @@ class DetailTaskViewmodel extends FutureViewModel {
 
     try {
       final source = await imageService.showImageSourceDialogVerify(context!);
-
+      
       if (source == null) return;
 
       // Ambil lokasi jika dari camera dan belum ada
@@ -309,12 +315,12 @@ class DetailTaskViewmodel extends FutureViewModel {
       longitude = '${currentLocation!.longitude}';
 
       final isFake = await locationService.isFakeGPS(position);
-      if (isFake) {
+        if (isFake) {
         if (context != null) {
           locationService.showFakeGPSWarning(context!);
         }
-        setBusy(false);
-        return false;
+          setBusy(false);
+          return false;
       }
 
       final addressResult =
@@ -383,12 +389,12 @@ class DetailTaskViewmodel extends FutureViewModel {
       longitude = '${currentLocation!.longitude}';
 
       final isFake = await locationService.isFakeGPS(position);
-      if (isFake) {
+        if (isFake) {
         if (context != null) {
           locationService.showFakeGPSWarning(context!);
         }
-        setBusy(false);
-        return;
+          setBusy(false);
+          return;
       }
 
       final addressResult =
@@ -474,15 +480,30 @@ class DetailTaskViewmodel extends FutureViewModel {
         return true; // Skip validasi jika parsing gagal
       }
 
-      // Ambil lokasi saat ini
-      final userPosition = await Geolocator.getCurrentPosition(
+      // Gunakan currentLocation yang sudah di-update (jika ada)
+      // Jika tidak ada, ambil lokasi saat ini
+      double currentLat;
+      double currentLng;
+      
+      if (currentLocation != null) {
+        currentLat = currentLocation!.latitude;
+        currentLng = currentLocation!.longitude;
+      } else if (userPosition != null) {
+        currentLat = userPosition!.latitude;
+        currentLng = userPosition!.longitude;
+      } else {
+        // Fallback: ambil lokasi saat ini jika currentLocation belum di-set
+        final position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
       );
+        currentLat = position.latitude;
+        currentLng = position.longitude;
+      }
 
       // Hitung jarak
       final distance = RadiusCalculate.calculateDistanceInMeter(
-        userPosition.latitude,
-        userPosition.longitude,
+        currentLat,
+        currentLng,
         samplingLat,
         samplingLng,
       );
@@ -508,9 +529,8 @@ class DetailTaskViewmodel extends FutureViewModel {
       parameterEquipmentSelect: parameterEquipmentSelect,
       listParameter: listParameter,
       parameterSelect: parameterSelect,
-      isCalibration: isCalibration,
-      insituresult: institutController?.text,
       description: descriptionParController?.text,
+      formulaExecList: formulaExecList.isNotEmpty ? formulaExecList : null,
       resetForm: _resetParameterForm,
       notifyListeners: notifyListeners,
     );
@@ -521,11 +541,12 @@ class DetailTaskViewmodel extends FutureViewModel {
     parameterSelect = null;
     listParameterEquipment = [];
     parameterEquipmentSelect = null;
-    institutController?.text = "";
     descriptionParController?.text = "";
-    isCalibration = false;
     dropdownKeyParameter.currentState?.clearValue();
     dropdownKeyParameterEquipment.currentState?.clearValue();
+    // Reset formula exec list setelah parameter di-add
+    formulaExecList = [];
+    expandedIndices.clear();
   }
 
   /// Update list equipment parameter ketika parameter dipilih
@@ -542,6 +563,50 @@ class DetailTaskViewmodel extends FutureViewModel {
 
   /// Hapus parameter dari list
   void removeListPar(int index, dynamic data) {
+    // Clear expanded formula indices untuk parameter yang dihapus
+    final keysToRemove = expandedFormulaIndices.keys
+        .where((key) => key.startsWith('${index}_'))
+        .toList();
+    for (var key in keysToRemove) {
+      expandedFormulaIndices.remove(key);
+    }
+    
+    // Jika parameter yang dihapus sedang di-expand, remove dari expandedIndices
+    if (expandedIndices.contains(index)) {
+      expandedIndices.remove(index);
+    }
+    
+    // Re-index expandedIndices yang lebih besar dari index yang dihapus
+    final newExpandedIndices = <int>{};
+    for (var idx in expandedIndices) {
+      if (idx > index) {
+        newExpandedIndices.add(idx - 1);
+      } else {
+        newExpandedIndices.add(idx);
+      }
+    }
+    expandedIndices = newExpandedIndices;
+    
+    // Re-index expandedFormulaIndices untuk parameter yang tersisa
+    final newExpandedFormulaIndices = <String, bool>{};
+    for (var entry in expandedFormulaIndices.entries) {
+      final parts = entry.key.split('_');
+      if (parts.length == 2) {
+        final paramIdx = int.tryParse(parts[0]);
+        if (paramIdx != null) {
+          if (paramIdx > index) {
+            // Parameter index lebih besar, kurangi 1
+            newExpandedFormulaIndices['${paramIdx - 1}_${parts[1]}'] = entry.value;
+          } else if (paramIdx < index) {
+            // Parameter index lebih kecil, tetap sama
+            newExpandedFormulaIndices[entry.key] = entry.value;
+          }
+          // paramIdx == index di-skip (parameter yang dihapus)
+        }
+      }
+    }
+    expandedFormulaIndices = newExpandedFormulaIndices;
+    
     parameterService.removeListPar(
       index: index,
       data: data,
@@ -552,6 +617,161 @@ class DetailTaskViewmodel extends FutureViewModel {
       reindexParameterList: _reindexParameterList,
       notifyListeners: notifyListeners,
     );
+  }
+
+  /// Edit parameter - load data ke form dan hapus dari list
+  void editParameter(int index, TakingSampleParameter param) {
+    // Clear expanded formula indices untuk parameter yang di-edit
+    final keysToRemove = expandedFormulaIndices.keys
+        .where((key) => key.startsWith('${index}_'))
+        .toList();
+    for (var key in keysToRemove) {
+      expandedFormulaIndices.remove(key);
+    }
+    
+    // Jika parameter yang di-edit sedang di-expand, remove dari expandedIndices
+    if (expandedIndices.contains(index)) {
+      expandedIndices.remove(index);
+    }
+    
+    // Load data ke form
+    // 1. Set parameterSelect berdasarkan parcode
+    parameterSelect = listParameter2.firstWhere(
+      (p) => p.parcode == param.parcode,
+      orElse: () => listParameter.firstWhere(
+        (p) => p.parcode == param.parcode,
+        orElse: () => TestingOrderParameter(
+          reqnumber: '',
+          sampleno: '',
+          parcode: param.parcode,
+          parname: param.parname,
+          methodid: '',
+          insitu: false,
+          detail: [],
+        ),
+      ),
+    );
+    
+    // 2. Set listParameterEquipment dari parameterSelect.detail
+    if (parameterSelect != null && parameterSelect!.detail != null && parameterSelect!.detail!.isNotEmpty) {
+      listParameterEquipment = parameterSelect!.detail!;
+    } else {
+      listParameterEquipment = [];
+    }
+    
+    // 3. Set parameterEquipmentSelect berdasarkan equipmentcode
+    if (param.equipmentcode.isNotEmpty && listParameterEquipment.isNotEmpty) {
+      parameterEquipmentSelect = listParameterEquipment.firstWhere(
+        (e) => e.equipmentcode == param.equipmentcode,
+        orElse: () => ParameterEquipmentDetail(
+          equipmentcode: param.equipmentcode,
+          equipmentname: param.equipmentname,
+        ),
+      );
+    } else {
+      parameterEquipmentSelect = null;
+    }
+    
+    // 4. Set description
+    descriptionParController?.text = param.description;
+    
+    // 5. Load formula data dari ls_t_ts_fo (format baru)
+    formulaExecList = [];
+    if (param.ls_t_ts_fo != null && param.ls_t_ts_fo!.isNotEmpty) {
+      try {
+        formulaExecList = param.ls_t_ts_fo!.map((e) {
+          if (e is Map<String, dynamic>) {
+            // Konversi dari format baru ke FormulaExec
+            final detailList = (e['detail'] as List<dynamic>?)
+                ?.map((detailJson) {
+                  if (detailJson is Map<String, dynamic>) {
+                    return FormulaDetail(
+                      samplecode: '',
+                      parcode: '',
+                      formulacode: detailJson['formulacode']?.toString() ?? '',
+                      formulaversion: int.tryParse(detailJson['formulaversion']?.toString() ?? '0') ?? 0,
+                      description: detailJson['description']?.toString(),
+                      lspec: detailJson['lspec']?.toString(),
+                      uspec: detailJson['uspec']?.toString(),
+                      version: 0,
+                      parameter: detailJson['parameter']?.toString() ?? '',
+                      simvalue: null,
+                      detailno: int.tryParse(detailJson['detailno']?.toString() ?? '0') ?? 0,
+                      fortype: '',
+                      comparespec: detailJson['comparespec']?.toString().toLowerCase() == 'true',
+                      formula: detailJson['formula']?.toString(),
+                      simformula: null,
+                      simresult: detailJson['parameterresult']?.toString(),
+                    );
+                  }
+                  return null;
+                })
+                .whereType<FormulaDetail>()
+                .toList() ?? [];
+            
+            return FormulaExec(
+              formulacode: e['formulacode']?.toString() ?? '',
+              formulaname: '',
+              refcode: '',
+              formulaversion: int.tryParse(e['formulaversion']?.toString() ?? '0') ?? 0,
+              formulalevel: int.tryParse(e['formulalevel']?.toString() ?? '0') ?? 0,
+              description: e['description']?.toString(),
+              samplecode: '',
+              version: 0,
+              formula_detail: detailList,
+            );
+          } else if (e is Map) {
+            // Fallback untuk format lama
+            return FormulaExec.fromJson(Map<String, dynamic>.from(e));
+          }
+          return null;
+        }).whereType<FormulaExec>().toList();
+      } catch (e) {
+        logger.e("Error parsing formula data: $e");
+        formulaExecList = [];
+      }
+    }
+    
+    // 6. Restore parameter ke listParameter (jika belum ada)
+    final parcodeToRestore = param.parcode.toString().trim().toUpperCase();
+    if (parcodeToRestore.isNotEmpty) {
+      final alreadyExists = listParameter.any(
+        (p) => p.parcode.toString().trim().toUpperCase() == parcodeToRestore,
+      );
+      
+      if (!alreadyExists) {
+        TestingOrderParameter? parameterToRestore;
+    for (var parameter in listParameter2) {
+          final paramParcode = parameter.parcode.toString().trim().toUpperCase();
+          if (paramParcode == parcodeToRestore) {
+            parameterToRestore = parameter;
+        break;
+      }
+    }
+        
+        if (parameterToRestore != null) {
+          listParameter.add(parameterToRestore);
+        }
+      }
+    }
+    
+    // 7. Hapus parameter dari listTakingSampleParameter
+    listTakingSampleParameter.removeAt(index);
+    
+    // 8. Re-index listTakingSampleParameter
+    _reindexParameterList();
+    
+    // 9. Clear expanded indices
+    expandedIndices.clear();
+    
+    // 10. Update dropdown values setelah widget rebuild
+    // Dropdown akan otomatis update karena parameterSelect dan parameterEquipmentSelect sudah di-set
+    notifyListeners();
+    
+    // Trigger update formula setelah parameter di-set
+    if (parameterSelect != null) {
+      getFormulaListForQC(parameterSelect?.parcode);
+    }
   }
 
   /// Re-index parameter list
@@ -672,7 +892,7 @@ class DetailTaskViewmodel extends FutureViewModel {
     } else {
       radiusLocation = 0;
     }
-    print("radiusLocation: $radiusLocation");
+   
     final responseParameterAndEquipment =
         await apiService.getParameterAndEquipment(
       '${listTaskList?.ptsnumber}',
@@ -689,13 +909,13 @@ class DetailTaskViewmodel extends FutureViewModel {
   /// Parse parameter data dari response
   void _parseParameterData(dynamic response) {
     listParameter = taskDataService.parseParameterData(response);
-    listParameter2 = List.from(listParameter);
+      listParameter2 = List.from(listParameter);
   }
 
   /// Parse equipment data dari response
   void _parseEquipmentData(dynamic response) {
     equipmentlist = taskDataService.parseEquipmentData(response);
-    equipmentlist2 = List.from(equipmentlist);
+      equipmentlist2 = List.from(equipmentlist);
   }
 
   /// Initialize location data
@@ -755,7 +975,8 @@ class DetailTaskViewmodel extends FutureViewModel {
             SnackBar(
               backgroundColor: Colors.red,
               duration: const Duration(seconds: 3),
-              content: Text('Task sudah di${response['appstatus'].toUpperCase()} , Silahkan Refresh Kembali'),
+              content: Text(
+                  'Task sudah di${response['appstatus'].toUpperCase()} , Silahkan Refresh Kembali'),
             ),
           );
         }
@@ -1015,7 +1236,7 @@ class DetailTaskViewmodel extends FutureViewModel {
         if (hasImageString && hasImageStringVerifiy) {
           // Ada data dari API, validasi imageString dan imageStringVerifiy
           if (imageString.isEmpty && imageOldString.isEmpty) {
-            return AppLocalizations.of(context!)?.imageCannotBeEmpty ??
+          return AppLocalizations.of(context!)?.imageCannotBeEmpty ??
                 "Gambar sample tidak boleh kosong. Minimal harus ada 1 gambar sample.";
           }
           if (imageStringVerifiy.isEmpty && imageOldStringVerifiy.isEmpty) {
@@ -1065,6 +1286,16 @@ class DetailTaskViewmodel extends FutureViewModel {
       }
     }
 
+    // Validasi: Semua equipment harus digunakan (tidak boleh tersisa)
+    if (equipmentlist.isNotEmpty) {
+      return "Semua equipment harus digunakan. Masih ada equipment yang belum digunakan.";
+    }
+
+    // Validasi: Semua parameter harus digunakan (tidak boleh tersisa)
+    if (listParameter.isNotEmpty) {
+      return "Semua parameter harus digunakan. Masih ada parameter yang belum digunakan.";
+    }
+
     return null; // Valid
   }
 
@@ -1076,7 +1307,56 @@ class DetailTaskViewmodel extends FutureViewModel {
       return;
     }
 
-    // Validasi radius lokasi sampling
+    // Ambil current location terbaru sebelum validasi
+    setBusy(true);
+    try {
+      final permission =
+          await locationService.checkAndRequestLocationPermission();
+
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
+        if (context != null) {
+          locationService.showLocationPermissionError(context!);
+        }
+        setBusy(false);
+        return;
+      }
+
+      // Ambil lokasi terbaru
+      final position = await locationService.fetchCurrentLocation();
+      userPosition = position;
+      currentLocation = LatLng(position.latitude, position.longitude);
+      latlang = '${currentLocation!.latitude},${currentLocation!.longitude}';
+      latitude = '${currentLocation!.latitude}';
+      longitude = '${currentLocation!.longitude}';
+
+      // Cek fake GPS
+      final isFake = await locationService.isFakeGPS(position);
+      if (isFake) {
+        if (context != null) {
+          locationService.showFakeGPSWarning(context!);
+        }
+        setBusy(false);
+        return;
+      }
+
+      // Update address jika diperlukan
+      final addressResult =
+          await locationService.fetchAddressFromLocation(currentLocation!);
+      address = addressResult['address'];
+      namaJalan = addressResult['namaJalan'];
+      _updateLocationController();
+    } catch (e) {
+      logger.e('Error fetching current location before save', error: e);
+      if (context != null) {
+        locationService.showLocationError(context!);
+      }
+      setBusy(false);
+      return;
+    }
+    setBusy(false);
+
+    // Validasi radius lokasi sampling dengan lokasi terbaru
     final isInRadius = await cekRadiusSamplingLocation();
     if (!isInRadius) {
       _showOutOfRadiusDialog();
@@ -1186,6 +1466,8 @@ class DetailTaskViewmodel extends FutureViewModel {
         photoOldVerifikasi: imageOldStringVerifiy,
       );
 
+      print("dataJson: ${jsonEncode(dataJson)}");
+
       final postSample = await apiService.postTakingSample(dataJson);
 
       if (postSample.data != null) {
@@ -1255,6 +1537,363 @@ class DetailTaskViewmodel extends FutureViewModel {
       ),
     );
     notifyListeners();
+  }
+
+  bool isExpanded(int index) {
+    return expandedIndices.contains(index);
+  }
+
+  void toggleExpand(int index) {
+    if (expandedIndices.contains(index)) {
+      expandedIndices.remove(index);
+    } else {
+      expandedIndices.add(index);
+    }
+    notifyListeners();
+  }
+
+  /// Check if formula is expanded (untuk formula di dalam parameter)
+  bool isFormulaExpanded(int paramIndex, int formulaIndex) {
+    final key = '${paramIndex}_$formulaIndex';
+    return expandedFormulaIndices[key] ?? false;
+  }
+
+  /// Toggle formula expanded state
+  void toggleFormulaExpand(int paramIndex, int formulaIndex) {
+    final key = '${paramIndex}_$formulaIndex';
+    expandedFormulaIndices[key] = !(expandedFormulaIndices[key] ?? false);
+    notifyListeners();
+  }
+
+  void updateSimResult(int formulaIndex, int detailIndex, String newValue) async {
+    if (formulaIndex >= 0 &&
+        formulaIndex < formulaExecList.length &&
+        detailIndex >= 0 &&
+        detailIndex < formulaExecList[formulaIndex].formula_detail.length) {
+      formulaExecList[formulaIndex].formula_detail[detailIndex].simresult = newValue;
+      notifyListeners();
+      
+      // Trigger postFormulaExec setelah update simresult
+      await _postFormulaExecAndRefresh();
+    }
+  }
+
+  /// Post formula exec dengan data yang sudah di-update dan refresh data
+  Future<void> _postFormulaExecAndRefresh() async {
+    if (formulaExecList.isEmpty || parameterSelect?.parcode == null) {
+      return;
+    }
+
+    setBusy(true);
+    try {
+      final userData = await localService.getUserData();
+      final branchcode = userData?.data?.branchcode ?? '';
+      final currentParcode = parameterSelect?.parcode;
+      
+      // Simpan expanded indices sebelum refresh
+      final savedExpandedIndices = Set<int>.from(expandedIndices);
+
+      if (branchcode.isEmpty) {
+        setBusy(false);
+        return;
+      }
+
+      // Post formula exec dengan data yang sudah di-update
+      final postResponse = await apiService.postFormulaExec(
+        formulaExecList: formulaExecList,
+        branchcode: branchcode,
+      );
+
+      if (postResponse.error == null && postResponse.data != null) {
+        // Parse response dari postFormulaExec
+        final postData = postResponse.data as Map<String, dynamic>;
+        
+        if (postData['data'] != null && postData['data']['formula_exec'] != null) {
+          try {
+            final formulaExecArray = postData['data']['formula_exec'] as List;
+            
+            final formulaExecListData = formulaExecArray
+                .map((e) {
+                  if (e is! Map<String, dynamic>) {
+                    return null;
+                  }
+                  return FormulaExec.fromJson(e);
+                })
+                .whereType<FormulaExec>()
+                .toList();
+            
+            // Update formulaExecList dengan response baru
+            formulaExecList = formulaExecListData;
+            
+            // Restore expanded indices setelah refresh
+            expandedIndices = savedExpandedIndices;
+            
+            // Pastikan parameter yang dipilih tetap sama
+            if (currentParcode != null && parameterSelect != null) {
+              logger.i('Formula exec updated successfully. Parameter: $currentParcode, Expanded: ${expandedIndices.length}');
+            }
+            
+            notifyListeners();
+          } catch (e) {
+            logger.e('Error parsing postFormulaExec response after update', error: e);
+          }
+        }
+      } else {
+        logger.w('postFormulaExec failed after update: ${postResponse.error}');
+      }
+    } catch (e) {
+      logger.e('Error posting formula exec after update', error: e);
+    } finally {
+      setBusy(false);
+      notifyListeners();
+    }
+  }
+
+  /// Delete formula dari formulaExecList dan pindahkan ke deletedFormulaList berdasarkan parameter
+  void deleteFormula(int index, String? parcode) {
+    if (index >= 0 && index < formulaExecList.length && parcode != null) {
+      final deletedFormula = formulaExecList.removeAt(index);
+      
+      // Simpan ke map berdasarkan parcode
+      if (!deletedFormulaListByParameter.containsKey(parcode)) {
+        deletedFormulaListByParameter[parcode] = [];
+      }
+      deletedFormulaListByParameter[parcode]!.add(deletedFormula);
+      
+      // Update expandedIndices setelah delete
+      expandedIndices.remove(index);
+      // Re-index expandedIndices yang lebih besar dari index yang dihapus
+      final newExpandedIndices = <int>{};
+      for (var idx in expandedIndices) {
+        if (idx > index) {
+          newExpandedIndices.add(idx - 1);
+        } else {
+          newExpandedIndices.add(idx);
+        }
+      }
+      expandedIndices = newExpandedIndices;
+      
+      notifyListeners();
+    }
+  }
+
+  /// Restore formula dari deletedFormulaList ke formulaExecList berdasarkan parameter
+  void restoreFormula(FormulaExec formula, String? parcode) {
+    if (parcode != null && 
+        deletedFormulaListByParameter.containsKey(parcode) &&
+        deletedFormulaListByParameter[parcode]!.contains(formula)) {
+      deletedFormulaListByParameter[parcode]!.remove(formula);
+      formulaExecList.add(formula);
+      dropdownKeyDeletedFormula.currentState?.clearValue();
+      notifyListeners();
+    }
+  }
+
+  /// Get deleted formula list untuk parameter tertentu
+  List<FormulaExec> getDeletedFormulaListForParameter(String? parcode) {
+    if (parcode == null || !deletedFormulaListByParameter.containsKey(parcode)) {
+      return [];
+    }
+    return deletedFormulaListByParameter[parcode]!;
+  }
+
+  getFormulaListForQC(String? parcode) async {
+    setBusy(true);
+    try {
+      final userData = await localService.getUserData();
+      final response = await apiService.getFormulaListForQC(
+          branchcode: userData?.data?.branchcode ?? '',
+          samplecode: listTaskList?.sampleCode ?? '',
+          sampleversion: (listTaskList?.sampleVersion ?? 0).toString(),
+          parcode: parcode ?? '');
+
+      if (response.data != null && response.data!.data.isNotEmpty) {
+        // Langsung post ke postFormulaExec dengan data dari getFormulaListForQC
+        final postResponse = await apiService.postFormulaExec(
+          formulaExecList: response.data!.data,
+          branchcode: userData?.data?.branchcode ?? '',
+        );
+
+        if (postResponse.error == null && postResponse.data != null) {
+          // Parse response dari postFormulaExec
+          final postData = postResponse.data as Map<String, dynamic>;
+          logger.i('postFormulaExec response: ${postData.toString()}');
+          
+          if (postData['data'] != null && postData['data']['formula_exec'] != null) {
+            // Konversi response ke List<FormulaExec>
+            try {
+              final formulaExecArray = postData['data']['formula_exec'] as List;
+              logger.i('formula_exec array length: ${formulaExecArray.length}');
+              
+              final formulaExecListData = formulaExecArray
+                  .map((e) {
+                    if (e is! Map<String, dynamic>) {
+                      logger.w('Invalid formula item type: ${e.runtimeType}');
+                      return null;
+                    }
+                    
+                    // Log raw data sebelum parsing
+                    final hasFormulaDetail = e['formula_detail'] != null;
+                    final hasDetails = e['details'] != null;
+                    logger.i('Raw formula data - formulacode: ${e['formulacode']}, has formula_detail: $hasFormulaDetail, has details: $hasDetails');
+                    if (hasDetails) {
+                      logger.i('details length: ${(e['details'] as List?)?.length ?? 0}');
+                    }
+                    if (hasFormulaDetail) {
+                      logger.i('formula_detail length: ${(e['formula_detail'] as List?)?.length ?? 0}');
+                    }
+                    
+                    final formula = FormulaExec.fromJson(e);
+                    logger.i('Parsed formula: ${formula.formulacode}, detail count: ${formula.formula_detail.length}');
+                    
+                    if (formula.formula_detail.isEmpty && (hasFormulaDetail || hasDetails)) {
+                      logger.w('⚠️ formula_detail is empty but exists in JSON!');
+                      if (hasDetails) {
+                        logger.w('details data: ${e['details']}');
+                      }
+                      if (hasFormulaDetail) {
+                        logger.w('formula_detail data: ${e['formula_detail']}');
+                      }
+                    }
+                    
+                    return formula;
+                  })
+                  .whereType<FormulaExec>()
+                  .toList();
+              
+              formulaExecList = formulaExecListData;
+              logger.i('Formula exec posted and data updated successfully. Count: ${formulaExecList.length}');
+              
+              // Log detail count untuk setiap formula
+              for (var formula in formulaExecList) {
+                logger.i('Formula ${formula.formulacode} has ${formula.formula_detail.length} details');
+                if (formula.formula_detail.isNotEmpty) {
+                  logger.i('First detail: ${formula.formula_detail.first.parameter}');
+                }
+              }
+            } catch (e) {
+              logger.e('Error parsing formula_exec from postFormulaExec response', error: e);
+              // Fallback: gunakan data dari getFormulaListForQC jika parsing gagal
+              formulaExecList = response.data!.data;
+              logger.w('Using getFormulaListForQC data as fallback');
+            }
+          } else {
+            // Fallback: gunakan data dari getFormulaListForQC jika struktur tidak sesuai
+            formulaExecList = response.data!.data;
+            logger.w('postFormulaExec response structure not as expected. Using getFormulaListForQC data');
+            logger.w('postData keys: ${postData.keys}');
+            if (postData['data'] != null) {
+              logger.w('postData[data] keys: ${(postData['data'] as Map).keys}');
+            }
+          }
+        } else {
+          // Jika postFormulaExec gagal, tetap gunakan data dari getFormulaListForQC
+          formulaExecList = response.data!.data;
+          logger.w('postFormulaExec failed: ${postResponse.error}, using getFormulaListForQC data');
+          if (context != null) {
+            ScaffoldMessenger.of(context!).showSnackBar(
+              SnackBar(
+                duration: const Duration(seconds: 2),
+                content: Text(postResponse.error ?? 'Failed to process formula exec'),
+                backgroundColor: Colors.orange,
+              ),
+            );
+          }
+        }
+      } else {
+        formulaExecList = [];
+      }
+      setBusy(false);
+      notifyListeners();
+    } catch (e) {
+      logger.e('Error getting formula list for QC', error: e);
+      setBusy(false);
+      notifyListeners();
+    }
+  }
+
+  /// Post formula exec untuk testing process
+  Future<void> postFormulaExec() async {
+    if (formulaExecList.isEmpty) {
+      if (context != null) {
+        ScaffoldMessenger.of(context!).showSnackBar(
+          SnackBar(
+            duration: const Duration(seconds: 2),
+            content: Text('No formula data to submit'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
+      return;
+    }
+
+    setBusy(true);
+    try {
+      final userData = await localService.getUserData();
+      final branchcode = userData?.data?.branchcode ?? '';
+
+      if (branchcode.isEmpty) {
+        if (context != null) {
+          ScaffoldMessenger.of(context!).showSnackBar(
+            SnackBar(
+              duration: const Duration(seconds: 2),
+              content: Text('Branch code not found'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        setBusy(false);
+        return;
+      }
+
+      final response = await apiService.postFormulaExec(
+        formulaExecList: formulaExecList,
+        branchcode: branchcode,
+      );
+
+      if (response.error == null && response.data != null) {
+        if (context != null) {
+          ScaffoldMessenger.of(context!).showSnackBar(
+            SnackBar(
+              duration: const Duration(seconds: 2),
+              content: Text(
+                response.data is Map 
+                    ? (response.data as Map)['message']?.toString() ?? 
+                      'Formula exec submitted successfully'
+                    : 'Formula exec submitted successfully',
+              ),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+        logger.i('Formula exec posted successfully: ${response.data}');
+      } else {
+        if (context != null) {
+          ScaffoldMessenger.of(context!).showSnackBar(
+            SnackBar(
+              duration: const Duration(seconds: 2),
+              content: Text(response.error ?? 'Failed to submit formula exec'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        logger.e('Error posting formula exec: ${response.error}');
+      }
+    } catch (e) {
+      logger.e('Error posting formula exec', error: e);
+      if (context != null) {
+        ScaffoldMessenger.of(context!).showSnackBar(
+          SnackBar(
+            duration: const Duration(seconds: 2),
+            content: Text('Unexpected error: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      setBusy(false);
+      notifyListeners();
+    }
   }
 
   // ============================================================================

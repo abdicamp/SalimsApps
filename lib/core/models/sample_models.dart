@@ -142,9 +142,8 @@ class TakingSampleParameter {
   final String parname;
   final String equipmentcode;
   final String equipmentname;
-  final bool iscalibration;
-  final String insituresult;
   final String description;
+  List<dynamic>? ls_t_ts_fo; // Menyimpan data formula
 
   TakingSampleParameter({
     this.key,
@@ -153,12 +152,66 @@ class TakingSampleParameter {
     required this.parname,
     required this.equipmentcode,
     required this.equipmentname,
-    required this.iscalibration,
-    required this.insituresult,
     required this.description,
+    this.ls_t_ts_fo,
   });
 
   factory TakingSampleParameter.fromJson(Map<String, dynamic> json) {
+    // Parse taking_sample_fo dari response API ke ls_t_ts_fo
+    List<dynamic>? ls_t_ts_fo;
+    if (json['taking_sample_fo'] != null && json['taking_sample_fo'] is List) {
+      // Konversi dari format API ke format yang disimpan
+      ls_t_ts_fo = (json['taking_sample_fo'] as List).map((formulaJson) {
+        if (formulaJson is Map<String, dynamic>) {
+          // Format sesuai dengan struktur yang disimpan
+          final detailList = (formulaJson['detail'] as List<dynamic>?)
+              ?.map((detailJson) {
+                if (detailJson is Map<String, dynamic>) {
+                  return {
+                    "detailno": (detailJson['detailno'] is int 
+                        ? detailJson['detailno'].toString() 
+                        : detailJson['detailno']?.toString() ?? ""),
+                    "formulacode": detailJson['formulacode']?.toString() ?? "",
+                    "formulaversion": (detailJson['formulaversion'] is int 
+                        ? detailJson['formulaversion'].toString() 
+                        : detailJson['formulaversion']?.toString() ?? ""),
+                    "parameter": detailJson['parameter']?.toString() ?? "",
+                    "formula": detailJson['formula']?.toString() ?? "",
+                    "parameterresult": detailJson['parameterresult']?.toString() ?? "",
+                    "comparespec": (detailJson['comparespec'] is bool 
+                        ? detailJson['comparespec'].toString() 
+                        : detailJson['comparespec']?.toString() ?? ""),
+                    "lspec": detailJson['lspec']?.toString() ?? "",
+                    "uspec": detailJson['uspec']?.toString() ?? "",
+                  };
+                }
+                return null;
+              })
+              .whereType<Map<String, dynamic>>()
+              .toList() ?? [];
+          
+          return {
+            "detailno": (formulaJson['detailno'] is int 
+                ? formulaJson['detailno'].toString() 
+                : formulaJson['detailno']?.toString() ?? ""),
+            "formulacode": formulaJson['formulacode']?.toString() ?? "",
+            "formulaversion": (formulaJson['formulaversion'] is int 
+                ? formulaJson['formulaversion'].toString() 
+                : formulaJson['formulaversion']?.toString() ?? ""),
+            "formulalevel": (formulaJson['formulalevel'] is int 
+                ? formulaJson['formulalevel'].toString() 
+                : formulaJson['formulalevel']?.toString() ?? ""),
+            "description": formulaJson['description']?.toString() ?? "",
+            "detail": detailList,
+          };
+        }
+        return null;
+      }).whereType<Map<String, dynamic>>().toList();
+    } else if (json['ls_t_ts_fo'] != null && json['ls_t_ts_fo'] is List) {
+      // Fallback untuk format lama
+      ls_t_ts_fo = json['ls_t_ts_fo'] as List<dynamic>;
+    }
+    
     return TakingSampleParameter(
       key: json['key'] ?? '',
       detailno: json['detailno'] ?? '',
@@ -166,9 +219,8 @@ class TakingSampleParameter {
       parname: json['parname'] ?? '',
       equipmentcode: json['equipmentcode'] ?? '',
       equipmentname: json['equipmentname'] ?? '',
-      iscalibration: json['iscalibration'] ?? false,
-      insituresult: json['insituresult'] ?? '',
       description: json['description'] ?? '',
+      ls_t_ts_fo: ls_t_ts_fo,
     );
   }
 
@@ -180,9 +232,8 @@ class TakingSampleParameter {
       'parname': parname,
       'equipmentcode': equipmentcode,
       'equipmentname': equipmentname,
-      'iscalibration': iscalibration,
-      'insituresult': insituresult,
       'description': description,
+      'ls_t_ts_fo': ls_t_ts_fo,
     };
   }
 }

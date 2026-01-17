@@ -10,6 +10,7 @@ import 'package:provider/provider.dart';
 
 import '../../../core/utils/colors.dart';
 import '../detail_task/detail_task_view.dart';
+import '../formula_test/formula_test_view.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({super.key});
@@ -174,6 +175,47 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
                                                         color: Colors.white,
                                                         size: 26,
                                                       ),
+                                                    ),
+                                                  ),
+                                                ),
+
+                                                const SizedBox(width: 14),
+
+                                                // Formula Test dengan gradient background yang sama
+                                                InkWell(
+                                                  borderRadius:
+                                                      BorderRadius.circular(50),
+                                                  onTap: () {
+                                                    Navigator.push(
+                                                      context,
+                                                      MaterialPageRoute(
+                                                        builder: (context) =>
+                                                            FormulaTestView(),
+                                                      ),
+                                                    );
+                                                  },
+                                                  child: Container(
+                                                    padding:
+                                                        const EdgeInsets.all(
+                                                            10),
+                                                    decoration:
+                                                        const BoxDecoration(
+                                                      shape: BoxShape.circle,
+                                                      gradient: LinearGradient(
+                                                        colors: [
+                                                          AppColors.skyBlue,
+                                                          AppColors.limeLight,
+                                                        ],
+                                                        begin:
+                                                            Alignment.topLeft,
+                                                        end: Alignment
+                                                            .bottomRight,
+                                                      ),
+                                                    ),
+                                                    child: const Icon(
+                                                      Icons.science,
+                                                      color: Colors.white,
+                                                      size: 26,
                                                     ),
                                                   ),
                                                 ),

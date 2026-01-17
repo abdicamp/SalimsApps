@@ -16,6 +16,7 @@ import 'package:salims_apps_new/core/services/local_Storage_Services.dart';
 import '../models/task_list_history_models.dart';
 import '../models/testing_order_history_models.dart';
 import '../models/notification_models.dart';
+import '../models/formula_exec_models.dart';
 
 class ApiService {
   // final String baseUrl = "https://lims.pdam-sby.go.id/v1";
@@ -146,8 +147,6 @@ class ApiService {
           "token_fcm": "${token}"
         }),
       );
-      print("token fcmm : ${token}");
-      print("json data login : ${response.body}");
 
       // Parse response body terlepas dari HTTP status code
       try {
@@ -189,8 +188,6 @@ class ApiService {
       String? dateFrom, String? dateTo) async {
     try {
       final getData = await _storage.getUserData();
-      print(
-          "${baseUrl}/transaction/taking-sample/testing-order?labourcode=${getData?.data?.labourcode}&dateFrom=${dateFrom}&dateTo=${dateTo}&branchcode=${getData?.data?.branchcode}");
       final response = await http.get(
         Uri.parse(
             "${baseUrl}/transaction/taking-sample/testing-order?labourcode=${getData?.data?.labourcode}&dateFrom=${dateFrom}&dateTo=${dateTo}&branchcode=${getData?.data?.branchcode}"),
@@ -205,7 +202,7 @@ class ApiService {
       if (isTokenExpired) {
         return ApiResponse.error("Session expired. Please login again.");
       }
-      print("response: ${response.body}");
+
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         // Cek status dari JSON response body
@@ -295,9 +292,6 @@ class ApiService {
   Future<dynamic> getOneTaskList(String? tsNumber) async {
     try {
       final getData = await _storage.getUserData();
-      print("tsNumber: ${tsNumber}");
-      print(
-          "baseUrl: ${baseUrl}/transaction/taking-sample/one/${getData?.data?.branchcode}?tsnumber=${tsNumber}");
       final response = await http.get(
         Uri.parse(
             "${baseUrl}/transaction/taking-sample/one/${getData?.data?.branchcode}?tsnumber=${tsNumber}"),
@@ -518,9 +512,9 @@ class ApiService {
         if (isTokenExpired) {
           return ApiResponse.error("Session expired. Please login again.");
         }
+        print("response postTakingSample: ${response.body}");
 
         final data = jsonDecode(response.body);
-        print("response body post: ${response.body}");
         if (response.statusCode == 201 || response.statusCode == 200) {
           return ApiResponse.success(data);
         } else {
@@ -729,7 +723,8 @@ class ApiService {
       } else {
         try {
           final data = jsonDecode(response.body);
-          final errorMessage = data['message'] ?? data['msg'] ?? "Logout failed";
+          final errorMessage =
+              data['message'] ?? data['msg'] ?? "Logout failed";
           return ApiResponse.error(errorMessage);
         } catch (e) {
           return ApiResponse.error("Logout failed: ${response.statusCode}");
@@ -741,4 +736,137 @@ class ApiService {
     }
   }
 
+  Future<ApiResponse<FormulaExecResponse>> getFormulaListForQC({
+    required String branchcode,
+    required String samplecode,
+    required String sampleversion,
+    required String parcode,
+  }) async {
+    try {
+      final getData = await _storage.getUserData();
+
+      final response = await http.post(
+        Uri.parse("$baseUrl/general/get-formula-list-for-qc"),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer ${getData?.accessToken}",
+        },
+        body: jsonEncode({
+          "branchcode": branchcode,
+          "samplecode": samplecode,
+          "sampleversion": sampleversion,
+          "parcode": parcode,
+        }),
+      );
+
+      final isTokenExpired = await _checkAndHandleTokenExpired(response);
+      if (isTokenExpired) {
+        return ApiResponse.error("Session expired. Please login again.");
+      }
+
+      if (response.statusCode == 200) {
+        try {
+          final data = jsonDecode(response.body);
+          final formulaResponse = FormulaExecResponse.fromJson(data);
+          return ApiResponse.success(formulaResponse);
+        } catch (e) {
+          logger.e("Error parsing formula response: $e");
+          return ApiResponse.error("Error parsing response: $e");
+        }
+      } else {
+        try {
+          final data = jsonDecode(response.body);
+          final errorMessage =
+              data['message'] ?? data['msg'] ?? "Failed to get formula";
+          return ApiResponse.error(errorMessage);
+        } catch (e) {
+          return ApiResponse.error(
+              "Failed to get formula: ${response.statusCode}");
+        }
+      }
+    } catch (e) {
+      logger.e("Error getFormulaListForQC: $e");
+      return ApiResponse.error("Unexpected Error: $e");
+    }
+  }
+
+  /// Post formula exec untuk testing process
+  /// Menerima data dari getFormulaListForQC dan langsung mengirimkannya ke API
+  Future<ApiResponse<dynamic>> postFormulaExec({
+    required List<FormulaExec> formulaExecList,
+    required String branchcode,
+  }) async {
+    try {
+      final getData = await _storage.getUserData();
+
+      // Konversi FormulaExec ke format request body (struktur lama untuk API)
+      final formulaExecData = formulaExecList.map((formula) {
+        return {
+          "branchcode": branchcode,
+          "version": formula.formulaversion,
+          "formulacode": formula.formulacode,
+          "formulaname": formula.formulaname,
+          "refcode": formula.refcode,
+          "formulalevel": formula.formulalevel,
+          "formulano": formula
+              .formulalevel, // Menggunakan formulalevel sebagai formulano
+          "details": formula.formula_detail.map((detail) {
+            return {
+              "parameter": detail.parameter,
+              "description": detail.description,
+              "simvalue": detail.simvalue,
+              "detailno": detail.detailno,
+              "fortype": detail.fortype,
+              "comparespec": detail.comparespec,
+              "formula": detail.formula,
+              "simformula": detail.simformula,
+              "simresult": detail.simresult,
+            };
+          }).toList(),
+        };
+      }).toList();
+
+      final requestBody = {
+        "formula_exec": formulaExecData,
+      };
+
+      final response = await http.post(
+        Uri.parse("$baseUrl/general/get-formula-exec"),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer ${getData?.accessToken}",
+        },
+        body: jsonEncode(requestBody),
+      );
+      print("response postFormulaExec: ${response.body}");
+
+      final isTokenExpired = await _checkAndHandleTokenExpired(response);
+      if (isTokenExpired) {
+        return ApiResponse.error("Session expired. Please login again.");
+      }
+
+      if (response.statusCode == 200) {
+        try {
+          final data = jsonDecode(response.body);
+          return ApiResponse.success(data);
+        } catch (e) {
+          logger.e("Error parsing formula exec response: $e");
+          return ApiResponse.error("Error parsing response: $e");
+        }
+      } else {
+        try {
+          final data = jsonDecode(response.body);
+          final errorMessage =
+              data['message'] ?? data['msg'] ?? "Failed to post formula exec";
+          return ApiResponse.error(errorMessage);
+        } catch (e) {
+          return ApiResponse.error(
+              "Failed to post formula exec: ${response.statusCode}");
+        }
+      }
+    } catch (e) {
+      logger.e("Error postFormulaExec: $e");
+      return ApiResponse.error("Unexpected Error: $e");
+    }
+  }
 }

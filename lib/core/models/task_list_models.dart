@@ -49,6 +49,7 @@ class TestingOrder {
   final String buildingcode;
   final String sampleCode;
   final String sampleName;
+  final dynamic sampleVersion;
   final String? samplecategory;
   final String samplecatname;
   final String? samplecatcode;
@@ -65,6 +66,14 @@ class TestingOrder {
   final String? labourcode;
   final String? labourname;
   final String? branchcode_setup;
+  final List<dynamic>? documents;
+  final List<dynamic>? identitynumbers;
+  final String? documentid;
+  final String? documentname;
+  final String? documentpath;
+  final String? documenttype;
+  final String? documentrefno;
+  final String? identitynumber;
 
   TestingOrder({
     this.geotag,
@@ -75,10 +84,11 @@ class TestingOrder {
     required this.gps_subzone,
     required this.samplingradius,
     required this.buildingcode,
+    required this.sampleVersion,
     required this.sampleno,
     required this.sampleCode,
     required this.sampleName,
-    this.samplecategory,
+    this.samplecategory,  
     required this.samplecatname,
     this.samplecatcode,
     required this.servicetype,
@@ -94,6 +104,14 @@ class TestingOrder {
     this.labourcode,
     this.labourname,
     this.branchcode_setup,
+    this.documents,
+    this.identitynumbers,
+    this.documentid,
+    this.documentname,
+    this.documentpath,
+    this.documenttype,
+    this.documentrefno,
+    this.identitynumber,
   });
 
   factory TestingOrder.fromJson(Map<String, dynamic> json) {
@@ -109,6 +127,7 @@ class TestingOrder {
       sampleno: json['sampleno'] ?? "",
       sampleCode: json['samplecode'] ?? "",
       sampleName: json['samplename'] ?? "",
+      sampleVersion: json['sampleversion'],
       samplecategory: json['samplecategory'],
       servicetype: json['servicetype'] ?? "",
       zonacode: json['zonacode'] ?? "",
@@ -125,6 +144,14 @@ class TestingOrder {
       labourcode: json['labourcode'],
       labourname: json['labourname'],
       branchcode_setup: json['branchcode_setup'],
+      documents: json['documents'] != null ? List<dynamic>.from(json['documents']) : null,
+      identitynumbers: json['identitynumbers'] != null ? List<dynamic>.from(json['identitynumbers']) : null,
+      documentid: json['documentid'],
+      documentname: json['documentname'],
+      documentpath: json['documentpath'],
+      documenttype: json['documenttype'],
+      documentrefno: json['documentrefno'],
+      identitynumber: json['identitynumber'],
     );
   }
 
@@ -141,6 +168,7 @@ class TestingOrder {
       "sampleno": sampleno,
       "samplecode": sampleCode,
       "samplename": sampleName,
+      "sampleversion": sampleVersion,
       "samplecategory": samplecategory,
       "samplecatcode": samplecatcode,
       "servicetype": servicetype,
@@ -157,6 +185,14 @@ class TestingOrder {
       "labourcode": labourcode,
       "labourname": labourname,
       "branchcode_setup": branchcode_setup,
+      "documents": documents,
+      "identitynumbers": identitynumbers,
+      "documentid": documentid,
+      "documentname": documentname,
+      "documentpath": documentpath,
+      "documenttype": documenttype,
+      "documentrefno": documentrefno,
+      "identitynumber": identitynumber,
     };
   }
 }
