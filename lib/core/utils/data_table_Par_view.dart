@@ -223,7 +223,7 @@ class DataTableParView extends StatelessWidget {
         formulaList = param.ls_t_ts_fo!.map((e) {
           if (e is Map<String, dynamic>) {
             // Konversi dari format baru ke FormulaExec
-            final detailList = (e['detail'] as List<dynamic>?)
+            final detailList = (e['formula_detail'] as List<dynamic>?)
                 ?.map((detailJson) {
                   if (detailJson is Map<String, dynamic>) {
                     return FormulaDetail(
@@ -252,7 +252,7 @@ class DataTableParView extends StatelessWidget {
             
             return FormulaExec(
               formulacode: e['formulacode']?.toString() ?? '',
-              formulaname: '',
+              formulaname: e['formulaname']?.toString() ?? '',
               refcode: '',
               formulaversion: int.tryParse(e['formulaversion']?.toString() ?? '0') ?? 0,
               formulalevel: int.tryParse(e['formulalevel']?.toString() ?? '0') ?? 0,
@@ -260,10 +260,39 @@ class DataTableParView extends StatelessWidget {
               samplecode: '',
               version: 0,
               formula_detail: detailList,
+              formulano: int.tryParse(e['formulano']?.toString() ?? '1') ?? 1,
             );
           }
           return null;
         }).whereType<FormulaExec>().toList();
+        
+        // Sort formula berdasarkan formulalevel ascending, lalu formulano ascending
+        formulaList.sort((a, b) {
+          if (a.formulalevel != b.formulalevel) {
+            return a.formulalevel.compareTo(b.formulalevel);
+          }
+          return a.formulano.compareTo(b.formulano);
+        });
+        
+        // Sort formula_detail berdasarkan detailno ascending untuk setiap formula
+        for (var formula in formulaList) {
+          final sortedDetails = List<FormulaDetail>.from(formula.formula_detail);
+          sortedDetails.sort((a, b) => a.detailno.compareTo(b.detailno));
+          // Karena formula_detail adalah final, kita perlu membuat FormulaExec baru dengan detail yang sudah di-sort
+          final index = formulaList.indexOf(formula);
+          formulaList[index] = FormulaExec(
+            formulacode: formula.formulacode,
+            formulaname: formula.formulaname,
+            refcode: formula.refcode,
+            formulaversion: formula.formulaversion,
+            formulalevel: formula.formulalevel,
+            description: formula.description,
+            samplecode: formula.samplecode,
+            version: formula.version,
+            formula_detail: sortedDetails,
+            formulano: formula.formulano,
+          );
+        }
       } catch (e) {
         print('Error parsing ls_t_ts_fo: $e');
       }
@@ -350,8 +379,8 @@ class DataTableParView extends StatelessWidget {
             _buildHeaderCell('No', width: 80),
             _buildHeaderCell('Formula Code', width: 150),
             _buildHeaderCell('Formula Name', width: 200),
-            _buildHeaderCell('Version', width: 100),
-            _buildHeaderCell('Reference Code', width: 150),
+            // _buildHeaderCell('Version', width: 100), // Hidden
+            // _buildHeaderCell('Reference Code', width: 150), // Hidden
             _buildHeaderCell('Formula Level', width: 120),
           ],
         ),
@@ -403,8 +432,8 @@ class DataTableParView extends StatelessWidget {
             _buildCell('${formulaIndex + 1}', width: 80),
             _buildCell(formula.formulacode, width: 150),
             _buildCell(formula.formulaname, width: 200),
-            _buildCell('${formula.formulaversion}', width: 100),
-            _buildCell(formula.refcode, width: 150),
+            // _buildCell('${formula.formulaversion}', width: 100), // Hidden
+            // _buildCell(formula.refcode, width: 150), // Hidden
             _buildCell('${formula.formulalevel}', width: 120),
           ],
         ),
@@ -457,15 +486,20 @@ class DataTableParView extends StatelessWidget {
                 children: [
                   _buildHeaderCell('Detail No'),
                   _buildHeaderCell('Parameter'),
-                  _buildHeaderCell('Type'),
-                  _buildHeaderCell('Compare Specification'),
+                  // _buildHeaderCell('Type'), // Hidden
+                  // _buildHeaderCell('Compare Specification'), // Hidden
                   _buildHeaderCell('Result', width: 150),
-                  _buildHeaderCell('Description', width: 200),
+                  // _buildHeaderCell('Description', width: 200), // Hidden
                 ],
               ),
             ),
           ),
-          ...formula.formula_detail.map((detail) {
+          ...(() {
+            // Sort detail berdasarkan detailno ascending
+            final sortedDetails = List<FormulaDetail>.from(formula.formula_detail);
+            sortedDetails.sort((a, b) => a.detailno.compareTo(b.detailno));
+            return sortedDetails;
+          })().map((detail) {
             return IntrinsicWidth(
               child: Container(
                 width: double.infinity,
@@ -478,8 +512,8 @@ class DataTableParView extends StatelessWidget {
                   children: [
                     _buildCell('${detail.detailno}'),
                     _buildCell(detail.parameter),
-                    _buildCell(detail.fortype),
-                    _buildCell(detail.comparespec ? 'Yes' : 'No'),
+                    // _buildCell(detail.fortype), // Hidden
+                    // _buildCell(detail.comparespec ? 'Yes' : 'No'), // Hidden
                     SizedBox(
                       width: 150,
                       child: Padding(
@@ -491,7 +525,7 @@ class DataTableParView extends StatelessWidget {
                         ),
                       ),
                     ),
-                    _buildCell(detail.description ?? '-', width: MediaQuery.of(context).size.width * 0.15),
+                    // _buildCell(detail.description ?? '-', width: MediaQuery.of(context).size.width * 0.15), // Hidden
                   ],
                 ),
               ),

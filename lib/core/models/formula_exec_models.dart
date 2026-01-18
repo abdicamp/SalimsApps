@@ -43,6 +43,7 @@ class FormulaExec {
   final String samplecode;
   final int version;
   final List<FormulaDetail> formula_detail;
+  final int formulano;
 
   FormulaExec({
     required this.formulacode,
@@ -54,6 +55,7 @@ class FormulaExec {
     required this.samplecode,
     required this.version,
     required this.formula_detail,
+    this.formulano = 1,
   });
 
   factory FormulaExec.fromJson(Map<String, dynamic> json) {
@@ -95,6 +97,7 @@ class FormulaExec {
       samplecode: json['samplecode'] ?? '',
       version: json['version'] ?? 0,
       formula_detail: details,
+      formulano: json['formulano'] ?? json['formula_no'] ?? json['formulanumber'] ?? 1,
     );
   }
 
@@ -109,6 +112,7 @@ class FormulaExec {
       'samplecode': samplecode,
       'version': version,
       'formula_detail': formula_detail.map((e) => e.toJson()).toList(),
+      'formulano': formulano,
     };
   }
 }

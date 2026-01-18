@@ -161,10 +161,11 @@ class TakingSampleParameter {
     List<dynamic>? ls_t_ts_fo;
     if (json['taking_sample_fo'] != null && json['taking_sample_fo'] is List) {
       // Konversi dari format API ke format yang disimpan
+      print("taking_sample_fo: ${json['taking_sample_fo']}");
       ls_t_ts_fo = (json['taking_sample_fo'] as List).map((formulaJson) {
         if (formulaJson is Map<String, dynamic>) {
           // Format sesuai dengan struktur yang disimpan
-          final detailList = (formulaJson['detail'] as List<dynamic>?)
+          final detailList = (formulaJson['formula_detail'] as List<dynamic>?)
               ?.map((detailJson) {
                 if (detailJson is Map<String, dynamic>) {
                   return {
@@ -195,6 +196,7 @@ class TakingSampleParameter {
                 ? formulaJson['detailno'].toString() 
                 : formulaJson['detailno']?.toString() ?? ""),
             "formulacode": formulaJson['formulacode']?.toString() ?? "",
+            "formulaname": formulaJson['formulaname']?.toString() ?? "",
             "formulaversion": (formulaJson['formulaversion'] is int 
                 ? formulaJson['formulaversion'].toString() 
                 : formulaJson['formulaversion']?.toString() ?? ""),
@@ -202,7 +204,7 @@ class TakingSampleParameter {
                 ? formulaJson['formulalevel'].toString() 
                 : formulaJson['formulalevel']?.toString() ?? ""),
             "description": formulaJson['description']?.toString() ?? "",
-            "detail": detailList,
+            "formula_detail": detailList,
           };
         }
         return null;

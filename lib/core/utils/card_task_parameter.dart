@@ -6,6 +6,7 @@ import 'package:salims_apps_new/core/utils/data_table_Par_view.dart';
 import 'package:salims_apps_new/core/utils/search_dropdown.dart';
 import 'package:salims_apps_new/core/utils/app_localizations.dart';
 import 'package:salims_apps_new/ui/views/detail_task/detail_task_viewmodel.dart';
+import 'package:salims_apps_new/core/models/formula_exec_models.dart';
 
 class CardTaskParameter extends StatefulWidget {
   bool? isDetailhistory;
@@ -91,7 +92,22 @@ class _CardTaskParameterState extends State<CardTaskParameter> {
                                       ),
                                       child: Padding(
                                         padding: const EdgeInsets.all(8.0),
-                                        child: CustomSearchableDropDown(
+                                        child: Builder(
+                                          builder: (context) {
+                                            // Cari index parameter yang dipilih untuk initialIndex
+                                            int? initialIndex;
+                                            if (widget.vm?.parameterSelect != null && widget.vm!.listParameter.isNotEmpty) {
+                                              final parcode = widget.vm!.parameterSelect!.parcode.toString().trim().toUpperCase();
+                                              for (int i = 0; i < widget.vm!.listParameter.length; i++) {
+                                                final paramParcode = widget.vm!.listParameter[i].parcode.toString().trim().toUpperCase();
+                                                if (paramParcode == parcode) {
+                                                  initialIndex = i;
+                                                  break;
+                                                }
+                                              }
+                                            }
+                                            
+                                            return CustomSearchableDropDown(
                                           key: widget.vm?.dropdownKeyParameter,
                                           isReadOnly: false,
                                           items: widget.vm!.listParameter,
@@ -99,9 +115,8 @@ class _CardTaskParameterState extends State<CardTaskParameter> {
                                                   ?.searchParameter ??
                                               'Search Parameter',
                                           padding: EdgeInsets.zero,
-                                          // searchBarHeight: SDP.sdp(40),
                                           hint: 'Search Parameter',
-                                          // initialIndex: index,
+                                              initialIndex: initialIndex,
                                           dropdownHintText:
                                               AppLocalizations.of(context)
                                                       ?.searchParameterHint ??
@@ -115,19 +130,21 @@ class _CardTaskParameterState extends State<CardTaskParameter> {
                                               setState(() {
                                                 widget.vm?.parameterSelect =
                                                     value;
-                                                // Update list equipment ketika parameter dipilih
-                                              
-                                                widget.vm
-                                                    ?.updateParameterEquipment();
-                                                widget.vm?.getFormulaListForQC(widget.vm?.parameterSelect?.parcode);
-                                                print("formulaExecList: ${widget.vm?.parameterSelect?.parcode}");
+                                                    // Update list equipment ketika parameter dipilih
+                                                  
+                                                    widget.vm
+                                                        ?.updateParameterEquipment();
+                                                    widget.vm?.getFormulaListForQC(widget.vm?.parameterSelect?.parcode);
+                                                    print("formulaExecList: ${widget.vm?.parameterSelect?.parcode}");
                                               });
                                             }
                                           },
-                                          dropDownMenuItems:
-                                              widget.vm!.listParameter.map((e) {
-                                            return '${e.parname}';
-                                          }).toList(),
+                                              dropDownMenuItems:
+                                                  widget.vm!.listParameter.map((e) {
+                                                return '${e.parname}';
+                                              }).toList(),
+                                            );
+                                          },
                                         ),
                                       ),
                                     ),
@@ -166,34 +183,52 @@ class _CardTaskParameterState extends State<CardTaskParameter> {
                                             child: Padding(
                                               padding:
                                                   const EdgeInsets.all(8.0),
-                                              child: CustomSearchableDropDown(
-                                                key: widget.vm
-                                                    ?.dropdownKeyParameterEquipment,
-                                                isReadOnly: false,
-                                                items: widget
-                                                    .vm!.listParameterEquipment,
-                                                label: 'Equipment Parameter',
-                                                padding: EdgeInsets.zero,
-                                                hint:
-                                                    'Search Equipment Parameter',
-                                                dropdownHintText:
-                                                    'Search Equipment Parameter',
-                                                dropdownItemStyle:
-                                                    GoogleFonts.getFont("Lato"),
-                                                onChanged: (value) {
-                                                  if (value != null) {
-                                                    setState(() {
-                                                      widget.vm
-                                                              ?.parameterEquipmentSelect =
-                                                          value;
-                                                    });
+                                              child: Builder(
+                                                builder: (context) {
+                                                  // Cari index equipment yang dipilih untuk initialIndex
+                                                  int? initialIndex;
+                                                  if (widget.vm?.parameterEquipmentSelect != null && widget.vm!.listParameterEquipment.isNotEmpty) {
+                                                    final equipmentcode = widget.vm!.parameterEquipmentSelect!.equipmentcode.toString().trim().toUpperCase();
+                                                    for (int i = 0; i < widget.vm!.listParameterEquipment.length; i++) {
+                                                      final eqCode = widget.vm!.listParameterEquipment[i].equipmentcode.toString().trim().toUpperCase();
+                                                      if (eqCode == equipmentcode) {
+                                                        initialIndex = i;
+                                                        break;
+                                                      }
+                                                    }
                                                   }
+                                                  
+                                                  return CustomSearchableDropDown(
+                                                    key: widget.vm
+                                                        ?.dropdownKeyParameterEquipment,
+                                                    isReadOnly: false,
+                                                    items: widget
+                                                        .vm!.listParameterEquipment,
+                                                    label: 'Equipment Parameter',
+                                                    padding: EdgeInsets.zero,
+                                                    hint:
+                                                        'Search Equipment Parameter',
+                                                    initialIndex: initialIndex,
+                                                    dropdownHintText:
+                                                        'Search Equipment Parameter',
+                                                    dropdownItemStyle:
+                                                        GoogleFonts.getFont("Lato"),
+                                                    onChanged: (value) {
+                                                      if (value != null) {
+                                                        setState(() {
+                                                          widget.vm
+                                                                  ?.parameterEquipmentSelect =
+                                                              value;
+                                                        });
+                                                      }
+                                                    },
+                                                    dropDownMenuItems: widget
+                                                        .vm!.listParameterEquipment
+                                                        .map((e) {
+                                                      return '${e.equipmentname} (${e.equipmentcode})';
+                                                    }).toList(),
+                                                  );
                                                 },
-                                                dropDownMenuItems: widget
-                                                    .vm!.listParameterEquipment
-                                                    .map((e) {
-                                                  return '${e.equipmentname} (${e.equipmentcode})';
-                                                }).toList(),
                                               ),
                                             ),
                                           ),
@@ -215,22 +250,21 @@ class _CardTaskParameterState extends State<CardTaskParameter> {
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         SizedBox(height: 10),
-                                        // Dropdown untuk restore deleted formulas (berdasarkan parameter yang dipilih)
+                                        // Dropdown untuk menambahkan formula dari parameter lain
                                         if (widget.vm?.parameterSelect?.parcode != null)
                                           Builder(
                                             builder: (context) {
-                                              final deletedList = widget.vm?.getDeletedFormulaListForParameter(
-                                                widget.vm?.parameterSelect?.parcode,
-                                              ) ?? [];
+                                              // availableFormulaList sudah di-update dari API saat edit parameter
+                                              final availableList = widget.vm?.availableFormulaList ?? [];
                                               
-                                              if (deletedList.isNotEmpty)
+                                              if (availableList.isNotEmpty)
                                                 return Column(
                                                   crossAxisAlignment: CrossAxisAlignment.start,
                                                   children: [
                                                     Padding(
                                                       padding: const EdgeInsets.all(4),
                                                       child: Text(
-                                                        "Restore Deleted Formula",
+                                                        "Add Formula",
                                                         style: const TextStyle(
                                                           fontSize: 12,
                                                           fontWeight: FontWeight.w600,
@@ -251,25 +285,23 @@ class _CardTaskParameterState extends State<CardTaskParameter> {
                                                         child: Padding(
                                                           padding: const EdgeInsets.all(8.0),
                                                           child: CustomSearchableDropDown(
-                                                            key: widget.vm?.dropdownKeyDeletedFormula,
+                                                            key: widget.vm?.dropdownKeyAvailableFormula,
                                                             isReadOnly: false,
-                                                            items: deletedList,
-                                                            label: 'Select Deleted Formula to Restore',
+                                                            items: availableList,
+                                                            label: 'Select Formula to Add',
                                                             padding: EdgeInsets.zero,
-                                                            hint: 'Search Deleted Formula',
-                                                            dropdownHintText: 'Search Deleted Formula',
+                                                            hint: 'Search Formula',
+                                                            dropdownHintText: 'Search Formula',
                                                             dropdownItemStyle: GoogleFonts.getFont("Lato"),
                                                             onChanged: (value) {
                                                               if (value != null) {
                                                                 setState(() {
-                                                                  widget.vm?.restoreFormula(
-                                                                    value,
-                                                                    widget.vm?.parameterSelect?.parcode,
-                                                                  );
+                                                                  widget.vm?.addFormulaFromAvailable(value);
+                                                                  widget.vm?.dropdownKeyAvailableFormula.currentState?.clearValue();
                                                                 });
                                                               }
                                                             },
-                                                            dropDownMenuItems: deletedList
+                                                            dropDownMenuItems: availableList
                                                                 .map((e) {
                                                               return '${e.formulaname} (${e.formulacode})';
                                                             }).toList(),
@@ -298,24 +330,63 @@ class _CardTaskParameterState extends State<CardTaskParameter> {
                                                   crossAxisAlignment: CrossAxisAlignment.start,
                                                   children: [
                                                     _buildFormulaTableHeader(),
-                                                    ...widget.vm!.formulaExecList.asMap().entries.map((entry) {
-                                                      final index = entry.key;
-                                                      final formula = entry.value;
-                                                      final isExpanded = widget.vm?.isExpanded(index) ?? false;
+                                                    ...(() {
+                                                      // Sort formula berdasarkan formulalevel ascending, lalu formulano ascending
+                                                      final originalList = widget.vm!.formulaExecList;
+                                                      // Buat list dengan original index untuk tracking
+                                                      final indexedList = originalList.asMap().entries.toList();
+                                                      indexedList.sort((a, b) {
+                                                        if (a.value.formulalevel != b.value.formulalevel) {
+                                                          return a.value.formulalevel.compareTo(b.value.formulalevel);
+                                                        }
+                                                        return a.value.formulano.compareTo(b.value.formulano);
+                                                      });
+                                                      
+                                                      // Sort formula_detail berdasarkan detailno ascending untuk setiap formula
+                                                      final result = <Map<String, dynamic>>[];
+                                                      for (var entry in indexedList) {
+                                                        final originalIndex = entry.key;
+                                                        final formula = entry.value;
+                                                        final sortedDetails = List<FormulaDetail>.from(formula.formula_detail);
+                                                        sortedDetails.sort((a, b) => a.detailno.compareTo(b.detailno));
+                                                        // Buat FormulaExec baru dengan detail yang sudah di-sort
+                                                        final sortedFormula = FormulaExec(
+                                                          formulacode: formula.formulacode,
+                                                          formulaname: formula.formulaname,
+                                                          refcode: formula.refcode,
+                                                          formulaversion: formula.formulaversion,
+                                                          formulalevel: formula.formulalevel,
+                                                          description: formula.description,
+                                                          samplecode: formula.samplecode,
+                                                          version: formula.version,
+                                                          formula_detail: sortedDetails,
+                                                          formulano: formula.formulano,
+                                                        );
+                                                        result.add({
+                                                          'formula': sortedFormula,
+                                                          'originalIndex': originalIndex,
+                                                        });
+                                                      }
+                                                      
+                                                      return result;
+                                                    })().map((data) {
+                                                      final formula = data['formula'] as FormulaExec;
+                                                      final originalIndex = data['originalIndex'] as int;
+                                                      final isExpanded = widget.vm?.isExpanded(originalIndex) ?? false;
 
                                                       return Column(
                                                         children: [
                                                           _buildFormulaRow(
                                                             context,
-                                                            index,
+                                                            originalIndex,
                                                             formula,
                                                             isExpanded,
-                                                            () => widget.vm?.toggleExpand(index),
+                                                            () => widget.vm?.toggleExpand(originalIndex),
                                                           ),
                                                           if (isExpanded)
                                                             _buildFormulaDetailTable(
                                                               context,
-                                                              index,
+                                                              originalIndex,
                                                               formula,
                                                             ),
                                                         ],
@@ -359,18 +430,48 @@ class _CardTaskParameterState extends State<CardTaskParameter> {
                                         'Description',
                                   ),
 
-                                  SizedBox(
-                                    width: MediaQuery.of(context).size.width,
+                                  Row(
+                                    children: [
+                                      // Tombol Cancel (muncul jika sedang edit)
+                                      if (widget.vm?.isEditingParameter == true)
+                                        Expanded(
+                                          child: Padding(
+                                            padding: EdgeInsets.only(right: 8),
+                                            child: ElevatedButton(
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: Colors.grey[600],
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius: BorderRadius.circular(12),
+                                                ),
+                                                elevation: 4,
+                                              ),
+                                              onPressed: () {
+                                          setState(() {
+                                                  widget.vm?.cancelEditParameter();
+                                          });
+                                        },
+                                              child: const Text(
+                                                "Cancel",
+                                                style: TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      // Tombol Add/Update
+                                      Expanded(
                                     child: ElevatedButton(
                                       style: ElevatedButton.styleFrom(
-                                        backgroundColor: Colors
-                                            .blue.shade800, // warna elegan
+                                            backgroundColor: widget.vm?.isEditingParameter == true
+                                                ? Colors.orange.shade700
+                                                : Colors.blue.shade800,
                                         shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            12,
-                                          ), // tombol rounded
+                                              borderRadius: BorderRadius.circular(12),
                                         ),
-                                        elevation: 4, // efek bayangan halus
+                                            elevation: 4,
                                       ),
                                       onPressed: () {
                                         setState(() {
@@ -396,15 +497,19 @@ class _CardTaskParameterState extends State<CardTaskParameter> {
                                           }
                                         });
                                       },
-                                      child: const Text(
-                                        "Add",
-                                        style: TextStyle(
+                                          child: Text(
+                                            widget.vm?.isEditingParameter == true
+                                                ? "Update"
+                                                : "Add",
+                                            style: const TextStyle(
                                           fontSize: 16,
                                           fontWeight: FontWeight.bold,
-                                          color: Colors.white, // teks kontras
+                                              color: Colors.white,
+                                            ),
+                                          ),
                                         ),
                                       ),
-                                    ),
+                                    ],
                                   ),
                                   SizedBox(height: 10),
                                   widget.vm!.listTakingSampleParameter
@@ -415,6 +520,7 @@ class _CardTaskParameterState extends State<CardTaskParameter> {
                                           vm: widget.vm!,
                                         )
                                       : Stack()
+                                      
                                 ],
                               ),
                       ),
@@ -448,8 +554,8 @@ class _CardTaskParameterState extends State<CardTaskParameter> {
             _buildFormulaHeaderCell('No', width: 80),
             _buildFormulaHeaderCell('Formula Code', width: 150),
             _buildFormulaHeaderCell('Formula Name', width: 200),
-            _buildFormulaHeaderCell('Version', width: 100),
-            _buildFormulaHeaderCell('Reference Code', width: 150),
+            // _buildFormulaHeaderCell('Version', width: 100), // Hidden
+            // _buildFormulaHeaderCell('Reference Code', width: 150), // Hidden
             _buildFormulaHeaderCell('Formula Level', width: 120),
             _buildFormulaHeaderCell('Action', width: 100),
           ],
@@ -517,8 +623,8 @@ class _CardTaskParameterState extends State<CardTaskParameter> {
             _buildFormulaCell('${index + 1}', width: 80),
             _buildFormulaCell(formula.formulacode, width: 150),
             _buildFormulaCell(formula.formulaname, width: 200),
-            _buildFormulaCell('${formula.formulaversion}', width: 100),
-            _buildFormulaCell(formula.refcode, width: 150),
+            // _buildFormulaCell('${formula.formulaversion}', width: 100), // Hidden
+            // _buildFormulaCell(formula.refcode, width: 150), // Hidden
             _buildFormulaCell('${formula.formulalevel}', width: 120),
             SizedBox(
               width: 100,
@@ -590,15 +696,17 @@ class _CardTaskParameterState extends State<CardTaskParameter> {
     int index,
     dynamic formula,
   ) {
-    return Container(
-      margin: EdgeInsets.only(top: 8, bottom: 16),
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey[400]!),
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Container(
+        margin: EdgeInsets.only(top: 8, bottom: 16),
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.grey[400]!),
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
           Container(
             padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
@@ -618,7 +726,6 @@ class _CardTaskParameterState extends State<CardTaskParameter> {
           ),
           IntrinsicWidth(
             child: Container(
-              width: double.infinity,
               decoration: BoxDecoration(
                 color: Colors.green[50],
                 border: Border(
@@ -629,19 +736,30 @@ class _CardTaskParameterState extends State<CardTaskParameter> {
                 children: [
                   _buildFormulaHeaderCell('Detail No'),
                   _buildFormulaHeaderCell('Parameter'),
-                  _buildFormulaHeaderCell('Type'),
-                  _buildFormulaHeaderCell('Compare Specification'),
+                  // _buildFormulaHeaderCell('Type'), // Hidden
+                  // _buildFormulaHeaderCell('Compare Specification'), // Hidden
                   _buildFormulaHeaderCell('Result', width: 150),
-                  _buildFormulaHeaderCell('Description', width: 200),
+                  // _buildFormulaHeaderCell('Description', width: 200), // Hidden
                 ],
               ),
             ),
           ),
-          ...formula.formula_detail.map((detail) {
-            final detailIndex = formula.formula_detail.indexOf(detail);
+          ...(() {
+            // Sort detail berdasarkan detailno ascending
+            final originalDetails = formula.formula_detail;
+            final indexedDetails = originalDetails.asMap().entries.toList();
+            indexedDetails.sort((MapEntry<int, FormulaDetail> a, MapEntry<int, FormulaDetail> b) => a.value.detailno.compareTo(b.value.detailno));
+            
+            // Return dengan original index untuk tracking
+            return indexedDetails.map((entry) => {
+              'detail': entry.value,
+              'originalDetailIndex': entry.key,
+            }).toList();
+          })().map((data) {
+            final detail = data['detail'] as FormulaDetail;
+            final originalDetailIndex = data['originalDetailIndex'] as int;
             return IntrinsicWidth(
               child: Container(
-                width: double.infinity,
                 decoration: BoxDecoration(
                   border: Border(
                     bottom: BorderSide(color: Colors.grey[300]!),
@@ -651,8 +769,8 @@ class _CardTaskParameterState extends State<CardTaskParameter> {
                   children: [
                     _buildFormulaCell('${detail.detailno}'),
                     _buildFormulaCell(detail.parameter),
-                    _buildFormulaCell(detail.fortype),
-                    _buildFormulaCell(detail.comparespec ? 'Yes' : 'No'),
+                    // _buildFormulaCell(detail.fortype), // Hidden
+                    // _buildFormulaCell(detail.comparespec ? 'Yes' : 'No'), // Hidden
                     SizedBox(
                       width: 150,
                       child: Padding(
@@ -661,21 +779,23 @@ class _CardTaskParameterState extends State<CardTaskParameter> {
                           value: detail.simresult ?? '',
                           isEditable: detail.parameter.startsWith('@'),
                           onChanged: (newValue) {
-                            widget.vm?.updateSimResult(index, detailIndex, newValue);
+                            widget.vm?.updateSimResult(index, originalDetailIndex, newValue);
                           },
                         ),
                       ),
                     ),
-                    _buildFormulaCell(detail.description ?? '-', width: MediaQuery.of(context).size.width * 0.15),
+                    // _buildFormulaCell(detail.description ?? '-', width: MediaQuery.of(context).size.width * 0.15), // Hidden
                   ],
                 ),
               ),
             );
           }),
         ],
+        ),
       ),
     );
   }
+
 }
 
 // ============================================================================

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
@@ -275,8 +277,11 @@ class HomeViewmodel extends FutureViewModel {
     final dateFormat = DateFormat('yyyy-MM-dd');
     final fromDateStr = dateFormat.format(fromDate);
     final toDateStr = dateFormat.format(toDate);
+    print("fromDateStr: $fromDateStr");
+    print("toDateStr: $toDateStr");
     final responseTaskList =
         await apiService.getTaskList(fromDateStr, toDateStr);
+    print("responseTaskList: ${jsonEncode(responseTaskList?.data?.data)}");
     final responseTaskListHistory =
         await apiService.getTaskListHistory('${fromDateStr} - ${toDateStr}');
 
@@ -341,7 +346,7 @@ class HomeViewmodel extends FutureViewModel {
       }
 
       for (var place in listTask) {
-        String? latlong = place.geotag;
+        String? latlong = place.gps_subzone;
         if (latlong == null || latlong.isEmpty) {
           continue; // Skip jika geotag null atau empty
         }

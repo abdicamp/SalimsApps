@@ -767,6 +767,33 @@ class ApiService {
       if (response.statusCode == 200) {
         try {
           final data = jsonDecode(response.body);
+          
+          // Log raw response untuk melihat struktur data
+          logger.i('=== RAW GET FORMULA LIST FOR QC RESPONSE ===');
+          logger.i('Response body: ${response.body}');
+          if (data['data'] != null && data['data'] is List) {
+            final formulaList = data['data'] as List;
+            logger.i('Total formulas in response: ${formulaList.length}');
+            for (var i = 0; i < formulaList.length; i++) {
+              final formula = formulaList[i];
+              if (formula is Map<String, dynamic>) {
+                logger.i('Formula $i keys: ${formula.keys.toList()}');
+                logger.i('Formula $i full data: ${jsonEncode(formula)}');
+                // Cek apakah ada formula no atau formulano
+                if (formula.containsKey('formulano')) {
+                  logger.i('  - formulano found: ${formula['formulano']}');
+                }
+                if (formula.containsKey('formula_no')) {
+                  logger.i('  - formula_no found: ${formula['formula_no']}');
+                }
+                if (formula.containsKey('formulanumber')) {
+                  logger.i('  - formulanumber found: ${formula['formulanumber']}');
+                }
+              }
+            }
+          }
+          logger.i('=== END RAW GET FORMULA LIST FOR QC RESPONSE ===');
+          
           final formulaResponse = FormulaExecResponse.fromJson(data);
           return ApiResponse.success(formulaResponse);
         } catch (e) {
@@ -799,7 +826,7 @@ class ApiService {
     try {
       final getData = await _storage.getUserData();
 
-      // Konversi FormulaExec ke format request body (struktur lama untuk API)
+      // Konversi FormulaExec ke format request body
       final formulaExecData = formulaExecList.map((formula) {
         return {
           "branchcode": branchcode,
@@ -808,9 +835,8 @@ class ApiService {
           "formulaname": formula.formulaname,
           "refcode": formula.refcode,
           "formulalevel": formula.formulalevel,
-          "formulano": formula
-              .formulalevel, // Menggunakan formulalevel sebagai formulano
-          "details": formula.formula_detail.map((detail) {
+          "formulano": formula.formulano, // Gunakan formulano yang sudah di-increment
+          "formula_detail": formula.formula_detail.map((detail) {
             return {
               "parameter": detail.parameter,
               "description": detail.description,
@@ -830,13 +856,28 @@ class ApiService {
         "formula_exec": formulaExecData,
       };
 
+      // Log request body untuk debugging
+      final requestBodyJson = jsonEncode(requestBody);
+      logger.i('=== POST FORMULA EXEC REQUEST ===');
+      logger.i('Request body: $requestBodyJson');
+      // Log formulano dan simresult untuk setiap formula
+      for (var i = 0; i < formulaExecList.length; i++) {
+        final formula = formulaExecList[i];
+        logger.i('Formula $i: ${formula.formulacode} - formulano: ${formula.formulano}');
+        for (var j = 0; j < formula.formula_detail.length; j++) {
+          final detail = formula.formula_detail[j];
+          logger.i('  Detail $j: ${detail.parameter} - simresult: ${detail.simresult}');
+        }
+      }
+      logger.i('=== END POST FORMULA EXEC REQUEST ===');
+
       final response = await http.post(
         Uri.parse("$baseUrl/general/get-formula-exec"),
         headers: {
           "Content-Type": "application/json",
           "Authorization": "Bearer ${getData?.accessToken}",
         },
-        body: jsonEncode(requestBody),
+        body: requestBodyJson,
       );
       print("response postFormulaExec: ${response.body}");
 

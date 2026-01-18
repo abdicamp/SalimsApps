@@ -51,14 +51,7 @@ class TaskItem extends StatelessWidget {
                           InkWell(
                             onTap: () {
                               if (listData!.tsnumber == null || listData!.tsnumber == "") {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (context) => DetailTaskView(
-                                      listData: listData,
-                                      isDetailhistory: false,
-                                    ),
-                                  ),
-                                );
+                                vm?.navigateToDetailTask(listData!, context);
                               }
                             },
                             child: Row(
@@ -201,16 +194,7 @@ class TaskItem extends StatelessWidget {
                                         elevation: 3,
                                       ),
                                       onPressed: () {
-                                        Navigator.of(context).push(
-                                          MaterialPageRoute(
-                                            builder: (context) =>
-                                                DetailTaskView(
-                                              listData: listData,
-                                                  isDetailhistory: false,
-
-                                            ),
-                                          ),
-                                        );
+                                        vm?.navigateToDetailTask(listData!, context);
                                       },
                                       child: Row(
                                         mainAxisAlignment:

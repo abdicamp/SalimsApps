@@ -49,13 +49,17 @@ class ParameterService {
         
         // Format formula utama sesuai struktur baru
         // detailno untuk formula utama increment berdasarkan index formula (1, 2, 3, ...)
+        // formulano mengikuti detailno
+        final formulaDetailNo = formulaIndex + 1;
         return {
-          "detailno": "${formulaIndex + 1}", // Increment untuk setiap formula (1, 2, 3, ...)
+          "detailno": "$formulaDetailNo", // Increment untuk setiap formula (1, 2, 3, ...)
           "formulacode": formula.formulacode,
+          "formulaname": formula.formulaname,
           "formulaversion": formula.formulaversion.toString(),
           "formulalevel": formula.formulalevel.toString(),
+          "formulano": "$formulaDetailNo", // formulano mengikuti detailno
           "description": formula.description ?? "",
-          "detail": detailList,
+          "formula_detail": detailList,
         };
       }).toList();
     }
@@ -73,7 +77,10 @@ class ParameterService {
       ),
     );
 
-    print("ls_t_ts_fo: ${jsonEncode(listTakingSampleParameter)}");
+    // Debug: print ls_t_ts_fo untuk melihat apakah formulaname tersimpan
+    if (ls_t_ts_fo != null && ls_t_ts_fo.isNotEmpty) {
+      print("ls_t_ts_fo with formulaname: ${jsonEncode(ls_t_ts_fo)}");
+    }
 
     for (var parameter in listParameter) {
       if (parameter.parcode == parameterSelect?.parcode) {
